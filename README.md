@@ -16,6 +16,11 @@
   </p>
 </div>
 
+<!-- BREAKING CHANGES -->
+## Breaking Changes
+
+There are currently no breaking changes. 
+
 <!-- GETTING STARTED -->
 ## Getting Started
 
