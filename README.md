@@ -6,13 +6,19 @@
     <img src="https://catalog.weber.edu/mime/media/22/2687/east_horiz.png" alt="Weber State University Logo">
   </a>
 
-<h3 align="center">AlgoGauge CLI</h3>
+<h2 align="center">AlgoGauge CLI</h3>
 
 
-  <p align="center">
-    The CLI version of Dr. Brad Peterson's AlgoGauge Tenure project
-    <br />
-    <a href="https://github.com/jzdegrey/AlgoGauge/issues"><strong>Known Issues and Bugs »</strong></a>
+  <h6 align="center">
+    The CLI version of Dr. Brad Peterson's AlgoGauge Tenure project.
+    
+  </h6>
+  <p align="left">
+    This program will compare one or many different algorithms and print out the results of the Algorithm. The purpose 
+    of this program is to help show case the differences between the many different sorting algorithms and to help 
+    visualize use cases for each (e.g. quick sort is great for random data, but not so great if the data is already
+    sorted). In the future, this program will also provide more result data via Perf as well as have the ability to 
+    test hashing algorithm complexities.
   </p>
 </div>
 
