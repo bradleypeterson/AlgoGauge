@@ -58,7 +58,7 @@ Options getOptions() {
         ("h,help", "Prints this help page.")
     ;
 
-    options.custom_help(R"(--algo (some algorithm) --len [some int > 0][OPTIONALS: -r | -e | -c | -s | -o] [-f "some file", -v, -j])" );
+    options.custom_help(R"(--algo (some algorithm) --len [some int > 0][OPTIONALS: -r | -e | -c | -s | -o] [-f "some file", -v, -j, -i])" );
 
     return options;
 }
