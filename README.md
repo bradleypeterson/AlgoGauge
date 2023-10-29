@@ -8,6 +8,7 @@
 
 <h3 align="center">AlgoGauge CLI</h3>
 
+
   <p align="center">
     The CLI version of Dr. Brad Peterson's AlgoGauge Tenure project
     <br />
