@@ -332,7 +332,7 @@ Results written in JSON at: './results.json'
 - [ ] Add Perf options
 - [ ] Add Tim sort Algorithm
 - [ ] Add Hashing comparisons
-- [ ] Fix memory SEGFAULT errors
+- [X] Fix memory SEGFAULT errors
 - [ ] Finish documenting code
 
 See the [open issues](https://github.com/jzdegrey/AlgoGauge/issues) for a full list of proposed features (and known issues).
