@@ -1,5 +1,11 @@
 //#define _GNU_SOURCE
-
+/*
+ * docker instructions:
+ * docker build . -t perf:latest
+ * docker run --rm -m 150m --name perf perf
+ * or
+ * create a docker toolchain in clion using https://www.jetbrains.com/help/clion/clion-toolchains-in-docker.html#build-run-debug-docker
+ */
 
 #include <stdlib.h>
 #include <iostream>
