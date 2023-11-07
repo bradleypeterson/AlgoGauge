@@ -158,19 +158,19 @@ int main(int argc, char* argv[]) {
           val1 = rf->values[i].value;
         } else if (rf->values[i].id == id2) {
           cout << "Found id2" << endl;
-//          val2 = rf->values[i].value;
+          val2 = rf->values[i].value;
         } else if (rf->values[i].id == id3) {
           cout << "Found id3" << endl;
-//          val3 = rf->values[i].value;
+          val3 = rf->values[i].value;
         } else if (rf->values[i].id == id4) {
           cout << "Found id4" << endl;
-//          val4 = rf->values[i].value;
+          val4 = rf->values[i].value;
         } else if (rf->values[i].id == id5) {
           cout << "Found id5" << endl;
-//          val5 = rf->values[i].value;
+          val5 = rf->values[i].value;
         } else if (rf->values[i].id == id6) {
           cout << "Found id6" << endl;
-//          val6 = rf->values[i].value;
+          val6 = rf->values[i].value;
         }
         else {
             cout <<"Found none" << endl;
