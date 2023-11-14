@@ -108,7 +108,7 @@ vector<BaseSort<unsigned int>*> parseAndGetAlgorithms(const ParseResult& result,
 #ifndef linux
         // raise error if tyring to use perf on non-linux system
         if (includePerf == "true") {
-            throw std::invalid_argument("Option 'p' or 'perf' is not supported on this system! Perf only works on Linux distros! Please remove option 'p' or 'perf' from your args and try again.");
+            throw std::invalid_argument("Option 'p' or 'perf' is not supported on this system! Perf only works on Linux distros! Please remove option 'p' or 'perf' from your args and try again. If you want to test Perf on a non-Linux system, then set --perf=sample instead. Note: this only returns dummy values!");
         }
 #endif
 

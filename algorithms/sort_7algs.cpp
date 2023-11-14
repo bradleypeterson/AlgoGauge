@@ -94,6 +94,7 @@ namespace AlgoGauge {
         void runAndPrintSort();
         void runAndPrintFileSort(const string &filePath, const bool &append = true);
         string runAndGetJSONSort();
+        string getDummyPerfData(bool JSON = false);
 
         virtual void runSort() = 0; // Pure virtual function.
         // It makes the class **abstract**.  In other words,
@@ -233,6 +234,48 @@ namespace AlgoGauge {
     }
 
     template<typename T>
+    string BaseSort<T>::getDummyPerfData(bool JSON) {
+        string allEvents[17][2] = {
+            {"PERF NOTE", "\"INCLUDED DATA IS DUMMY DATA!\""},
+            {"cpu cycles", "5432316545"},
+            {"bus cycles", "1561896"},
+            {"cpu instructions", "5151651"},
+            {"cache references", "198456156"},
+            {"cache misses", "198415652"},
+            {"branch predictions", "51894156489"},
+            {"retired branch instructions", "98528445"},
+            {"branch misses", "7415437"},
+            {"total page faults", "574"},
+            {"minor page faults", "242"},
+            {"major page faults", "473"},
+            {"context switches", "4"},
+            {"L1 data cache read accesses", "369545"},
+            {"L1 instruction cache read accesses", "841616"},
+            {"L1 data cache prefetch accesses", "261485"},
+            {"L1 instruction cache prefetch accesses", "2117485"}
+        };
+
+        string returnString;
+        int size = sizeof(allEvents)/sizeof(*allEvents);
+        if (JSON) {
+            returnString += "{";
+            for (int i = 0; i < size; i++) {
+                returnString += "\"" + allEvents[i][0];
+                returnString += "\": " + allEvents[i][1];
+                if (i + 1 != size) returnString += ", ";
+            }
+            returnString += "}";
+        } else {
+            for (int i = 0; i < size; i++) {
+                returnString += allEvents[i][0];
+                returnString += ": " + allEvents[i][1];
+                if (i + 1 != size) returnString += "; ";
+            }
+        }
+        return returnString;
+    }
+
+    template<typename T>
     void BaseSort<T>::loadReversedValues() {
         algorithmOption = AlgorithmOptions::reversedSet;
         for (unsigned int i = capacity; i > 0; i--) arr[i - 1] = valuesPriorToSort[i - 1] = i - 1;
@@ -284,13 +327,7 @@ namespace AlgoGauge {
     string BaseSort<T>::getStringResult() {
         string perfString = "; Perf Data: ";
         if (includePerf == "sample") {
-            perfString += "cpu cycles: 5432316545"
-                    + string(" page faults: 45")
-                    + string(" cpu instructions: 65461862")
-                    + string(" branch predictions: 213156186")
-                    + string(" retired branch instructions: 45161683")
-                    + string(" branch misses: 51612358")
-                    ;
+            perfString += getDummyPerfData();
         }
 #ifdef linux
         else if (includePerf == "true") {
@@ -366,13 +403,7 @@ namespace AlgoGauge {
 
         output += ", \"perfData\": ";
         if (includePerf == "sample") {
-            output += "{\"cpu cycles\": 5432316545,"
-                      + string(" \"page faults\": 45,")
-                      + string(" \"cpu instructions\": 65461862,")
-                      + string(" \"branch predictions\": 213156186,")
-                      + string(" \"retired branch instructions\": 45161683,")
-                      + string(" \"branch misses\": 51612358}")
-                    ;
+            output += getDummyPerfData(true);
         }
 #ifdef linux
         else if (includePerf == "true") {
