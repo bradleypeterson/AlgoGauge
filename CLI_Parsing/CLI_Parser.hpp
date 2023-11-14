@@ -56,12 +56,8 @@ Options getOptions() {
         ("v,verbose", "Runs the program in Verbose mode", value<bool>()->implicit_value("true"), "Results will be passed to STDOUT and errors to STDERR regardless of flag.")
         ("i,include-values", "Will include values in the output. It is highly recommended to use a small length (less than 100).", value<bool>()->implicit_value("true"))
         ("h,help", "Prints this help page.")
-        ("p,perf", "Includes Perf data in the output. ONLY WORKS ON LINUX DISTROS!!!", value<bool>()->implicit_value("true"),
-#ifdef linux
-            "This program has been compiled on a Linux distro, so you may include this option."
-#else
-         "This program was NOT compiled on a Linux distro, so this option will NOT WORK!!!"
-#endif
+        ("p,perf", "Includes Perf data in the output. Actual Perf data only works on Linux.", value<string>()->implicit_value("true")->default_value("false"),
+            "If you are not on Linux and want to use this anyways, you can set this to \"sample\". e.g. --perf=sample"
         )
     ;
 
@@ -75,15 +71,16 @@ BaseSort<unsigned int>* getAlgorithm(
     const unsigned int& length,
     const string& canonicalName = "",
     const bool& verbose = false,
-    const bool& includeValues = false
+    const bool& includeValues = false,
+    const string& includePerf = "false"
 ) {
     transform(algorithmName.begin(), algorithmName.end(), algorithmName.begin(), ::tolower);
-    if (algorithmName == "bubble") return new Bubble<unsigned int>(length, canonicalName, verbose, includeValues);
-    else if (algorithmName == "selection") return new Selection<unsigned int>(length, canonicalName, verbose, includeValues);
-    else if (algorithmName == "insertion") return new Insertion<unsigned int>(length, canonicalName, verbose, includeValues);
-    else if (algorithmName == "quick") return new Quick<unsigned int>(length, canonicalName, verbose, includeValues);
-    else if (algorithmName == "merge") return new Merge<unsigned int>(length, canonicalName, verbose, includeValues);
-    else if (algorithmName == "heap") return new Heap<unsigned int>(length, canonicalName, verbose, includeValues);
+    if (algorithmName == "bubble") return new Bubble<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "selection") return new Selection<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "insertion") return new Insertion<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "quick") return new Quick<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "merge") return new Merge<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "heap") return new Heap<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else throw std::invalid_argument("Algorithm name '" + algorithmName + "' is not listed as a valid algorithm!");
 }
 
@@ -104,11 +101,13 @@ vector<BaseSort<unsigned int>*> parseAndGetAlgorithms(const ParseResult& result,
         vector<string> cns = result["n"].as<vector<string>>();
         bool verbose = result["v"].as<bool>();
         bool includeValues = result["i"].as<bool>();
-        bool includePerf = result["p"].as<bool>();
+        string includePerf = result["p"].as<string>();
+
+        transform(includePerf.begin(), includePerf.end(), includePerf.begin(), ::tolower);
 
 #ifndef linux
         // raise error if tyring to use perf on non-linux system
-        if (includePerf) {
+        if (includePerf == "true") {
             throw std::invalid_argument("Option 'p' or 'perf' is not supported on this system! Perf only works on Linux distros! Please remove option 'p' or 'perf' from your args and try again.");
         }
 #endif
@@ -148,7 +147,8 @@ vector<BaseSort<unsigned int>*> parseAndGetAlgorithms(const ParseResult& result,
                 len[i],
                 cNames[i],
                 verbose,
-                includeValues
+                includeValues,
+                includePerf
             );
             switch (algorithmOptions[i]) {
                 case AlgorithmOptions::randomSet:
