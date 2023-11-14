@@ -241,6 +241,36 @@ the previous examples. Note: the JSON flag ***only*** pertains to STDOUT.
 {"algorithms": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 100000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx}]}
 ```
 
+### Perf Values ```-p``` or ```--perf```
+
+To include Perf values, you ***MUST*** be on Linux machine and provide the Perf argument.
+
+```shell
+./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -rjp
+```
+
+#### Results:
+```
+{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Ordered","algorithmLength": 1000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx, "perfData": {"cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 1000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx, "perfData": {"cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}}]}
+```
+
+### Perf Values for *Non-Linux* Machines ```--perf=sample```
+
+If you are not on a Linux machine, but will be deploying this to a Linux machine eventually and will be needing Perf data, 
+but you need to test and debug on a non-Linux machine, you can include the ```--perf=sample``` argument which mimics the Perf output by providing 
+dummy Perf data. This flag works with every other flag.
+
+```shell
+./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -rj --perf=sample
+```
+
+#### Results:
+```
+{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Ordered","algorithmLength": 1000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx, "perfData": {"PERF NOTE": "INCLUDED DATA IS DUMMY DATA!", "cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 1000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx, "perfData": {"PERF NOTE": "INCLUDED DATA IS DUMMY DATA!", "cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}}]}
+```
+
+Notice that in the JSON response, a "PERF NOTE" is included to remind that the output does not contain actual Perf data, but instead only dummy data.
+
 ### Printing to a file ```-f [path_to_file]``` or ```--file [path_to_file]```
 
 You can have the program print the results in a JSON formatted file. You just need to provide the path to the file 
@@ -304,7 +334,8 @@ Sort 'Quick' with Algorithm Option 'Random' of length 50, completed in x.xxxxxx 
 ```
 
 ### Print everything!!! ```-j -v -f -i```
-You can provide all program option flags at once (excluding the help flag)
+You can provide all program option flags at once (excluding the help flag). Perf flag is not included here as it is only 
+available on Linux machines. However, you can add it here too if needed.
 
 ```shell
 ./AlgoGauge --algo quick --len 50 --name first -r --algo bubble --len 50 --name final -r --file ./results.json -vji
@@ -329,16 +360,15 @@ Results written in JSON at: './results.json'
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Add Perf options
 - [ ] Add Tim sort Algorithm
 - [ ] Add Hashing comparisons
-- [X] Fix memory SEGFAULT errors
 - [ ] Finish documenting code
+- [X] Add Perf options
+- [X] Fix memory SEGFAULT errors
 
 See the [open issues](https://github.com/jzdegrey/AlgoGauge/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- CONTRIBUTING -->
@@ -350,5 +380,16 @@ create a pull request. ***NEVER*** commit and push directly to main or developme
 1. Create your Feature Branch from Development or Main
 2. Commit and push your Changes
 3. Open a Pull Request
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+<!-- AUTHORS -->
+## Authors
+
+#### Weber State University - School of Computing
+
+- Dr. Brad Peterson
+- John Z. DeGrey
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

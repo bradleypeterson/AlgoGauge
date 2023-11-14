@@ -10,6 +10,7 @@
 #include <string>
 #include <chrono>
 #include "RandomNum.hpp"
+#include "../dependencies/Perf.hpp"
 
 using std::cout;
 using std::cin;
@@ -52,11 +53,12 @@ namespace AlgoGauge {
     public:
         //constructors and destructors
         BaseSort(
-                const string &sortName,
-                const unsigned int capacity,
-                const string &canonicalName = "",
-                const bool &verbose = false,
-                const bool &includeValues = false
+            const string &sortName,
+            const unsigned int capacity,
+            const string &canonicalName = "",
+            const bool &verbose = false,
+            const bool &includeValues = false,
+            const string &includePerf = "false"
         );
         virtual ~BaseSort();
 
@@ -92,6 +94,7 @@ namespace AlgoGauge {
         void runAndPrintSort();
         void runAndPrintFileSort(const string &filePath, const bool &append = true);
         string runAndGetJSONSort();
+        string getDummyPerfData(bool JSON = false);
 
         virtual void runSort() = 0; // Pure virtual function.
         // It makes the class **abstract**.  In other words,
@@ -106,9 +109,15 @@ namespace AlgoGauge {
         // This is different from sortName as this can be whatever the user defines.
         bool verbose;
         bool includeValues;
+        string includePerf;
+#ifdef linux
+        Perf::Perf perf;
+#endif
+
     private:
         unsigned int *valuesPriorToSort; //Stores the values prior to sorting
         std::chrono::duration<double, std::milli> executionTime;
+        void loadPerf();
     };
 
     template<typename T>
@@ -117,7 +126,8 @@ namespace AlgoGauge {
             const unsigned int capacity,
             const string &canonicalName,
             const bool &verbose,
-            const bool &includeValues
+            const bool &includeValues,
+            const string &includePerf
     ) {
         this->sortName = sortName;
         if (capacity > 0 && capacity < UINT32_MAX) this->capacity = capacity;
@@ -129,6 +139,8 @@ namespace AlgoGauge {
         this->executionTime = (std::chrono::high_resolution_clock::now() - std::chrono::high_resolution_clock::now());
         this->verbose = verbose;
         this->includeValues = includeValues;
+        this->includePerf = includePerf;
+        this->loadPerf();
     }
 
     template<typename T>
@@ -179,6 +191,91 @@ namespace AlgoGauge {
     }
 
     template<typename T>
+    void BaseSort<T>::loadPerf() {
+#ifdef linux
+        //CPU Hardware Events
+        perf.addNewPerfEvent("cpu cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+        perf.addNewPerfEvent("bus cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES);
+        perf.addNewPerfEvent("cpu instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
+        perf.addNewPerfEvent("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
+        perf.addNewPerfEvent("cache misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+        perf.addNewPerfEvent("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
+        perf.addNewPerfEvent("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
+        perf.addNewPerfEvent("branch misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
+
+        //CPU Software (OS) Events
+        perf.addNewPerfEvent("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
+        perf.addNewPerfEvent("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
+        perf.addNewPerfEvent("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
+        perf.addNewPerfEvent("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
+
+        //CPU Cache Events
+        perf.addNewPerfEvent(
+            "L1 data cache read accesses",
+            PERF_TYPE_HW_CACHE,
+            (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+        );
+        perf.addNewPerfEvent(
+            "L1 instruction cache read accesses",
+            PERF_TYPE_HW_CACHE,
+            (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+        );
+        perf.addNewPerfEvent(
+            "L1 data cache prefetch accesses",
+            PERF_TYPE_HW_CACHE,
+            (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+        );
+        perf.addNewPerfEvent(
+            "L1 instruction cache prefetch accesses",
+            PERF_TYPE_HW_CACHE,
+            (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+        );
+#endif
+    }
+
+    template<typename T>
+    string BaseSort<T>::getDummyPerfData(bool JSON) {
+        string allEvents[17][2] = {
+            {"PERF NOTE", "\"INCLUDED DATA IS DUMMY DATA!\""},
+            {"cpu cycles", "5432316545"},
+            {"bus cycles", "1561896"},
+            {"cpu instructions", "5151651"},
+            {"cache references", "198456156"},
+            {"cache misses", "198415652"},
+            {"branch predictions", "51894156489"},
+            {"retired branch instructions", "98528445"},
+            {"branch misses", "7415437"},
+            {"total page faults", "574"},
+            {"minor page faults", "242"},
+            {"major page faults", "473"},
+            {"context switches", "4"},
+            {"L1 data cache read accesses", "369545"},
+            {"L1 instruction cache read accesses", "841616"},
+            {"L1 data cache prefetch accesses", "261485"},
+            {"L1 instruction cache prefetch accesses", "2117485"}
+        };
+
+        string returnString;
+        int size = sizeof(allEvents)/sizeof(*allEvents);
+        if (JSON) {
+            returnString += "{";
+            for (int i = 0; i < size; i++) {
+                returnString += "\"" + allEvents[i][0];
+                returnString += "\": " + allEvents[i][1];
+                if (i + 1 != size) returnString += ", ";
+            }
+            returnString += "}";
+        } else {
+            for (int i = 0; i < size; i++) {
+                returnString += allEvents[i][0];
+                returnString += ": " + allEvents[i][1];
+                if (i + 1 != size) returnString += "; ";
+            }
+        }
+        return returnString;
+    }
+
+    template<typename T>
     void BaseSort<T>::loadReversedValues() {
         algorithmOption = AlgorithmOptions::reversedSet;
         for (unsigned int i = capacity; i > 0; i--) arr[i - 1] = valuesPriorToSort[i - 1] = i - 1;
@@ -203,16 +300,42 @@ namespace AlgoGauge {
     void BaseSort<T>::runAndCaptureSort() {
         if (verbose) cout << "Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         auto startTime = std::chrono::high_resolution_clock::now();
+#ifdef linux
+        if (includePerf == "true") {
+            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
+            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
+            runSort();
+            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
+        } else {
+#endif
         runSort();
+#ifdef linux
+        }
+#endif
+
         auto stopTime = std::chrono::high_resolution_clock::now();
         if (verbose) cout << "Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         verifySort();
         if (verbose) cout << "Sort: \"" << sortName << "\"" << getCanonicalName() << "Verified!" << endl;
         executionTime = stopTime - startTime;
+#ifdef linux
+        perf.readBuffer();
+#endif
     }
 
     template<typename T>
     string BaseSort<T>::getStringResult() {
+        string perfString = "; Perf Data: ";
+        if (includePerf == "sample") {
+            perfString += getDummyPerfData();
+        }
+#ifdef linux
+        else if (includePerf == "true") {
+            perfString += perf.getBufferString();
+        }
+#endif
+        else perfString = "";
+
         return string("Sort '")
                + sortName
                + string("' ")
@@ -223,7 +346,8 @@ namespace AlgoGauge {
                + std::to_string(capacity)
                + string(", completed in ")
                + std::to_string(executionTime.count())
-               + string(" milliseconds");
+               + string(" milliseconds")
+               + perfString;
     }
 
     template<typename T>
@@ -277,6 +401,17 @@ namespace AlgoGauge {
 
         output += "\"algorithmRunTime_ms\": " + std::to_string(executionTime.count());
 
+        output += ", \"perfData\": ";
+        if (includePerf == "sample") {
+            output += getDummyPerfData(true);
+        }
+#ifdef linux
+        else if (includePerf == "true") {
+            output += perf.getBufferJSON();
+        }
+#endif
+        else output += "{}";
+
         return output + "}";
     }
 
@@ -317,8 +452,9 @@ namespace AlgoGauge {
                 const unsigned int capacity,
                 const string &canonicalName = "",
                 const bool &verbose = false,
-                const bool &includedValues = false
-        ) : BaseSort<T>("Bubble", capacity, canonicalName, verbose, includedValues) {}
+                const bool &includedValues = false,
+                const string &includePerf = "false"
+        ) : BaseSort<T>("Bubble", capacity, canonicalName, verbose, includedValues, includePerf) {}
 
         void runSort();
 
@@ -345,8 +481,9 @@ namespace AlgoGauge {
                 const unsigned int capacity,
                 const string &canonicalName = "",
                 const bool &verbose = false,
-                const bool &includedValues = false
-        ) : BaseSort<T>("Selection", capacity, canonicalName, verbose, includedValues) {};
+                const bool &includedValues = false,
+                const string &includePerf = "false"
+        ) : BaseSort<T>("Selection", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
 
@@ -378,8 +515,9 @@ namespace AlgoGauge {
                 const unsigned int capacity,
                 const string &canonicalName = "",
                 const bool &verbose = false,
-                const bool &includedValues = false
-        ) : BaseSort<T>("Insertion", capacity, canonicalName, verbose, includedValues) {};
+                const bool &includedValues = false,
+                const string &includePerf = "false"
+        ) : BaseSort<T>("Insertion", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
 
@@ -411,8 +549,9 @@ namespace AlgoGauge {
                 const unsigned int capacity,
                 const string &canonicalName = "",
                 const bool &verbose = false,
-                const bool &includedValues = false
-        ) : BaseSort<T>("Quick", capacity, canonicalName, verbose, includedValues) {};
+                const bool &includedValues = false,
+                const string &includePerf = "false"
+        ) : BaseSort<T>("Quick", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
 
@@ -471,8 +610,9 @@ namespace AlgoGauge {
                 const unsigned int capacity,
                 const string &canonicalName = "",
                 const bool &verbose = false,
-                const bool &includedValues = false
-        ) : BaseSort<T>("Heap", capacity, canonicalName, verbose, includedValues) {};
+                const bool &includedValues = false,
+                const string &includePerf = "false"
+        ) : BaseSort<T>("Heap", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
 
@@ -530,8 +670,9 @@ namespace AlgoGauge {
                 const unsigned int capacity,
                 const string &canonicalName = "",
                 const bool &verbose = false,
-                const bool &includedValues = false
-        ) : BaseSort<T>("merge", capacity, canonicalName, verbose, includedValues) {}
+                const bool &includedValues = false,
+                const string &includePerf = "false"
+        ) : BaseSort<T>("merge", capacity, canonicalName, verbose, includedValues, includePerf) {}
 
         void runSort();
 
