@@ -8,4 +8,5 @@ add_executable(AlgoGauge main.cpp
         algorithms/sort_7algs.cpp
         CLI_Parsing/CLI_Parser.hpp
         algorithms/RandomNum.hpp
+        dependencies/Perf.hpp
 )

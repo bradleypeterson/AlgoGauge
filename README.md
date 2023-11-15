@@ -6,15 +6,26 @@
     <img src="https://catalog.weber.edu/mime/media/22/2687/east_horiz.png" alt="Weber State University Logo">
   </a>
 
-<h3 align="center">AlgoGauge CLI</h3>
+<h2 align="center">AlgoGauge CLI</h3>
 
 
-  <p align="center">
-    The CLI version of Dr. Brad Peterson's AlgoGauge Tenure project
-    <br />
-    <a href="https://github.com/jzdegrey/AlgoGauge/issues"><strong>Known Issues and Bugs »</strong></a>
+  <h6 align="center">
+    The CLI version of Dr. Brad Peterson's AlgoGauge Tenure project.
+    
+  </h6>
+  <p align="left">
+    This program will compare one or many different algorithms and print out the results of the Algorithm. The purpose 
+    of this program is to help show case the differences between the many different sorting algorithms and to help 
+    visualize use cases for each (e.g. quick sort is great for random data, but not so great if the data is already
+    sorted). In the future, this program will also provide more result data via Perf as well as have the ability to 
+    test hashing algorithm complexities.
   </p>
 </div>
+
+<!-- BREAKING CHANGES -->
+## Breaking Changes
+
+There are currently no breaking changes. 
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -73,7 +84,7 @@ Please use ```shell ./AlgoGauge -h``` to see the help message along with options
 #### Basic Usage
 
 ```shell
-AlgoGauge --algo (some algorithm) --len [some int > 0][OPTIONALS: -r | -e | -c | -s | -o] [-f "some file", -v, -j]
+AlgoGauge --algo (some algorithm) --len [some int > 0][OPTIONALS: -r | -e | -c | -s | -o] [-f "some file", -v, -j, -i]
 ```
 
 #### Algorithm Name and Length [REQUIRED] options:
@@ -230,6 +241,36 @@ the previous examples. Note: the JSON flag ***only*** pertains to STDOUT.
 {"algorithms": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 100000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx}]}
 ```
 
+### Perf Values ```-p``` or ```--perf```
+
+To include Perf values, you ***MUST*** be on Linux machine and provide the Perf argument.
+
+```shell
+./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -rjp
+```
+
+#### Results:
+```
+{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Ordered","algorithmLength": 1000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx, "perfData": {"cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 1000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx, "perfData": {"cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}}]}
+```
+
+### Perf Values for *Non-Linux* Machines ```--perf=sample```
+
+If you are not on a Linux machine, but will be deploying this to a Linux machine eventually and will be needing Perf data, 
+but you need to test and debug on a non-Linux machine, you can include the ```--perf=sample``` argument which mimics the Perf output by providing 
+dummy Perf data. This flag works with every other flag.
+
+```shell
+./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -rj --perf=sample
+```
+
+#### Results:
+```
+{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Ordered","algorithmLength": 1000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx, "perfData": {"PERF NOTE": "INCLUDED DATA IS DUMMY DATA!", "cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 1000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx, "perfData": {"PERF NOTE": "INCLUDED DATA IS DUMMY DATA!", "cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}}]}
+```
+
+Notice that in the JSON response, a "PERF NOTE" is included to remind that the output does not contain actual Perf data, but instead only dummy data.
+
 ### Printing to a file ```-f [path_to_file]``` or ```--file [path_to_file]```
 
 You can have the program print the results in a JSON formatted file. You just need to provide the path to the file 
@@ -271,11 +312,33 @@ Results written in JSON at: './results.json'
 
 Note: The Verbose flag also works with or without the File flag and also works on the JSON flag as well.
 
-### Print everything!!! ```-j -v -f```
-You can provide all program option flags at once (excluding the help flag)
+### Include values ```-i``` or ```--include-values```
+
+If you want to see the values before and after running the algorithm, pass in the Include-Values flag. It will only 
+include the first and last values if the list of values is too long to output.
+
+***IMPORTANT: IF PASSING IN THE JSON OR FILE FLAG, THE INCLUDE-VALUES FLAG WILL INCLUDE ALL VALUES. IT IS EXTREMELY 
+NOT RECOMMENDED TO PASS IN THIS FLAG IF PASSING IN A LENGTH MORE THAN 100!*** 
 
 ```shell
-./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -r --file ./results.json -vj
+./AlgoGauge --algo quick --len 50 -ri
+```
+
+#### Results
+
+```Values before sort:
+2412496532, 3119216746, 1495923606, 3931352601, 26313293, 2552602825, 3745457912, 2213446826, 4119067789, 4188234190, 728322180, 2841381042, 1361173914, 2270545070, 3012213090, 3386551741, 1096517083, 318260028, 2467059067, 1416695198, 1451902384, 2507160589, 1023210396, 133024446, 738742523 ... , 3988278624, 4149187129, 84836057, 2807460976, 3347377057, 2052069331, 1443301765, 283741067, 1471137817, 59622745, 1781636238, 3614324154, 3896880493, 1215130632, 2798086528, 3952394013, 2450837735, 3642544339, 33621616, 2406532855, 1232451556, 3820123330, 3133462892, 4610458, 3016786978
+Values after sort:
+4610458, 26313293, 33621616, 59622745, 84836057, 133024446, 283741067, 318260028, 728322180, 738742523, 1023210396, 1096517083, 1215130632, 1232451556, 1361173914, 1416695198, 1443301765, 1451902384, 1471137817, 1495923606, 1781636238, 2052069331, 2213446826, 2270545070, 2406532855 ... , 2412496532, 2450837735, 2467059067, 2507160589, 2552602825, 2798086528, 2807460976, 2841381042, 3012213090, 3016786978, 3119216746, 3133462892, 3347377057, 3386551741, 3614324154, 3642544339, 3745457912, 3820123330, 3896880493, 3931352601, 3952394013, 3988278624, 4119067789, 4149187129, 4188234190
+Sort 'Quick' with Algorithm Option 'Random' of length 50, completed in x.xxxxxx milliseconds
+```
+
+### Print everything!!! ```-j -v -f -i```
+You can provide all program option flags at once (excluding the help flag). Perf flag is not included here as it is only 
+available on Linux machines. However, you can add it here too if needed.
+
+```shell
+./AlgoGauge --algo quick --len 50 --name first -r --algo bubble --len 50 --name final -r --file ./results.json -vji
 ```
 
 #### Results:
@@ -284,12 +347,12 @@ You can provide all program option flags at once (excluding the help flag)
 Starting sort: "Quick"<first> ...
 Verifying sort: "Quick"<first> ...
 Sort: "Quick"<first> Verified!
-Sort 'Quick' <first> with Algorithm Option 'Random' of length 100000, completed in x.xxxxxx milliseconds
+Sort 'Quick' <first> with Algorithm Option 'Random' of length 50, completed in x.xxxxxx milliseconds
 Starting sort: "Bubble"<final> ...
 Verifying sort: "Bubble"<final> ...
 Sort: "Bubble"<final> Verified!
-Sort 'Bubble' <final> with Algorithm Option 'Random' of length 100000, completed in x.xxxxxx milliseconds
-{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 100000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx}]}
+Sort 'Bubble' <final> with Algorithm Option 'Random' of length 50, completed in x.xxxxxx milliseconds
+{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 50,"algorithmCanonicalName": "first","valuesBeforeSort": [2412496532,3119216746,1495923606,3931352601,26313293,2552602825,3745457912,2213446826,4119067789,4188234190,728322180,2841381042,1361173914,2270545070,3012213090,3386551741,1096517083,318260028,2467059067,1416695198,1451902384,2507160589,1023210396,133024446,738742523,3988278624,4149187129,84836057,2807460976,3347377057,2052069331,1443301765,283741067,1471137817,59622745,1781636238,3614324154,3896880493,1215130632,2798086528,3952394013,2450837735,3642544339,33621616,2406532855,1232451556,3820123330,3133462892,4610458,3016786978],"valuesAfterSort": [4610458,26313293,33621616,59622745,84836057,133024446,283741067,318260028,728322180,738742523,1023210396,1096517083,1215130632,1232451556,1361173914,1416695198,1443301765,1451902384,1471137817,1495923606,1781636238,2052069331,2213446826,2270545070,2406532855,2412496532,2450837735,2467059067,2507160589,2552602825,2798086528,2807460976,2841381042,3012213090,3016786978,3119216746,3133462892,3347377057,3386551741,3614324154,3642544339,3745457912,3820123330,3896880493,3931352601,3952394013,3988278624,4119067789,4149187129,4188234190],"algorithmRunTime_ms": x.xxxxxx},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 50,"algorithmCanonicalName": "final","valuesBeforeSort": [2412496532,3119216746,1495923606,3931352601,26313293,2552602825,3745457912,2213446826,4119067789,4188234190,728322180,2841381042,1361173914,2270545070,3012213090,3386551741,1096517083,318260028,2467059067,1416695198,1451902384,2507160589,1023210396,133024446,738742523,3988278624,4149187129,84836057,2807460976,3347377057,2052069331,1443301765,283741067,1471137817,59622745,1781636238,3614324154,3896880493,1215130632,2798086528,3952394013,2450837735,3642544339,33621616,2406532855,1232451556,3820123330,3133462892,4610458,3016786978],"valuesAfterSort": [4610458,26313293,33621616,59622745,84836057,133024446,283741067,318260028,728322180,738742523,1023210396,1096517083,1215130632,1232451556,1361173914,1416695198,1443301765,1451902384,1471137817,1495923606,1781636238,2052069331,2213446826,2270545070,2406532855,2412496532,2450837735,2467059067,2507160589,2552602825,2798086528,2807460976,2841381042,3012213090,3016786978,3119216746,3133462892,3347377057,3386551741,3614324154,3642544339,3745457912,3820123330,3896880493,3931352601,3952394013,3988278624,4119067789,4149187129,4188234190],"algorithmRunTime_ms": x.xxxxxx}]}
 Results written in JSON at: './results.json'
 ```
 
@@ -297,16 +360,15 @@ Results written in JSON at: './results.json'
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Add Perf options
 - [ ] Add Tim sort Algorithm
 - [ ] Add Hashing comparisons
-- [ ] Fix memory SEGFAULT errors
 - [ ] Finish documenting code
+- [X] Add Perf options
+- [X] Fix memory SEGFAULT errors
 
 See the [open issues](https://github.com/jzdegrey/AlgoGauge/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- CONTRIBUTING -->
@@ -318,5 +380,16 @@ create a pull request. ***NEVER*** commit and push directly to main or developme
 1. Create your Feature Branch from Development or Main
 2. Commit and push your Changes
 3. Open a Pull Request
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+<!-- AUTHORS -->
+## Authors
+
+#### Weber State University - School of Computing
+
+- Dr. Brad Peterson
+- John Z. DeGrey
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
