@@ -77,7 +77,7 @@ cmake --build ..
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Please use ```shell ./AlgoGauge -h``` to see the help message along with options.
+Please use ```./AlgoGauge -h``` to see the help message along with options.
 
 ### Usage Help
 
