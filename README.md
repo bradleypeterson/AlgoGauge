@@ -42,6 +42,7 @@ code, then you must check out and create a new branch from either main or the <a
 make your edits, commit and push them to your branch and then create a pull request. Only owners of this repo may 
 authorize pull requests.
 
+If you do want to add to this repo, please also read the <a href="./DEV-README.md">DEV-README.md</a>
 
 ### Prerequisites
 
@@ -131,6 +132,10 @@ Runs the program in Verbose mode
 
 ##### -i, --include-values
 Will include values in the output. It is highly recommended to use a small length (less than 100).
+
+##### -p, --perf
+Includes Perf data in the output. Actual Perf data only works on Linux.
+If you are not on Linux and want to use this anyways, you can set this to "sample". e.g. --perf=sample
 
 ##### -h, --help
 Prints this help page.
