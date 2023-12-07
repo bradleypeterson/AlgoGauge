@@ -198,6 +198,8 @@ root ALL=NOPASSWD:/usr/bin/AlgoGauge
 ```
 What these three lines mean is to allow all users to run the AlgoGauge program as sudo without 
 also having to have sudo access as well as not having to input any password when running it as sudo.
+(these changes will only work on new shell sessions. Meaning you'll need to close your active shell session and re-login
+in order to get it to work)
 These lines allow any user to now run the following command:
 ```bash
 sudo AlgoGauge [flags/args]
@@ -213,7 +215,428 @@ Deploying React to an Ubuntu Server
 </h1>
 
 ****
-*This section provides details on deploying your React app to an Ubuntu server running NginX*
+*This section provides details on deploying your React app to an Ubuntu server running NGINX*
+
+### Prerequisites
+
+- ##### NGINX
+- ##### Ubuntu
+These instructions were made for deploying on an Ubuntu server using the NGINX web daemon. These instructions will
+go over some configurations on NGINX and Ubuntu systemd, however, it will be assumed that at this point, you already 
+have at least the basic installation of NGINX installed and running on Ubuntu. 
+
+<br>
+
+<h2 id="i-react-home" name="i-react-home">Installation Contents</h2>
+- <a href="#i-node">Installing Node</a>
+- <a href="#c-react-root-dep">Configuring React for root deployment</a>
+- <a href="#c-react-sub-dep">Configuring React for sub-directory or sub-domain deployment</a>
+- <a href="#sandbox-subdir-groups">Sandbox sub-directory for Group Based Permissions</a>
+- <a href="#c-react-server-daemon">Create React Server Daemon Process</a>
+- <a href="#c-nginx-react-router">Configure NGINX to Point React Pages to React Router</a>
+- <a href="#i-c-mongodb">Install and Configure MongoDB</a>
+- <a href="#react-additional-notes">Additional Notes</a>
 
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<h2 id="i-node" name="i-node">Installing Node</h2>
+As you probably already know, Node is required in order to run a React app. However, installing Node on Ubuntu is a 
+little bit different if you are wanting to use the most recent version of Node. 
+<hr>
+
+**IMPORTANT:** The majority of package managers (including `apt` and `apt-get`) do not have the latest version of Node.
+I do not know the reason for this, but it is ***highly recommended to use the following installation instructions***
+instead of installing Node via the stock package manager repo!
+
+To install the ***correct*** and ***latest*** version of Node, please follow the instructions located at their official 
+Git repo listed here: https://github.com/nodesource/distributions#debian-and-ubuntu-based-distributions
+<br>
+If you do not, it is highly probable you ***will*** run into issues later on.
+
+<p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<h2 id="c-react-root-dep" name="c-react-root-dep">Configuring React for root deployment</h2>
+If you are planning on deploying your React app at the root level of your website (or if your React app will be the 
+sole website running on the server) and you intend to install it at `/var/www/html/`, then continue with this section.
+<hr>
+
+***IMPORTANT:*** **If you are planning on installing this in a subdirectory or as a subdomain,** ***do NOT*** **follow
+this section!!! Instead, follow the next section titled** <a href="#c-react-sub-dep">Configuring React for 
+sub-directory or sub-domain deployment</a>.
+
+Once you clone your React repo, first, make sure that you create the .env files for both your frontend and backend 
+folders. After you do that, all you have to do is `cd` into your frontend folder and then run the following command:
+
+```shell
+npm run build
+```
+
+After it builds, it should create a `build` folder within your frontend folder. Copy or move all the contents from that 
+folder into the root NGINX html folder.
+
+```shell
+mv ./build/* /var/www/html/
+```
+The above command assumes your present working directory is the frontend/client folder.
+<br>
+After you move or copy the files to the `html` folder, cd into that folder and change the file modifications to have 
+read and execute permissions recursively.
+
+```shell
+cd /var/www/html
+sudo chmod -R +rx .
+```
+
+***IMPORTANT:*** **It is critical to make sure ALL folders and files have both READ (r) and EXECUTE (x) permissions, 
+especially on the world flags. If they do not, NGINX will assume they should not be accessed and when you go to visit 
+your website, you will get a 403 FORBIDDEN error!**
+<br>
+If there are *any* folders starting from root down to *any* web file that needs to be displayed that doesn't have 
+read and execute flags on world, then NGINX will **ALWAYS** return a 403 error. 
+<br>
+E.g.
+If all files listed in `/var/www/html/` have read and execute flags set on world, but the folder `/var/www/` does not 
+have these permissions, then NGINX will return 403 for every single file attempted to access on your website. Even
+though your files under `html/` have the appropriate permissions, because one of the parent folders `www/` does not have
+the appropriate permissions, NGINX assumes everything under that folder should inherit those permissions without
+exception. 
+<br>
+In reality, this isn't abnormal or weird behavior that NGINX is doing to make things frustrating or hard, this is 
+actually standard permission practice in the world of Linux which is called the precedence of ACLS. You can read more 
+about Linux file permissions here: https://linuxhandbook.com/linux-file-permissions/
+
+<p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<h2 id="c-react-sub-dep" name="c-react-sub-dep">Configuring React for sub-directory or sub-domain deployment</h2>
+If you are planning on deploying your React app in a subdirectory or subdomain of your website (or if your React app 
+will be one of many websites running on the server) and you intend to install it at `/var/www/html/[some-folder-name]`, 
+then continue with this section.
+<hr>
+
+***IMPORTANT:*** **If you are planning on installing this at the root level,** ***do NOT*** **follow
+this section!!! Instead, follow the previous section titled** <a href="#c-react-root-dep">Configuring React for root 
+deployment</a>.
+
+There is some important configurations you need to make to your React project before you deploying it to a subfolder is
+possible. First, in your frontend/client folder, you need to make sure any resource links are **relative**. This 
+means any links to pictures, videos, or other files you're referencing that you are also storing. 
+<br>
+Next, your index.html file and add the following line as the first line right after the `<head>` tag:
+```html
+<head>
+    <base href="%PUBLIC_URL%" />
+    ...
+</head>
+```
+The `%PUBLIC_URL%` string is a React environment variable that tells React to use the public URL set for your React app.
+<br><br>
+**Note: If for whatever reason, relative links aren't working for your React app once you build and deploy it, you will 
+need to instead convert them to absolute, but prepend it with:** `${process.env.PUBLIC_URL}/[path to resource]`
+<br>
+E.g.
+Instead of
+```jsx
+<img src={`pics/img/logo.png`}/>
+```
+
+Use:
+```jsx
+<img src={`${process.env.PUBLIC_URL}/img/logo.png`}/>
+```
+
+<br>
+
+Next, you'll need to modify any file that has a `<BrowserRouter>` AND/OR `<Routes>` tag.
+
+<br>
+
+For each `<BrowserRouter>` occurrence, you'll need to change the tags as such:
+```jsx
+import { BrowserRouter } from "react-router-dom";
+...
+const basename = process.env.PUBLIC_URL;
+...
+<BrowserRouter basename={basename}>
+    ...
+</BrowserRouter>
+```
+
+<br>
+
+For each `<Routes>` occurrence, you'll need to change the tags as such:
+```jsx
+import { Route, Routes } from "react-router-dom";
+...
+const basename = process.env.PUBLIC_URL;
+...
+<Routes basename={basename}>
+    ...
+</Routes>
+```
+
+Only modify the `<Routes>` tags, do **NOT** modify the `<Route>` tags!
+If your app uses both `<BrowserRouter>` and `<Routes>` tags, you'll need to modify both.
+
+<br>
+
+The final thing you'll need to modify is the `package.json` file within your frontend/client folder (do not do this in 
+your backend/server folder!)
+
+<br>
+
+Add the following key/value pair at the bottom of this file:
+
+```json
+{
+  ...,
+  "homepage": "[full URL to your webserver including path-to-subfolder. e.g. https://example.com/react-app]"
+}
+```
+It is important to only make this last change on the production server!
+
+<br>
+
+With all these changes made, we can finally build and deploy our React script. First, `cd` into your frontend folder and
+then run the following command:
+
+```shell
+npm run build
+```
+
+After it builds, it should create a `build` folder within your frontend folder. Copy or move all the contents from that
+folder into the html subdirectory folder.
+
+```shell
+mv ./build/* /var/www/html/[path to your subdirectory]
+```
+The above command assumes your present working directory is the frontend/client folder.
+<br>
+After you move or copy the files to the `/var/www/html/[path to your subdirectory]` folder, cd into that folder and 
+change the file modifications to have read and execute permissions recursively.
+
+```shell
+cd /var/www/html/[path to your subdirectory]
+sudo chmod -R +rx .
+```
+
+***IMPORTANT:*** **It is critical to make sure ALL folders and files have both READ (r) and EXECUTE (x) permissions,
+especially on the world flags. If they do not, NGINX will assume they should not be accessed and when you go to visit
+your website, you will get a 403 FORBIDDEN error!**
+<br>
+If there are *any* folders starting from root down to *any* web file that needs to be displayed that doesn't have
+read and execute flags on world, then NGINX will **ALWAYS** return a 403 error.
+<br>
+E.g.
+If all files listed in `/var/www/html/` have read and execute flags set on world, but the folder `/var/www/` does not
+have these permissions, then NGINX will return 403 for every single file attempted to access on your website. Even
+though your files under `html/` have the appropriate permissions, because one of the parent folders `www/` does not have
+the appropriate permissions, NGINX assumes everything under that folder should inherit those permissions without
+exception.
+<br>
+In reality, this isn't abnormal or weird behavior that NGINX is doing to make things frustrating or hard, this is
+actually standard permission practice in the world of Linux which is called the precedence of ACLS. You can read more
+about Linux file permissions here: https://linuxhandbook.com/linux-file-permissions/
+
+<br>
+
+The following article may be helpful for reference if problems arise: 
+https://skryvets.com/blog/2018/09/20/an-elegant-solution-of-deploying-react-app-into-a-subdirectory/
+
+<p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<h2 id="sandbox-subdir-groups" name="sandbox-subdir-groups">Sandbox sub-directory for Group Based Permissions</h2>
+This section details instructions for the current deployment of the AlgoGauge React app on the Morpheus server as well 
+as deploying individual group's React projects to their own segregated/sandboxed folders
+
+<hr>
+
+The current Morpheus server is setup so that each group that had an opportunity to deploy their project, was sandboxed 
+into their own project folder. This provided certain security boundaries so that each group could only access and 
+make changes to their folder and not the others. The following explains how this was accomplished.
+<br><br>
+
+1. A user group is created for the student team using their full team name
+2. All students belonging to that team are then added to the group
+3. A folder is created within `/var/www/html` with their group name as the folder name
+4. The `chown` command is then used on that newly created folder to make the group ownership part of the new group we
+just created
+5. A `setgid` bit is then added to that newly created folder to the **group ONLY** using the following command
+```shell
+sudo chmod -R 775 /var/www/html/[folder name]
+sudo chown -R [myself]:[group name] /var/www/html/[folder name]
+sudo chmod g+s /var/www/html/[folder name]
+```
+***IMPORTANT:*** **It is absolutely critical that the you make sure to use `g+s` instead of just `+s` so that the 
+`setgid` bit is placed on the group part only! Using just `+s` will set it on both the group AND the user meaning that 
+not only will all newly created files inherit the group, but also the user who created the folder!**
+
+<br>
+
+Currently on the Morpheus server, there is a bit of a problem that should be changed at a later date (I would have 
+changed it, but we were so late in the semester that it wasn't really worth doing so). When I created the individual 
+sandboxed group folders, I created them within `/var/www/html/` and meant those to be the sole folder where the 
+groups could do whatever they wanted in their own sandboxed folders. However, I later learned that this created a 
+nuisance as when a group built their React app, they would have to put it at the root of their group folder which is 
+where their git repo was also located. Considering no one wanted their git repo to be accessible by NGINX which would 
+also make it available by web browser, the work around we created was to have an `etc` folder at the root group folder. 
+This `etc` folder would house all files not wanting to be displayed by NGINX including their git repo. This worked
+because we would only set the `etc` folder to **NOT** have any permissions on the world bits. This is all fine 
+except whenever we have to build the React app. This is because we would have to redo the `chmod -R +rx` on the root 
+group folder which would also add read and execute permissions to the `etc` folder which is not what we wanted. Meaning 
+that every time we would have to manually specify each of the files in our `chmod` command so as to not touch the `etc` 
+folder as well. 
+
+<br>
+
+The best solution to this problem is to create two folders for each group. One group folder that would be the same as 
+above in `/var/www/html/` and then another one somewhere other than `/var/www/html/`. This would eliminate the need for 
+the `etc` folder as it would move the `etc` folder somewhere else in the file system. 
+
+<p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<h2 id="c-react-server-daemon" name="c-react-server-daemon">Create React Server Daemon Process</h2>
+This section explains how to set up the React backend/server/express/etc server to run without taking over your shell 
+and without requiring you to maintain an active shell session.
+<hr>
+
+When we run `npm start` within our development environments for our backend/server/express process, you may have 
+noticed that the command `npm start` takes over your current console/shell and can only be regained by terminating the 
+process. This of course, is completely impractical to use on the server. To get around this, we create a daemon via 
+Ubuntu's `systemd` daemons and allow Ubuntu to manage it for us. To do this run the following commands:
+
+<br>
+
+First, make note of the absolute path of where your backend/server/express `js` file is located. If you don't know, 
+look within your package.json file within the backend/server/express/whatever folder (not your frontend folder) and 
+look at the value for the `start` key. 
+
+<br>
+
+Next, edit that file and add the following line to the **1st line** of the file (it ***must*** be the first line!):
+```jsx
+#!/user/bin/env node
+```
+
+Then run the following command:
+```bash
+chmod +x [path to your backend/server/express js file]
+```
+
+Now you can create the daemon file using the following:
+
+```bash
+sudo [vim or nano] /etc/systemd/system/[group name or whatever name]-backend.service
+```
+
+Add the following lines to this file:
+```bash
+[Unit]
+Description=CHANGEME
+
+[Service]
+ExecStart=/usr/bin/env node /var/www/html/CHANGEME
+Restart=always
+User=nobody
+# Note Debian/Ubuntu uses 'nogroup', RHEL/Fedora uses 'nobody'
+Group=nogroup
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/var/www/html/CHANGEME
+
+[Install]
+WantedBy=multi-user.target
+```
+Making sure to change all the `CHANGEME` to the appropriate values.
+
+<br>
+
+The following is an example of this service file for a group called `example` where their root group folder is located 
+at `/var/www/html/example` and their backend JS file is located at 
+`/var/www/html/example/etc/AlgoGauge/backend/server.js`:
+```bash
+[Unit]
+Description=Example AlgoGauge Backend
+
+[Service]
+ExecStart=/usr/bin/env node /var/www/html/example/etc/AlgoGauge/backend/server.js
+Restart=always
+User=nobody
+# Note Debian/Ubuntu uses 'nogroup', RHEL/Fedora uses 'nobody'
+Group=nogroup
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/var/www/html/example/etc/AlgoGauge/backend
+
+[Install]
+WantedBy=multi-user.target
+```
+
+After you created and saved your `.service` file, you need to tell `systemd` to enable it. You can do this with the 
+following command:
+```bash
+sudo systemctl enable [name of .service file you created WITHOUT .service]
+```
+
+E.g. if the service file you created is called `example-backend.service`, you would run:
+```bash
+sudo systemctl enable example-backend
+```
+
+Now that it is enabled, you can test it by running:
+```bash
+sudo systemctl start [name of .service file you created WITHOUT .service]
+```
+
+If you need to stop it, run the following:
+```bash
+sudo systemctl stop [name of .service file you created WITHOUT .service]
+```
+
+If you need to restart it, run the following:
+```bash
+sudo systemctl restart [name of .service file you created WITHOUT .service]
+```
+
+After you start it, it is important to make sure that it did start correctly. To check to see if it started correctly 
+or to just check if it's running at anytime, run the following command:
+```bash
+systemctl status [name of .service file you created WITHOUT .service]
+```
+
+If you want to view the logs or stdout of your daemon, the `systemctl status` will display the last 5 or so lines from 
+your daemon. To view more, you'll need to use the `journalctl` command like so:
+```bash
+journalctl -u [name of .service file you created WITHOUT .service]
+```
+
+**Note: if you get a permissions error when running this, you may need to run `journalctl` as root.**
+
+
+<p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<h2 id="c-nginx-react-router" name="c-nginx-react-router">Configure NGINX to Point React Pages to React Router</h2>
+<hr>
+
+
+<p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<h2 id="i-c-mongodb" name="i-c-mongodb">Install and Configure MongoDB</h2>
+<hr>
+
+
+<p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<h2 id="react-additional-notes" name="react-additional-notes">Additional Notes</h2>
+<hr>
+
+
+<p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
