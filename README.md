@@ -367,7 +367,7 @@ Results written in JSON at: './results.json'
 
 - [ ] Add Tim sort Algorithm
 - [ ] Add Hashing comparisons
-- [ ] Finish documenting code
+- [X] Finish documenting code
 - [X] Add Perf options
 - [X] Fix memory SEGFAULT errors
 

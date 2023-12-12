@@ -227,14 +227,16 @@ have at least the basic installation of NGINX installed and running on Ubuntu.
 <br>
 
 <h2 id="i-react-home" name="i-react-home">Installation Contents</h2>
-- <a href="#i-node">Installing Node</a>
-- <a href="#c-react-root-dep">Configuring React for root deployment</a>
-- <a href="#c-react-sub-dep">Configuring React for sub-directory or sub-domain deployment</a>
-- <a href="#sandbox-subdir-groups">Sandbox sub-directory for Group Based Permissions</a>
-- <a href="#c-react-server-daemon">Create React Server Daemon Process</a>
-- <a href="#c-nginx-react-router">Configure NGINX to Point React Pages to React Router</a>
-- <a href="#i-c-mongodb">Install and Configure MongoDB</a>
-- <a href="#react-additional-notes">Additional Notes</a>
+<ul>
+<li><a href="#i-node">Installing Node</a></li>
+<li><a href="#c-react-root-dep">Configuring React for root deployment</a></li>
+<li><a href="#c-react-sub-dep">Configuring React for sub-directory or sub-domain deployment</a></li>
+<li><a href="#sandbox-subdir-groups">Sandbox sub-directory for Group Based Permissions</a></li>
+<li><a href="#c-react-server-daemon">Create React Server Daemon Process</a></li>
+<li><a href="#c-nginx-react-router">Configure NGINX to Point React Pages to React Router</a></li>
+<li><a href="#i-c-mongodb">Install and Configure MongoDB</a></li>
+<li><a href="#react-additional-notes">Additional Notes</a></li>
+</ul>
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
