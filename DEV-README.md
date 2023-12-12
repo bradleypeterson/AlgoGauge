@@ -621,22 +621,109 @@ journalctl -u [name of .service file you created WITHOUT .service]
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <h2 id="c-nginx-react-router" name="c-nginx-react-router">Configure NGINX to Point React Pages to React Router</h2>
+
 <hr>
+
+Another fun issue with React and React Router is that when you navigate to a different page that's handled 
+by your React Router and try to refresh, you'll notice you'll get a 404 error. This is because when you 
+navigate to a page from your React app, React Router handles the page indexing and page loading. However, 
+upon refreshing the page, the browser then asks NGINX for that page instead of React Router. This results 
+in a 404 as that page does in fact not actually exist. Once you build your React App, only 1 index.html file 
+is created. 
+
+
+To fix this, you'll need to configure NGINX to point any paths directed to your React App subdirectory to 
+point to the React Router instead of having NGINX try to find the path on the server. 
+
+First, open up `/etc/nginx/sites-available/default` in your favorite text editor.
+
+There should be a `location /{ ...` block already listed (Morpheus server will have multiple. Look at the 
+Morpheus Setup for info on the current configuration). Make sure the initial `location` field is set like so:
+
+```yaml
+location / {
+      # First attempt to serve request as file, then
+      # as directory, then fall back to displaying a 404.
+      try_files $uri $uri/ $uri/index.html /index.html;
+}
+```
+The above lines will fix refresh issue with a React App that's installed at the html root.
+
+To get your React App in a subdirectory to not return a 404 when refreshed, insert the following lines 
+for your React app:
+
+```yaml
+location /PATH-TO-YOUR-REACT-APP/ {
+    try_files $uri $uri/ /PATH-TO-YOUR-REACT-APP/index.html;
+}
+```
+
+It is critical that you make sure the `PATH-TO-YOUR-REACT-APP{` `location /PATH-TO-YOUR-REACT-APP/ {` is 
+wrapped in `/`. Otherwise, it will NOT work!
+
+#### Morpheus Current NGINX Configuration:
+The current Morpheus configuration at the time of this writing has 4 `location ...` entries. One for the 
+root html path and 3 for each of the groups that were to publish their project to Morpheus. 
+
+#### Useful links for NGINX Directives:
+https://www.keycdn.com/support/nginx-location-directive
+https://www.digitalocean.com/community/tutorials/nginx-location-directive
+https://stackforgeeks.com/blog/reactjs-application-showing-404-not-found-in-nginx-server
 
 
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <h2 id="i-c-mongodb" name="i-c-mongodb">Install and Configure MongoDB</h2>
+
 <hr>
 
+MongoDB has been installed on the Morpheus server so as to not have to worry about any paid cloud 
+subscriptions or free tier limits. 
+
+### Installing MongoDB on Ubuntu
+Please use the following tutorial on installing MongoDB on Ubuntu: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
+
+Make sure you also follow the (hidden) instructions on adjusting UNIX `ulimit` Settings listed on the same page 
+or here: https://www.mongodb.com/docs/manual/reference/ulimit/
+
+### Configuring Security for MongoDB
+By default, the newly installed instance of MongoDB is completely open on localhost where any user connecting to 
+it will have unlimited, admin access. This is not good. very not good. very super duper not good. so much not good that
+it bad. very bad. very, very bad. very very super duper bad.
+
+To fix this, we can setup an initial admin account for MongoDB by following the instructions here:
+https://www.mongodb.com/docs/manual/tutorial/configure-scram-client-authentication/#std-label-create-user-admin
+(Note: This has already been configured on Morpheus)
+
+### Creating Users on MongoDB
+To create a user on MongoDB, follow the instructions listed here: https://www.mongodb.com/docs/manual/tutorial/create-users/
+
+It should be noted that when you create a new user, if you create the user whiling using a db other than 
+`admin` then you will need to specify that db within your connection string.
+
+### Morpheus Setup
+The Morpheus server is currently configured with the fun-gang db only. All the other groups did not have time 
+to move their DB instance from Cloud Atlas to Morpheus localhost db. 
+
+Only one user was created to interface with this single db.
 
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <h2 id="react-additional-notes" name="react-additional-notes">Additional Notes</h2>
+
 <hr>
 
+If there are no additional notes to be added, but yet a section for additional notes is added anyways 
+where the only content is "there is no additional notes as of right now" or some other long winded content 
+under the section "Additional Notes" just for the sole purpose of wasting the reader's time and attention, 
+then the long winded content that is super descriptive and a waste of time that is included in the section 
+"Additional Notes" for the sole purpose of wasting the reader's time and attention, will be just that: a 
+complete disregard for the reader's time by wasting their time by providing bland and pointless and 
+redundant and runons, or inconsistent content. Yet, you read this whole thing. And that's what I like 
+about you. You and I can waste the universe's time together as father and son. Trust your instincts. You 
+know it to be true. Live, long, laugh, love and prosper. 
 
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
