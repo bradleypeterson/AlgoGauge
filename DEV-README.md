@@ -144,8 +144,7 @@ server has 5). This is because you have to lookup the manual for the specific CP
 I found to be very difficult to find one that actually contains this data. 
 <br><br>
 There are two main Perf Events we are using for this project. Hardware and Software. According to the
-docs, Software events do not use registers, however, we found that the Software events still added 
-to our total limit anyways.
+docs, Software events do not use CPU registers.
 <br>
 When this limit is exceeded, no error is generated. Instead, all the perf metrics are returned as all 
 0's. 
