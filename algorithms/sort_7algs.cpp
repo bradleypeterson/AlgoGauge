@@ -51,7 +51,7 @@ namespace AlgoGauge {
     /**
      * The Base Abstract Class that all sorting algorithms should inherit from
      */
-    template<typename T>
+    template <typename T>
     class BaseSort {
     public:
         //constructors and destructors
@@ -219,6 +219,7 @@ namespace AlgoGauge {
      */
     template<typename T>
     void BaseSort<T>::loadPerf() {
+        
 #ifdef linux
         //CPU Hardware Events
         perf.addNewPerfEvent("cpu cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
@@ -355,11 +356,12 @@ namespace AlgoGauge {
             //stop recording on the perf registers
             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
         } else { //don't record perf values if not specified
-#endif
-        runSort(); //run the actual sort
-#ifdef linux
+            runSort();
         }
+#else
+    runSort();
 #endif
+
 
         auto stopTime = std::chrono::high_resolution_clock::now(); //record the stop time counter
         if (verbose) cout << "Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
