@@ -66,7 +66,7 @@ cmake --build .
 #### Unix OS:
 
 ```shell
-cmake --build ..
+cmake --build .
 ./AlgoGauge -h
 ```
 
