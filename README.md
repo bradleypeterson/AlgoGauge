@@ -361,12 +361,47 @@ Sort 'Bubble' <final> with Algorithm Option 'Random' of length 50, completed in 
 Results written in JSON at: './results.json'
 ```
 
-
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Add Tim sort Algorithm
+### P1
+
+- [ ] Add array, linked list options CRUD operation resize array
 - [ ] Add Hashing comparisons
+- [ ] Site cleanup go over site and fix bugs and pages BIG theta notation on all
+  - [ ] clean card heavy layout (Experiment, History)
+  - [ ] footer padding
+  - [ ] global button / links for experiment operations
+  - [ ] change mode dropdown
+  - [ ] remove repeat text  
+  - [ ] Implement experiment popup timer
+  - [ ] Grid layout for multiple cards (Four cards per row max)
+  - [ ] Toggle Dark Mode and Light Mode support
+  - [ ] Better history layout ???
+  - [ ] GEt rid of user input size ??? 
+  - [ ] When a close education popup I want to go back to the experiment
+- [ ] Instructor video and education overhaul
+- [ ] Parallel vs Serial
+- [ ] Validate Perf, find a way to run in unix, ways to measure l1 cache. *
+
+### P2
+
+- [ ] GPU algorithms, CUDA
+- [ ] Variations of sort algorithms (quick sort, merge sort 1...k, selection)
+- [ ] JAVA vs C++ vs RUST vs Python ???
+- [ ] CPU vectorization algorithms
+- [ ] Clear queue
+- [ ] Trees AVL vs B trees
+
+### P3
+
+- [ ] Unit/Perf testing for cpu bound, memory bound, and latency bound.
+- [ ] Add Tim sort Algorithm and other sort
+- [ ] Optimization mode, O0, O1, O2, O3
+- [ ] graph storage mechs
+- [ ] Over under prediction betting, make the site fun
+- [ ] repeated and chunk slider
+
 - [X] Finish documenting code
 - [X] Add Perf options
 - [X] Fix memory SEGFAULT errors
