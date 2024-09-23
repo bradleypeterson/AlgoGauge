@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "../algorithms/hash_algs.cpp"
 #include "../algorithms/sort_7algs.cpp"
 #include "../dependencies/cxxopts.hpp"
 
@@ -29,7 +30,7 @@ Options getOptions() {
     Options options("AlgoGauge", "This is the command line version of the AlgoGauge Program.");
 
     options.add_options("Algorithm Name and Length [REQUIRED]")
-        ("a,algo,algorithm", "Supported algorithms include: bubble, selection, insertion, quick, merge, heap.", value<vector<string>>(), "Name of the first algorithm to run.")
+        ("a,algo,algorithm", /*TODO: ADD HASH ARRAY AND HASH LINKED LIST*/"Supported algorithms include: bubble, selection, insertion, quick, merge, heap.", value<vector<string>>(), "Name of the first algorithm to run.")
         ("l,len,length", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), value<vector<int>>(), "Number of items to process")
         ("n,name", "A canonical name that will be returned in output if provided.", value<vector<string>>()->default_value(""))
     ;
@@ -81,6 +82,10 @@ BaseSort<unsigned int>* getAlgorithm(
     else if (algorithmName == "quick") return new Quick<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "merge") return new Merge<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "heap") return new Heap<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    // TODO:  ADD HASH ARRAY ALGORITHM CALL
+    // else if (algorithmName == "hash_array") ;
+    // TODO:  ADD HASH LINKED LIST ALGORITHM CALL
+    // else if (algorithmName == "hash_list") ;
     else throw std::invalid_argument("Algorithm name '" + algorithmName + "' is not listed as a valid algorithm!");
 }
 
