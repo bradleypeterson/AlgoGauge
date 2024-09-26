@@ -43,6 +43,7 @@ static const std::string HashTableOptionsStrings[] = {
 namespace AlgoGauge {
   template<typename T>
   class BaseHashTable {
+
   public:
     //constructors and destructors
     BaseHashTable(
@@ -56,17 +57,13 @@ namespace AlgoGauge {
     virtual ~BaseHashTable();
 
     //getters
-    string getName() { return hashName; }
+    string getName() { return hashTableName; }
     string getCanonicalName() { return this->canonicalName.empty() ? string("") : (string("<") + this->canonicalName + string("> ")); }
-    string getAlgorithmOption() { return HashTableOptionsStrings[hashTableOptions]; }
-    // T *getValuesPriorToSort() const { return this->valuesPriorToSort; }
-    // T *returnValues() const { return this->arr; }
-    string getStringResult();
+    string getHashTableOptions() { return HashTableOptionsStrings[hashTableOptions]; }
+    string getStringResult(); // TODO: ADD METHOD
     bool isVerbose() { return this->verbose; }
     bool valuesIncluded() { return this->verbose; }
-    // FIXME: REMOVE? 
-    // string getValuesRange();
-    string getJSONResult();
+    string getJSONResult(); // TODO: ADD METHOD
 
     //setters
     void setCanonicalName(const string &c) { this->canonicalName = c; }
@@ -74,26 +71,21 @@ namespace AlgoGauge {
     void setValuesIncluded(const bool &i = true) { this->verbose = i; }
 
     //other class members
-    void loadRandomValues();
-    void loadRepeatedValues();
-    void loadChunkValues();
-    void loadReversedValues();
-    void loadOrderedValues();
-    void printValues() const;
-    // void verifySort() const;
+    void loadRandomHashValues(); // TODO: ADD METHOD
+    void printValues() const; // TODO: ADD METHOD
     void printSortToFile(const string &filePath, const bool &append = true) const;
-    void runAndCaptureSort();
-    void runAndPrintSort();
+    void runAndCaptureSort(); // TODO: ADD METHOD
+    void runAndPrintSort(); // TODO: ADD METHOD
     void runAndPrintFileSort(const string &filePath, const bool &append = true);
-    string runAndGetJSONSort();
-    string getDummyPerfData(bool JSON = false);
+    string runAndGetJSONSort(); // TODO: ADD METHOD
+    string getDummyPerfData(bool JSON = false); // TODO: ADD METHOD
 
-    virtual void runSort() = 0; // Pure virtual function.
+    virtual void runHashTable() = 0; // Pure virtual function.
     // It makes the class **abstract**.  In other words,
     // nothing can instantiate an object of this class.
 
     protected:
-      string hashName;
+      string hashTableName;
       HashTableOptions hashTableOptions;
       T *arr{nullptr};
       unsigned int capacity{0};
@@ -146,12 +138,54 @@ namespace AlgoGauge {
 
 
 
+  template<typename T>
+  void BaseHashTable<T>::loadPerf() {
+#ifdef linux
+    //CPU Hardware Events
+    perf.addNewPerfEvent("cpu cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+    perf.addNewPerfEvent("bus cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES);
+    perf.addNewPerfEvent("cpu instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
+    perf.addNewPerfEvent("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
+    perf.addNewPerfEvent("cache misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+    perf.addNewPerfEvent("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
+    perf.addNewPerfEvent("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
+    perf.addNewPerfEvent("branch misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
+
+    //CPU Software (OS) Events
+    perf.addNewPerfEvent("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
+    perf.addNewPerfEvent("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
+    perf.addNewPerfEvent("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
+    perf.addNewPerfEvent("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
+
+    //CPU Cache Events
+    perf.addNewPerfEvent(
+        "L1 data cache read accesses",
+        PERF_TYPE_HW_CACHE,
+        (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+    );
+    perf.addNewPerfEvent(
+        "L1 instruction cache read accesses",
+        PERF_TYPE_HW_CACHE,
+        (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+    );
+    perf.addNewPerfEvent(
+        "L1 data cache prefetch accesses",
+        PERF_TYPE_HW_CACHE,
+        (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+    );
+    perf.addNewPerfEvent(
+        "L1 instruction cache prefetch accesses",
+        PERF_TYPE_HW_CACHE,
+        (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+    );
+#endif
+  }
 
 }
 
 # endif
 
-// int main() {
-//   cout << "RUNNING HASH TABLES..." << endl;
-//   return 0;
-// }
+int main() {
+  cout << "RUNNING HASH TABLES..." << endl;
+  return 0;
+}
