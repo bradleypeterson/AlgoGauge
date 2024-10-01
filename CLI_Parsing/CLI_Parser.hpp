@@ -82,10 +82,10 @@ BaseSort<unsigned int>* getAlgorithm(
     else if (algorithmName == "quick") return new Quick<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "merge") return new Merge<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "heap") return new Heap<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
-    // TODO:  ADD HASH ARRAY ALGORITHM CALL
-    // else if (algorithmName == "hash_array") ;
-    // TODO:  ADD HASH LINKED LIST ALGORITHM CALL
-    // else if (algorithmName == "hash_list") ;
+    // TODO:  ADD CLOSED HASH TABLE ALGORITHM CALL
+    // else if (algorithmName == "closed_hash_table") ;
+    // TODO:  ADD OPEN HASH TABLE ALGORITHM CALL
+    // else if (algorithmName == "open_hash_table") ;
     else throw std::invalid_argument("Algorithm name '" + algorithmName + "' is not listed as a valid algorithm!");
 }
 
