@@ -168,5 +168,6 @@ namespace AlgoGauge {
 int main() {
   cout << "RUNNING HASH TABLES..." << endl;
   runHash(AlgoGauge::ClosedHashTable<string, string>(10));
+  runHash(AlgoGauge::ClosedHashTable<string, string>(10, "linear", 50));
   return 0;
 }

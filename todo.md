@@ -3,7 +3,8 @@
 
 ### Hash Tables
 ---
-- [ ] Add Hash Tables
+- [ ] Add psudeo code for hash table create and delete methods for front end. 
+- [ ] Add Hash Tables.
   - [ ] Open hash tables (linked list hash tables)
   - [ ] Closed hash tables (array hash tables)
 
