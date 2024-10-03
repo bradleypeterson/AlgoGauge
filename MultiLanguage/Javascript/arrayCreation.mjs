@@ -1,12 +1,12 @@
-const fullRandomArray = (length, max) => {
+export const fullRandomArray = (length, max) => {
 	return Array.from({ length }, () => Math.floor(Math.random() * max));
 };
 
-const repeatingValueArray = (length, max) => {
+export const repeatingValueArray = (length, max) => {
 	return Array(length).fill(Math.floor(Math.random() * max));
 };
 
-const randomChunkArray = (length, max) => {
+export const randomChunkArray = (length, max) => {
 	const chunkSize = length < 10 ? 1 : 5; //Update to take length/5 or something
 	let chunk = Math.random() >= 0.5; //update to randomly choose true or false every time
 	let arr = [];
@@ -25,3 +25,4 @@ const randomChunkArray = (length, max) => {
 
 	return arr.flat();
 };
+

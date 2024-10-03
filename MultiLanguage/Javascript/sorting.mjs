@@ -1,15 +1,7 @@
-const supportedAlgorithms = [
-	//"built-in",
-	//"bubble",
-	// "selection",
-	//"insertion",
-	//"quick",
-	//"merge",
-	// "heap",
-];
 
 
-export const defaultSort = (arr) => {
+
+export const builtinSorting = (arr) => {
 	return arr.sort((a, b) => a - b);
 };
 
@@ -168,6 +160,12 @@ export const heapSort = (arr) =>{
     return arr;
 }
 
-let unsortedArray = [0,1,2,3,4,5,9,4]
 
-console.log(heapSort(unsortedArray))
+export const verifySort = (arr) =>{
+	for (let i = 0; i < arr.length-1; i++) {
+		if (arr[i + 1] < arr[i]) {
+			return false
+		}
+	}
+	return true
+}

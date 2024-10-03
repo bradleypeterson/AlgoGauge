@@ -9,6 +9,10 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <ranges>
+#include <map>
+#include <charconv>
+
 #include "../algorithms/sort_7algs.cpp"
 #include "../dependencies/cxxopts.hpp"
 
@@ -24,6 +28,27 @@ using std::cerr;
 using namespace cxxopts;
 using namespace AlgoGauge;
 
+
+
+struct AlgorithmSettings {
+	std::string Name = "None";
+	std::string Algorithm = "built_in";
+	std::string ArrayStrategy = "Random";
+    int ArrayCount = 100;
+	std::string Language = "c++";
+	bool empty = true;
+};
+
+struct{
+	bool Verbose = false;
+	bool Output = false;
+	bool Perf = false;
+	bool PerfFileWrite = false;
+	bool PerfSample = false;
+	bool Unique = false;
+	std::vector<AlgorithmSettings> SelectedAlgorithms;
+
+} AlgoGaugeDetails;
 /**
  * Creates the initial Options object and houses all the available options a user can pass into
  * @return Options object with all the available options available
@@ -38,19 +63,23 @@ Options getOptions() {
 
     // Adds the first group of options that are specific to the Algorithm
     options.add_options("Algorithm Name and Length [REQUIRED]")
-        ("a,algo,algorithm", "Supported algorithms include: bubble, selection, insertion, quick, merge, heap.", value<vector<string>>(), "Name of the first algorithm to run.")
+        ("a,algo,algorithm", "Supported algorithms include: bubble, selection, insertion, quick, merge, heap.", cxxopts::value<vector<string>>(), "Name of the first algorithm to run.")
         ("l,len,length", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), value<vector<int>>(), "Number of items to process")
+        ("c,count", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), cxxopts::value<vector<int>>(), "Number of items to process")
         // name is not required. May consider moving this to Program Output group instead to avoid confusion
         ("n,name", "A canonical name that will be returned in output if provided.", value<vector<string>>()->default_value(""))
+        ("x, lang, language", "The user selected programming language", value<vector<string>>()->default_value("c++"))
+        // ("z, strategy", "The array generation strategy", value<vector<string>>()->default_value("random"))
     ;
 
     // Adds the Options group where one and only one option may be specified per Algorithm.
     options.add_options("Algorithm Options [ONE REQUIRED]")
-        ("r,ran,rand,random", "Generated data will be a random set", value<vector<bool>>()->implicit_value("true")->default_value("false"))
-        ("e,rep,repeated", "Generated data set will have repeated values", value<vector<bool>>()->implicit_value("true")->default_value("false"))
-        ("c,chunks", "Generated data set will have various subsets that will contain both random and in order values", value<vector<bool>>()->implicit_value("true")->default_value("false"))
-        ("s,rev,reversed", "Generated data set will be in reverse order e.g. (9-0)", value<vector<bool>>()->implicit_value("true")->default_value("false"))
-        ("o,ord,ordered", "Generated data set will be ordered e.g. (0-9)", value<vector<bool>>()->implicit_value("true")->default_value("false"))
+        ("s, strat,strategy", "Determines how the array will be generated [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]", cxxopts::value<vector<std::string>>()->default_value("random"))
+        ("r,ran,rand,random", "Generated data will be a random set", cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
+        ("e,rep,repeated", "Generated data set will have repeated values", cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
+        ("z,chunks", "Generated data set will have various subsets that will contain both random and in order values",  cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
+        ("rev,reversed", "Generated data set will be in reverse order e.g. (9-0)",  cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
+        ("o,ord,ordered", "Generated data set will be ordered e.g. (0-9)",  cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
     ;
 
     // Adds the output settings group to allow the user to change where the output of the program should go
@@ -61,15 +90,15 @@ Options getOptions() {
         value<string>()->default_value(""),
         "File path must include the file name (extension not required). Regardless of file extension, file content's structure will always be JSON."
         )
-        ("j,json", "Prints the output as a json formatted object", value<bool>()->implicit_value("true"), "Pass this flag if you want the STDOUT to be JSON formatted.")
+        ("j,json", "Prints the output as a json formatted object", cxxopts::value<bool>()->implicit_value("true"), "Pass this flag if you want the STDOUT to be JSON formatted.")
     ;
 
     // Adds the final group for setting any additional program wide settings
     options.add_options("Program Settings [OPTIONAL]")
-        ("v,verbose", "Runs the program in Verbose mode", value<bool>()->implicit_value("true"), "Results will be passed to STDOUT and errors to STDERR regardless of flag.")
-        ("i,include-values", "Will include values in the output. It is highly recommended to use a small length (less than 100).", value<bool>()->implicit_value("true"))
+        ("v,verbose", "Runs the program in Verbose mode", cxxopts::value<bool>()->implicit_value("true"), "Results will be passed to STDOUT and errors to STDERR regardless of flag.")
+        ("i,include-values", "Will include values in the output. It is highly recommended to use a small length (less than 100).", cxxopts::value<bool>()->implicit_value("true"))
         ("h,help", "Prints this help page.")
-        ("p,perf", "Includes Perf data in the output. Actual Perf data only works on Linux.", value<string>()->implicit_value("true")->default_value("false"),
+        ("p,perf", "Includes Perf data in the output. Actual Perf data only works on Linux.", cxxopts::value<string>()->implicit_value("true")->default_value("false"),
             "If you are not on Linux and want to use this anyways, you can set this to \"sample\". e.g. --perf=sample"
         )
     ;
@@ -174,6 +203,17 @@ vector<BaseSort<unsigned int>*> parseAndGetAlgorithms(const ParseResult& result,
         bool includeValues = result["i"].as<bool>(); //set the Include Values flag
         string includePerf = result["p"].as<string>(); //set the Perf flag
 
+        auto algorithmList = result["algorithm"].as<vector<std::string>>();
+        // auto countList = result["count"].as<vector<std::string>>();
+        auto languageList = result["language"].as<vector<std::string>>();
+        auto strategyList = result["strategy"].as<vector<std::string>>();
+
+        
+
+        for(const  auto& nz : algorithmList){
+            cout << nz << endl;
+        }
+
         //convert the value that is passed to the Perf flag to lowercase. This is mainly meant for
         //if "sample" is passed to the Perf flag so that "sample" is case-insensitive.
         transform(includePerf.begin(), includePerf.end(), includePerf.begin(), ::tolower);
@@ -190,6 +230,7 @@ vector<BaseSort<unsigned int>*> parseAndGetAlgorithms(const ParseResult& result,
         vector<string> cNames; // This is to store all the canonical names that we pull from the results
         int counter = 0; // This is to keep track of how many algorithms are passed compared to the ones with canonical names
         for (const auto& r : result) { // loop through all results
+            cout << r.key() << r.value() << endl;
             if (r.key() == "algorithm") counter++; // increment the counter for every time an algorithm argument is passed
             else if (r.key() == "name") {
                 // collect the canonical name and decrement the counter for every canonical name that is passed
@@ -347,4 +388,110 @@ int runProgram(int argc, char *argv[]) {
 }
 
 
+
+
+std::pair<std::string_view, std::string_view> split_string_view(std::string_view str, char delimiter) {
+    size_t pos = str.find(delimiter);
+    
+    if (pos == std::string_view::npos) {
+        // If the delimiter is not found, return the whole string as the first part and an empty second part
+        return { str, std::string_view() };
+    }
+
+    // Return the substring before the delimiter and the substring after
+    return { str.substr(0, pos), str.substr(pos + 1) };
+}
+
+void parseArguments(std::vector<std::string_view> argv) {
+
+    AlgorithmSettings currentAlgorithm;
+	std::vector<AlgorithmSettings> selectedAlgorithms;
+    for (std::string_view arg: argv) {
+        // Check if it's a strategy separator
+        if (arg.starts_with("--")) {
+			arg.remove_prefix(std::min(arg.find_first_not_of("-"), arg.size()));
+
+    		auto [key, value] = split_string_view(arg, '=');
+
+			if(!key.compare("lang")){
+				currentAlgorithm.Language = value;
+			} else if(!key.compare("strategies")){
+				currentAlgorithm.ArrayStrategy = value;
+			} else if(!key.compare("count")){
+				    auto result = std::from_chars(value.data(), value.data() + value.size(), currentAlgorithm.ArrayCount);
+					if (result.ec == std::errc::invalid_argument) {
+						std::cout << "Could not convert. Using 100 count";
+					}
+			} else if(!key.compare("name")){
+				currentAlgorithm.Name = value;
+			}
+
+		   continue;
+        } 
+		if (arg.starts_with('-')){
+			arg.remove_prefix(std::min(arg.find_first_not_of("-"), arg.size()));
+
+			if(!arg.contains('v')){
+				AlgoGaugeDetails.Verbose = true;
+			}
+
+			if(!arg.contains('p')){
+				AlgoGaugeDetails.Perf = true;
+			}
+
+			if(!arg.contains('s')){
+				AlgoGaugeDetails.PerfSample = true;
+			}
+
+			if(!arg.contains('f')){
+				AlgoGaugeDetails.PerfFileWrite = true;
+			}
+			
+			if(!arg.contains('h')){
+				
+			}
+
+
+			continue;
+		}
+		if(!currentAlgorithm.empty){
+			// cout << "Adding: " << currentAlgorithm.Algorithm <<  currentAlgorithm.ArrayStrategy << currentAlgorithm.Language << endl;
+			if(currentAlgorithm.Name.length() == 0){
+				currentAlgorithm.Name = currentAlgorithm.Algorithm + "_" + currentAlgorithm.Language;
+			}
+			selectedAlgorithms.push_back(currentAlgorithm);
+			currentAlgorithm = AlgorithmSettings();
+		}
+
+		currentAlgorithm.empty = false;
+		currentAlgorithm.Algorithm = arg;
+    }
+
+    // Add the last strategy collected
+    if (!currentAlgorithm.empty) {
+        selectedAlgorithms.push_back(currentAlgorithm);
+    }
+	AlgoGaugeDetails.SelectedAlgorithms = selectedAlgorithms;
+
+
+    // Print the parsed strategies
+    for (const auto& strategy : selectedAlgorithms) {
+		std::cout << std::endl;
+
+        std::cout << "Algo:" << strategy.Algorithm<< std::endl;
+        std::cout << "count: " << strategy.ArrayCount << std::endl;
+        std::cout << "array stat: " << strategy.ArrayStrategy << std::endl;
+        std::cout << "lang: " << strategy.Language << std::endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
+
+    }
+
+	return;
+}
+
+
 #endif //ALGOGAUGE_CLI_PARSER_HPP
+
+
+
