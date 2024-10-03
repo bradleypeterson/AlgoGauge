@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "../algorithms/hash_algs.cpp"
 #include "../algorithms/sort_7algs.cpp"
 #include "../dependencies/cxxopts.hpp"
 
@@ -38,7 +39,7 @@ Options getOptions() {
 
     // Adds the first group of options that are specific to the Algorithm
     options.add_options("Algorithm Name and Length [REQUIRED]")
-        ("a,algo,algorithm", "Supported algorithms include: bubble, selection, insertion, quick, merge, heap.", value<vector<string>>(), "Name of the first algorithm to run.")
+        ("a,algo,algorithm", /*TODO: ADD HASH ARRAY AND HASH LINKED LIST*/"Supported algorithms include: bubble, selection, insertion, quick, merge, heap.", value<vector<string>>(), "Name of the first algorithm to run.")
         ("l,len,length", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), value<vector<int>>(), "Number of items to process")
         // name is not required. May consider moving this to Program Output group instead to avoid confusion
         ("n,name", "A canonical name that will be returned in output if provided.", value<vector<string>>()->default_value(""))
@@ -107,7 +108,10 @@ BaseSort<unsigned int>* getAlgorithm(
     else if (algorithmName == "quick") return new Quick<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "merge") return new Merge<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "heap") return new Heap<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
-    //raise an error if passed algorithmName doesn't match any already existing classes
+    // TODO:  ADD CLOSED HASH TABLE ALGORITHM CALL
+    // else if (algorithmName == "closed_hash_table") ;
+    // TODO:  ADD OPEN HASH TABLE ALGORITHM CALL
+    // else if (algorithmName == "open_hash_table") ;
     else throw std::invalid_argument("Algorithm name '" + algorithmName + "' is not listed as a valid algorithm!");
 }
 
