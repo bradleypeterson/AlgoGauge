@@ -54,15 +54,17 @@ namespace AlgoGauge {
     U retrieve(const T& key) const;
     void destroy(const T& key);
     int getHashTableFullness();
+    int getCapacity();
+    string getProbingType();
   private:
     int* statusArray = nullptr;
     pair<T, U>* kvArray = nullptr;	
     int capacity = 10; // array size
-    string probing_type = "";
+    string probing_type = "linear";
     int hash_table_fullness = 0; // default hash table fullness.
   };
 
-  // Closed Hash Table Constructor Method
+  // first Closed Hash Table Constructor Method
   template <typename T, typename U>
   ClosedHashTable<T, U>::ClosedHashTable(const int capacity) {
     this->capacity = capacity;
@@ -73,6 +75,7 @@ namespace AlgoGauge {
     this->kvArray = new pair<T, U>[capacity];
   }
 
+  // second Closed Hash Table Constructor Method
   template <typename T, typename U>
   ClosedHashTable<T, U>::ClosedHashTable(const int capacity, const string probing_Type, const int hash_table_fullness) {
     this->probing_type = probing_Type;
@@ -146,15 +149,29 @@ namespace AlgoGauge {
     return this->hash_table_fullness;
   }
 
+  // getter for capacity privite data member.
+  template <typename T, typename U>
+  int ClosedHashTable<T, U>::getCapacity() {
+    return this->capacity;
+  }
 
+  // getter for probing_type privite data member.
+  template <typename T, typename U>
+  string ClosedHashTable<T , U>::getProbingType(){
+    return this->probing_type;
+  }
 
+  // Testing function to run hash tables with parameters.
   template <typename T, typename U>
   void runHash(ClosedHashTable<T, U> &&hashObj) {
-    cout << "Running closed hash table" << endl;
+    cout << "Running closed hash table:" << endl;
+    cout << "Capacity: " << hashObj.getCapacity() << endl;
+    cout << "Probing Type: " << hashObj.getProbingType() << endl;
+    cout << "Hash Table Fullness: " << hashObj.getHashTableFullness() << endl;
     // sortObj.loadRandomValues();
     cout << "Filling up hash table with values to " << hashObj.getHashTableFullness() << " percent." << endl;
     auto t1 = std::chrono::high_resolution_clock::now();
-    // TODO: add function to create, look up, and delete values.
+    // TODO: runing adding and deleting stuff
     auto t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
     std::cout << "Sort completed in " << fp_ms.count() << " milliseconds" << endl;
@@ -168,6 +185,6 @@ namespace AlgoGauge {
 int main() {
   cout << "RUNNING HASH TABLES..." << endl;
   runHash(AlgoGauge::ClosedHashTable<string, string>(10));
-  runHash(AlgoGauge::ClosedHashTable<string, string>(10, "linear", 50));
+  runHash(AlgoGauge::ClosedHashTable<string, string>(100, "linear", 50));
   return 0;
 }
