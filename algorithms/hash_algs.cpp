@@ -3,6 +3,7 @@
  * @copyright Weber State University
  */
 
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <fstream>
@@ -50,9 +51,16 @@ namespace AlgoGauge {
     ClosedHashTable(const int capacity);
     ClosedHashTable(const int capacity, const string probing_Type, const int hash_table_fullness);
     ~ClosedHashTable();
+
+    // Hash Table methods
     void create(const T& key, const U& value);
     U retrieve(const T& key) const;
     void destroy(const T& key);
+
+    // Testing methods
+    void fillHashTable();
+
+    // Getters
     int getHashTableFullness();
     int getCapacity();
     string getProbingType();
@@ -98,17 +106,11 @@ namespace AlgoGauge {
   // Closed Hash Table create Method
   template <typename T, typename U>
   void ClosedHashTable<T, U>::create(const T& key, const U& value) {
-    // Step 1, Hash the key, mod by capacity. Obtain an index
-    // While loop as long as you haven't iterated capacity times
-      // Step 2, Go to the status array at that index.
-      // if the status array is 0 or -1, write the pair at this index
-      // Else if the status array is 1, linear probe to the next index
-    auto hashedIndex = std::hash<T>(key) % capacity;
+    std::hash<T> hash;
+    auto hashedIndex = hash(key) % capacity;
     int counter = 0;
     while (counter < capacity) {
-    // Assume the while loop was coded...
-      if (this->satusArray[hashedIndex] == -1 || statusArray[hashedIndex] == 0){
-        // Use this slot
+      if (this->statusArray[hashedIndex] == -1 || statusArray[hashedIndex] == 0){
         kvArray[hashedIndex] = pair<T, U>(key, value);
         statusArray[hashedIndex] = 1;
         return;
@@ -120,27 +122,54 @@ namespace AlgoGauge {
     }
   }
 
-  // Closed Hash Table retrive Method
+  // Closed Hash Table Destroy Method
   template <typename T, typename U>
-  U ClosedHashTable<T, U>::retrieve(const T& key) const {
-    auto hashedIndex = std::hash<T>(key) % capacity;
+  void ClosedHashTable<T, U>::destroy(const T& key){
+    std::hash<T> hash;
+    auto hashedIndex = hash(key) % capacity;
     int counter = 0;
     while (counter < capacity) {
       if (statusArray[hashedIndex] == 1) {
         if (kvArray[hashedIndex].first == key) {
-          return kvArray[hashedIndex].second;
+          statusArray[hashedIndex] = -1;
+          return;
         } else {
           counter++;
           hashedIndex = (hashedIndex + 1) % capacity;
         }
-      } else if (statusArray[hashedIndex] == -1) {
+      } else {
         counter++;
         hashedIndex = (hashedIndex + 1) % capacity;
-      } else {
-        throw 1;
       }
     }
-    throw 1;
+    cout << "NO VALUE " << key << " FOUND." << endl;
+  }
+
+  // Closed Hash Table retrive Method
+  template <typename T, typename U>
+  U ClosedHashTable<T, U>::retrieve(const T& key) const {
+    std::hash<U> hash;
+    auto hashedIndex = hash(key) % this->capacity;
+    int counter = 0;
+    while (counter < this->capacity) {
+      if (this->statusArray[hashedIndex] == 1) {
+        if (this->kvArray[hashedIndex].first == key) {
+          return this->kvArray[hashedIndex].second;
+        } 
+        else {
+          counter++;
+          hashedIndex = (hashedIndex + 1) % capacity;
+        }
+      }
+      else if (this->statusArray[hashedIndex] == -1) {
+        counter++;
+        hashedIndex = (hashedIndex + 1) % capacity;
+      } 
+      else {
+        throw std::logic_error("that key wasn't found");
+      }
+    }
+    throw std::logic_error("that key wasn't found");
   }
 
   // getter for hash_table_fullness privite data member.
@@ -161,6 +190,21 @@ namespace AlgoGauge {
     return this->probing_type;
   }
 
+  // TODO: filling up hash table
+  template <typename T, typename U>
+  void ClosedHashTable<T, U>::fillHashTable(){
+    if (this->hash_table_fullness == 0) { // stay empty
+      return;
+    }
+    int numToFill = capacity * ((1.0 * this->hash_table_fullness) / (1.0 * 100)); // 10 * (45/100) = 5
+    for (int i = 0; i < numToFill; i++) {
+      this->create(std::to_string(i), "value " + std::to_string(i));
+    }
+  }
+
+
+
+
   // Testing function to run hash tables with parameters.
   template <typename T, typename U>
   void runHash(ClosedHashTable<T, U> &&hashObj) {
@@ -170,6 +214,8 @@ namespace AlgoGauge {
     cout << "Hash Table Fullness: " << hashObj.getHashTableFullness() << endl;
     // sortObj.loadRandomValues();
     cout << "Filling up hash table with values to " << hashObj.getHashTableFullness() << " percent." << endl;
+   // Filling up hash table is outside of the timmer.
+    hashObj.fillHashTable();
     auto t1 = std::chrono::high_resolution_clock::now();
     // TODO: runing adding and deleting stuff
     auto t2 = std::chrono::high_resolution_clock::now();
@@ -184,7 +230,26 @@ namespace AlgoGauge {
 
 int main() {
   cout << "RUNNING HASH TABLES..." << endl;
-  runHash(AlgoGauge::ClosedHashTable<string, string>(10));
+
+  cout << "testing empty fill hash table" << endl;
+  runHash(AlgoGauge::ClosedHashTable<string, string>(100));
+
+  cout << "testing 50 percent fill hash table" << endl;
   runHash(AlgoGauge::ClosedHashTable<string, string>(100, "linear", 50));
+
+  cout << "testing 70 percent fill hash table" << endl;
+  runHash(AlgoGauge::ClosedHashTable<string, string>(100, "linear", 70));
+  // hashTable.create("first", "cooper");
+  // hashTable.create("second", "kade");
+  // hashTable.create("third", "brody");
+  // hashTable.create("fourth", "coleton");
+  // cout << "Retrieve: " << hashTable.retrieve("second") << endl;
+  // hashTable.destroy("second");
+  // hashTable.create("second", "new value");
+  // cout << "Retrive after Destroy: " << hashTable.retrieve("second") << endl;
+
+  // runHash(AlgoGauge::ClosedHashTable<string, string>(10));
+  // runHash(AlgoGauge::ClosedHashTable<string, string>(100, "linear", 50));
+
   return 0;
 }
