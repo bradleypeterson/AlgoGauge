@@ -1,7 +1,7 @@
 import { Command, Argument, Option } from "commander";
 import {randomChunkArray, repeatingValueArray, fullRandomArray} from "./arrayCreation.mjs";
 
-import { exit, stdin, stdout } from "process";
+import { exit, stderr, stdin, stdout } from "process";
 import {
 	builtinSorting,
 	bubbleSort,
@@ -17,7 +17,7 @@ const UINT32_MAX = (1 << 31) >>> 0 | (1 << 31) - 1;
 
 
 const supportedAlgorithms = [
-	"built-in",
+	"default",
 	"bubble",
 	"selection",
 	"insertion",
@@ -26,7 +26,7 @@ const supportedAlgorithms = [
 	"heap",
 ];
 
-const arrayOption = ["random", "repeating", "chunk"];
+const arrayOptions = ["random", "repeating", "chunk"];
 const program = new Command();
 let Algorithm = ""
 const ArrayDetails = {
@@ -55,56 +55,35 @@ program
 
 //All options are required but default where given to all
 program
-	.command("run")
 	.description(
 		"Runs a given sort algorithm expecting array strategy and count to be given"
 	)
-	.addArgument(
-		new Argument("<algorithm>", "Select sort algorithm").choices(
-			supportedAlgorithms
-		)
-	)
+	.option("-a --algorithm <string>", "Select sort algorithm", "default")
 	.requiredOption("-c, --count <int>", "the number of", 100)
-	.addOption(
-		new Option("-s, --strategy <string>", "the array creation method")
-			.default("random")
-			.choices(arrayOption)
-			.makeOptionMandatory()
-	)
-	.requiredOption("-m, -max <int>", "the largest number the array could have optional", Number.MAX_SAFE_INTEGER)
-	.action((algorithm, options) => {
-		Algorithm = algorithm;
-		ArrayDetails.Count = options.count;
-		ArrayDetails.Strategy = options.strategy
-	});
+	.option("-s, --strategy <string>", "the array creation method", "random")
+	.option("-m, --max <int>", "the largest number the array could have optional", Number.MAX_SAFE_INTEGER)
+	.action((options) => {
+		Algorithm = options.algorithm.toLowerCase();
 
-program
-	.command("sort")
-	.description(
-		"Runs a given sort algorithm expecting array to come from stdin"
-	)
-	.addArgument(
-		new Argument("<algorithm>", "Select sort algorithm").choices(
-			supportedAlgorithms
-		)
-	)
-	// .option(
-	// 	"-n, --name <string>",
-	// 	"The name of what you are running, doesn't do anything right now"
-	// )
-	.action((algorithm, options) => {
-		Algorithm = algorithm;
-		// sorting.Name = options.name;
+		if(!supportedAlgorithms.includes(Algorithm)){
+			console.error(`error: option '-a --algo --algorithm <string>' argument '${Algorithm}' is invalid. Allowed choices are built-in, default, bubble, selection, insertion, quick, merge, heap.`);
+			process.exit(1)
+		}		
+		ArrayDetails.Count = options.count;
+		ArrayDetails.Strategy = options.strategy.
+		toLowerCase()
+		ArrayDetails.Max = options.max
+		if(!arrayOptions.includes(ArrayDetails.Strategy)){
+			console.error(`error: option '-s, --strategy <string>' argument '${ArrayDetails.Strategy}' is invalid. Allowed choices are random, repeating, chunk.`)
+		}
 	});
 
 program.parse();
 
-
-
 const options = program.opts();
 let sortingCommand = null
 switch (Algorithm) {
-	case ("built-in", "default"):
+	case ("default"):
 		sortingCommand = builtinSorting;
 		break;
 	case "merge":
@@ -130,7 +109,7 @@ switch (Algorithm) {
 		exit();
 }
 
-if(program.args.includes("run")){
+
 	let array = []
 	switch (ArrayDetails.Strategy){
 		case "random":
@@ -156,37 +135,19 @@ if(program.args.includes("run")){
 		stdout.write(`Sorted Array: ${JSON.stringify(sortedArray)}\n`);
 	}
 
-	if(options.verify){
+	verify: if(options.verify){
 		const correct = verifySort(sortedArray)
-		stdout.write(`${Algorithm.toUpperCase()} ${correct ? "sorted correctly" : "AHHH!!!!"} \n`)
+		if(correct){
+			console.log(`${Algorithm.toUpperCase()} sorted correctly\n`)
+			break verify;
+		}
+		
+		console.error(`${Algorithm.toUpperCase()} there was an error when sorting\n`)
 	}
 
 	
 	
-	exit()
-}
+	exit(0)
 
-// Read input from stdin
-let input = "";
-stdin.on("data", (chunk) => {
-	input += chunk;
-});
 
-stdin.on("end", () => {
-	const array = JSON.parse(input);
-	if (options.output) {
-		stdout.write(JSON.stringify(array));
-	}
-
-	const sortedArray = sortingCommand(array)
-
-	// Output the sorted array as JSON to stdout
-	if (options.output) {
-		stdout.write(JSON.stringify(sortedArray));
-	}
-	if(options.verify){
-		const correct = verifySort(sortedArray)
-		stdout.write(`${Algorithm.toUpperCase()} ${correct ? "sorted correctly" : "AHHH!!!!"} \n`)
-	}
-});
 

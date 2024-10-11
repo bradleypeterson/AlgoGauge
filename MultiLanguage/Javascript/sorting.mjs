@@ -1,171 +1,242 @@
-
-
-
 export const builtinSorting = (arr) => {
 	return arr.sort((a, b) => a - b);
 };
 
-export const mergeSortElements = (right, left) => {
-	let resultArray = [],
-		leftIndex = 0,
-		rightIndex = 0;
+const mergeSortElements = (arr, firstIndex, lastIndex) => {
+	if (lastIndex - firstIndex < 2) {
+		return;
+	}
+	// Find a middle
+	let middleIndex = Math.floor((lastIndex - firstIndex) / 2) + firstIndex;
 
-	// Loop through both arrays, comparing elements and adding the smaller one to the resultArray
-	while (leftIndex < left.length && rightIndex < right.length) {
-		if (left[leftIndex] < right[rightIndex]) {
-			resultArray.push(left[leftIndex]);
-			leftIndex++; // Move to the next element in the `left` array
+	mergeSortElements(arr, firstIndex, middleIndex);
+	mergeSortElements(arr, middleIndex, lastIndex);
+
+	let leftHalfSize = middleIndex - firstIndex;
+
+	let leftArray = [];
+
+	for (let i = 0; i < leftHalfSize; i++) {
+		leftArray[i] = arr[firstIndex + i];
+	}
+	let rightHalfSize = lastIndex - middleIndex;
+	let rightArray = [];
+	for (let i = 0; i < rightHalfSize; i++) {
+		rightArray[i] = arr[middleIndex + i];
+	}
+	let leftIndex = 0;
+	let rightIndex = 0;
+	let arrIndex = firstIndex;
+
+	while (leftIndex < leftHalfSize && rightIndex < rightHalfSize) {
+		if (leftArray[leftIndex] <= rightArray[rightIndex]) {
+			arr[arrIndex] = leftArray[leftIndex];
+			leftIndex++;
 		} else {
-			resultArray.push(right[rightIndex]);
-			rightIndex++; // Move to the next element in the `right` array
+			arr[arrIndex] = rightArray[rightIndex];
+			rightIndex++;
+		}
+		arrIndex++;
+	}
+	while (leftIndex < leftHalfSize) {
+		arr[arrIndex] = leftArray[leftIndex];
+		leftIndex++;
+		arrIndex++;
+	}
+	while (rightIndex < rightHalfSize) {
+		arr[arrIndex] = rightArray[rightIndex];
+		rightIndex++;
+		arrIndex++;
+	}
+};
+
+export const mergeSort = (arr, firstIndex = 0, lastIndex = arr.length) => {
+	if (lastIndex - firstIndex < 2) {
+		return;
+	}
+
+	// Find a middle
+	let middleIndex = Math.floor((lastIndex - firstIndex) / 2) + firstIndex;
+
+	mergeSort(arr, firstIndex, middleIndex);
+	mergeSort(arr, middleIndex, lastIndex);
+
+	let leftHalfSize = middleIndex - firstIndex;
+
+	let leftArray = [];
+
+	for (let i = 0; i < leftHalfSize; i++) {
+		leftArray[i] = arr[firstIndex + i];
+	}
+	let rightHalfSize = lastIndex - middleIndex;
+	let rightArray = [];
+	for (let i = 0; i < rightHalfSize; i++) {
+		rightArray[i] = arr[middleIndex + i];
+	}
+	let leftIndex = 0;
+	let rightIndex = 0;
+	let arrIndex = firstIndex;
+
+	while (leftIndex < leftHalfSize && rightIndex < rightHalfSize) {
+		if (leftArray[leftIndex] <= rightArray[rightIndex]) {
+			arr[arrIndex] = leftArray[leftIndex];
+			leftIndex++;
+		} else {
+			arr[arrIndex] = rightArray[rightIndex];
+			rightIndex++;
+		}
+		arrIndex++;
+	}
+	while (leftIndex < leftHalfSize) {
+		arr[arrIndex] = leftArray[leftIndex];
+		leftIndex++;
+		arrIndex++;
+	}
+	while (rightIndex < rightHalfSize) {
+		arr[arrIndex] = rightArray[rightIndex];
+		rightIndex++;
+		arrIndex++;
+	}
+
+	return arr;
+};
+
+const quickSortPartition = (arr, first = 0, last = arr.length) => {
+	let pivot = arr[first],
+		index,
+		smallIndex = first;
+	for (index = first + 1; index < last; index++) {
+		if (arr[index] < pivot) {
+			smallIndex++;
+			[arr[smallIndex], arr[index]] = [arr[index], arr[smallIndex]];
 		}
 	}
 
-	// Concatenate the remaining elements from either `left` or `right` (if any)
-	return [
-		...resultArray,
-		...left.slice(leftIndex),
-		...right.slice(rightIndex),
-	];
+	// swap pivot into its final spot
+	[arr[first], arr[smallIndex]] = [arr[smallIndex], arr[first]];
+
+	return smallIndex;
 };
 
-export const mergeSort = (arr) => {
-	//Break out
+export const quickSort = (arr, firstIndex = 0, length = arr.length) => {
 	if (arr.length <= 1) {
 		return arr;
 	}
 
-	const middle = Math.floor(arr.length / 2); // Find the middle index
-	const left = arr.slice(0, middle); // Split the array into left half
-	const right = arr.slice(middle); // Split the array into right half
-
-	// Recursively call mergeSort on the left and right halves
-	return mergeSortElements(
-		mergeSort(left), // Recursively sort the left half
-		mergeSort(right) // Recursively sort the right half
-	);
-};
-
-export const quickSort = (arr) => {
-	if (arr.length <= 1) {
-		return arr;
+	if (firstIndex < length) {
+		let pivotLocation = quickSortPartition(arr, firstIndex, length);
+		quickSort(arr, firstIndex, pivotLocation);
+		quickSort(arr, pivotLocation + 1, length);
 	}
-
-	let pivot = arr[0];
-	let leftArr = [];
-	let rightArr = [];
-
-	for (let i = 1; i < arr.length; i++) {
-		if (arr[i] < pivot) {
-			leftArr.push(arr[i]);
-		} else {
-			rightArr.push(arr[i]);
-		}
-	}
-
-	return [...quickSort(leftArr), pivot, ...quickSort(rightArr)];
+	return arr;
 };
 
 export const bubbleSort = (arr) => {
-	let swapped = false;
+	let swapped;
+	let n = arr.length;
 
 	do {
 		swapped = false;
-		for (let i = 0; i < arr.length - 1; i++) {
+		let lastUnsorted = 0; // Track the last unsorted position
+
+		for (let i = 0; i < n - 1; i++) {
 			if (arr[i] > arr[i + 1]) {
-				let temp = arr[i];
-				arr[i] = arr[i + 1];
-				arr[i + 1] = temp;
+				// Swap using destructuring
+				[arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+
 				swapped = true;
+				lastUnsorted = i + 1; // Update last unsorted position
 			}
 		}
-	} while (swapped);
-
+		// Reduce the range for the next pass
+		n = lastUnsorted > 0 ? lastUnsorted : n; // If lastUnsorted is zero, keep n unchanged
+	} while (swapped && n > 1); // Continue if swaps were made and there's more than one element
 	return arr;
 };
 
 export const insertionSort = (arr) => {
+	// The outer loop's job is to...
+	// Obtain the leftmost unsorted value, iterates one index to the right each round.  Starts at 1
 	for (let i = 1; i < arr.length; i++) {
-		let currentValue = arr[i];
-		let j = i - 1;
-		while (j >= 0 && arr[j] > currentValue) {
-			arr[j + 1] = arr[j];
+		// The inner loop's job is to...
+		// Take the leftmost unsorted value, walk to the left (back to index 0), swapping along the way until
+		// no swaps are needed, or until we get to index 0.
+		let j = i;
+		while (j > 0 && arr[j] < arr[j - 1]) {
+			[arr[j], arr[j - 1]] = [arr[j - 1], arr[j]];
 			j--;
 		}
-		arr[j + 1] = currentValue;
 	}
 	return arr;
 };
 
-
 export const selectionSort = (arr) => {
+	// The outer loop's job is to...
+	// Each time the outer loop iterators, it works with the leftmost/unsorted index value
 	for (let i = 0; i < arr.length - 1; i++) {
-  
-	  let minIndex = i;
-	  for (let j = i + 1; j < arr.length; j++) {
-		if (arr[j] < arr[minIndex]) {
-		  minIndex = j;
-		}     
-	  }
-	  [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
-	}
-	return arr;
-}
-
-
-const swap = (array, index1, index2) => {
-    [array[index1], array[index2]] = [array[index2], array[index1]];
-}
-
-const heapify  = (array, index, length = array.length) => {
-    let largest = index,
-        left = index * 2 + 1,
-        right = index * 2 + 2;
-
-    // compare element to its left and right child 
-    if (left < length && array[left] > array[largest]) {
-        largest = left;
-    }
-    if (right < length && array[right] > array[largest]) {
-        largest = right;
-    }
-
-    // if the parent node isn't the largest element, swap it with the largest child
-    if (largest !== index) {
-        swap(array, index, largest);
-
-        // continue to heapify down the heap
-        heapify(array, largest, length);
-    }
-
-    return array;
-}
-
-
-
-export const heapSort = (arr) =>{
-    for (let i = Math.floor(arr.length / 2); i >= 0; i--) {
-        heapify(arr, i)
-    }
-
-    // work backwards, moving max elements to the end of the array
-    for(let i = arr.length - 1; i > 0; i--){
-        // max element of unsorted section of array is at index 0, swap with element at last index in unsorted array
-        swap(arr, 0, i);
-
-        // re-heapify array, from beginning to the end of the unsorted section
-        heapify(arr, 0, i);
-    }
-
-    return arr;
-}
-
-
-export const verifySort = (arr) =>{
-	for (let i = 0; i < arr.length-1; i++) {
-		if (arr[i + 1] < arr[i]) {
-			return false
+		// The inner loop's job is to...
+		// Compare the current index to the rest of the unsorted region
+		for (let j = i + 1; j < arr.length; j++) {
+			// We have an i (the index we hope to sort) and a j (a candidate to check)
+			if (arr[j] < arr[i]) {
+				[arr[i], arr[j]] = [arr[j], arr[i]];
+			}
 		}
 	}
-	return true
-}
+	return arr;
+};
+
+const heapify = (arr, index, lastUnsortedIndex) => {
+	// Find largest among root, left child and right child
+	let largest = index,
+		left = index * 2 + 1,
+		right = index * 2 + 2;
+
+	if (left < lastUnsortedIndex && arr[left] > arr[largest]) {
+		largest = left;
+	}
+
+	if (right < lastUnsortedIndex && arr[right] > arr[largest]) {
+		largest = right;
+	}
+
+	// Swap and continue heapifying if root is not largest
+	if (largest !== index) {
+		[arr[index], arr[largest]] = [arr[largest], arr[index]];
+
+		heapify(arr, largest, lastUnsortedIndex);
+	}
+
+	return arr;
+};
+
+export const heapSort = (arr) => {
+	let i = arr.length / 2;
+	while (i > 0) {
+		i--;
+		heapify(arr, i, arr.length);
+	}
+
+	// Swap root to sorted position, re-heap, repeat.
+	let lastUnsortedIndex = arr.length;
+	while (lastUnsortedIndex > 0) {
+		lastUnsortedIndex--;
+		[arr[0], arr[lastUnsortedIndex]] = [arr[0], arr[lastUnsortedIndex]];
+
+		heapify(arr, 0, lastUnsortedIndex);
+	}
+
+	return arr;
+};
+
+export const verifySort = (arr) => {
+	if (!arr) {
+		return false;
+	}
+	for (let i = 0; i < arr.length - 1; i++) {
+		if (arr[i + 1] < arr[i]) {
+			return false;
+		}
+	}
+	return true;
+};

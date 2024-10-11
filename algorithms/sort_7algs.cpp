@@ -552,18 +552,31 @@ namespace AlgoGauge {
     /**
      * The logic for executing the bubble sort algorithm.
      */
-    template<typename T>
-    void Bubble<T>::runSort() {
-        for (unsigned int round = 0; round < this->capacity - 1; round++) {
-            for (unsigned int i = 0; i < this->capacity - 1 - round; i++) {
-                if (this->arr[i + 1] < this->arr[i]) {
-                    T temp = this->arr[i];
-                    this->arr[i] = this->arr[i + 1];
-                    this->arr[i + 1] = temp;
-                }
+template<typename T>
+void Bubble<T>::runSort() {
+    bool swapped;
+    unsigned int n = this->capacity;
+
+    do {
+        swapped = false;
+        unsigned int lastUnsorted = 0; // Track the last unsorted position
+
+        for (unsigned int i = 0; i < n - 1; i++) {
+            if (this->arr[i] > this->arr[i + 1]) {
+                // Swap using a temporary variable
+                T temp = this->arr[i];
+                this->arr[i] = this->arr[i + 1];
+                this->arr[i + 1] = temp;
+                swapped = true;
+                lastUnsorted = i + 1; // Update last unsorted position
             }
         }
-    }
+
+        n = lastUnsorted > 0 ? lastUnsorted : n; // Update n only if lastUnsorted has changed
+    } while (swapped && n > 1); // Continue if swaps were made and there's more than one element
+}
+
+
 
     /**
      * This is the class for handling the Selection Sort Algorithm.
