@@ -18,7 +18,7 @@ The following options need to be implemented.
 
 `-c, --count <int>`, The number of elements being that are to be sorted. Default: 100
 
-`-s, --strategy <string>` The array strategy being used to generate the number. Needs to at least support ["random", "chunk", "repeating"] Default: random
+`-s, --strategy <string>` The array strategy being used to generate the number. Needs to at least support ["random", "chunk", "repeating", "sorted", "reverse_sorted"] Default: random
 
 `-m, --max <int>`, The largest number that can be randomly selected. Default: UINT32
 

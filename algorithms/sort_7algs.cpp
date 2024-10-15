@@ -5,6 +5,9 @@
  * @copyright Weber State University
  */
 
+#ifndef ALGOGAUGE_SORT_7ALGS_CPP
+#define ALGOGAUGE_SORT_7ALGS_CPP
+
 #include <iostream>
 #include <memory>
 #include <fstream>
@@ -12,29 +15,14 @@
 #include <chrono>
 #include "RandomNum.hpp"
 #include "../dependencies/Perf.hpp"
-
+#include "../AlgoGaugeDetails.hpp"
 using std::cout;
 using std::cin;
 using std::endl;
 using std::string;
 
-#ifndef ALGOGAUGE_SORT_7ALGS_CPP
-#define ALGOGAUGE_SORT_7ALGS_CPP
-
 namespace AlgoGauge {
 
-    /**
-     * @brief Used for determining valid Algorithm Options.
-     * none is default, however, if set, should always throw an error.
-     */
-    enum AlgorithmOptions {
-        none = 0,
-        randomSet,
-        repeatedSet,
-        chunkSet,
-        reversedSet,
-        orderedSet
-    };
 
     /**
      * @brief This is used to map to the AlgorithmOptions enum
@@ -448,7 +436,9 @@ namespace AlgoGauge {
         output += R"("algorithmName": ")" + sortName + "\",";
         output += R"("algorithmOption": ")" + getAlgorithmOption() + "\",";
         output += R"("algorithmLength": )" + std::to_string(capacity) + ",";
+        output += R"("language": "c++",)";
         output += R"("algorithmCanonicalName": ")" + canonicalName + "\",";
+
 
         if (includeValues) {
             output += R"("valuesBeforeSort": [)";

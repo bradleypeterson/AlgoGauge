@@ -26,3 +26,14 @@ export const randomChunkArray = (length, max) => {
 	return arr.flat();
 };
 
+export const orderedArray = (length) => {
+
+	return Array.from({ length: length}, (_, index) => index + 1)
+
+}
+
+export const orderedArrayReversed = (length) => {
+	return Array.from({ length: length }, (_, i) => length - i);
+}
+
+// console.log(sortedArrayReversed(12))

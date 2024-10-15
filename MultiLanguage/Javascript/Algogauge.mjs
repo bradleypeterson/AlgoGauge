@@ -1,5 +1,5 @@
 import { Command, Argument, Option } from "commander";
-import {randomChunkArray, repeatingValueArray, fullRandomArray} from "./arrayCreation.mjs";
+import {randomChunkArray, repeatingValueArray, fullRandomArray, orderedArray, orderedArrayReversed} from "./arrayCreation.mjs";
 
 import { exit, stderr, stdin, stdout } from "process";
 import {
@@ -15,25 +15,93 @@ import {
 
 const UINT32_MAX = (1 << 31) >>> 0 | (1 << 31) - 1;
 
+let Max_Number = Number.MAX_SAFE_INTEGER
 
-const supportedAlgorithms = [
-	"default",
-	"bubble",
-	"selection",
-	"insertion",
-	"quick",
-	"merge",
-	"heap",
-];
 
-const arrayOptions = ["random", "repeating", "chunk"];
 const program = new Command();
-let Algorithm = ""
-const ArrayDetails = {
-	Count: 100,
-	Strategy: "random",
-	Max: Number.MAX_SAFE_INTEGER
-};
+
+function collect(value, previous) {
+	return previous.concat([value.toLowerCase()]);
+}
+
+const runAlgorithm = (algorithm, strategy, count, name, options) => {
+	let sortingCommand = null
+	switch (algorithm) {
+		case ("default"):
+			sortingCommand = builtinSorting;
+			break;
+		case "merge":
+			sortingCommand = mergeSort;
+			break;
+		case "bubble":
+			sortingCommand = bubbleSort;
+			break;
+		case "selection":
+			sortingCommand = selectionSort;
+			break;
+		case "insertion":
+			sortingCommand = insertionSort;;
+			break;
+		case "quick":
+			sortingCommand = quickSort;
+			break;
+		case "heap":
+			sortingCommand = heapSort;
+			break;
+		default:
+			console.error(`error: option '-a --algo --algorithm <string>' argument '${algorithm}' is invalid. Allowed choices are built-in, default, bubble, selection, insertion, quick, merge, heap.`);
+			process.exit(1)
+	}
+
+	let array = []
+	switch (strategy){
+		case "random":
+			array = fullRandomArray(count, Max_Number)
+			break
+		case "chunk":
+			array = randomChunkArray(count, Max_Number)
+			break
+		case "repeating":
+			array = repeatingValueArray(count, Max_Number)
+			break
+		case "repeating":
+			array = repeatingValueArray(count, Max_Number)
+			break
+		case "ordered":
+			array = orderedArray(count)
+			break
+		case "reversed":
+			array = orderedArrayReversed(count)
+			break
+		default:
+			console.error(`error: option '-s, --strategy <string>' argument '${strategy}' is invalid. Allowed choices are random, chunk, repeating, ordered, reversed.`);
+			exit()
+	}
+	if (options.output) {
+		stdout.write(`Original Array: ${JSON.stringify(array)}\n`);
+	}
+	const start = performance.now();
+	const sortedArray = sortingCommand(array)
+
+    const timeTaken = performance.now() - start;
+
+	if (options.output) {
+		stdout.write(`Sorted Array: ${JSON.stringify(sortedArray)}\n`);
+	}
+
+	verify: if(options.verify){
+		const correct = verifySort(sortedArray)
+		if(correct){
+			console.log(`${algorithm.toUpperCase()} sorted correctly\n`)
+			break verify;
+		}
+		
+		console.error(`${algorithm.toUpperCase()} there was an error when sorting\n`)
+	}
+
+	return `{"algorithmName": "${algorithm}","algorithmOption": "${strategy}","algorithmLength": ${count},"language": "javascript", "algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken}, "perfData": {}}`
+}
+
 
 program
 	.name("AlgoGauge NodeJS")
@@ -49,7 +117,8 @@ program
 		"-o, --output <bool>",
 		"Will output the before and after of the sorted array.",
 		false
-	);
+	)
+	.option("-j, --json [bool]","Will output the before and after of the sorted array.")
 
 
 
@@ -58,92 +127,39 @@ program
 	.description(
 		"Runs a given sort algorithm expecting array strategy and count to be given"
 	)
-	.option("-a --algorithm <string>", "Select sort algorithm", "default")
-	.requiredOption("-c, --count <int>", "the number of", 100)
-	.option("-s, --strategy <string>", "the array creation method", "random")
+	.option("-a --algorithm <algo>", "Select sort algorithm", collect, [])
+	.requiredOption("-c, --count <int>", "the number of", collect, [])
+	.option("-s, --strategy <string>", "the array creation method", collect, [])
+	.option("-n, --name <string>", "optional the Canonical Name", collect, [])
 	.option("-m, --max <int>", "the largest number the array could have optional", Number.MAX_SAFE_INTEGER)
-	.action((options) => {
-		Algorithm = options.algorithm.toLowerCase();
-
-		if(!supportedAlgorithms.includes(Algorithm)){
-			console.error(`error: option '-a --algo --algorithm <string>' argument '${Algorithm}' is invalid. Allowed choices are built-in, default, bubble, selection, insertion, quick, merge, heap.`);
-			process.exit(1)
-		}		
-		ArrayDetails.Count = options.count;
-		ArrayDetails.Strategy = options.strategy.
-		toLowerCase()
-		ArrayDetails.Max = options.max
-		if(!arrayOptions.includes(ArrayDetails.Strategy)){
-			console.error(`error: option '-s, --strategy <string>' argument '${ArrayDetails.Strategy}' is invalid. Allowed choices are random, repeating, chunk.`)
-		}
+	.action((options) => {		
+		Max_Number = options.max
 	});
+
 
 program.parse();
 
 const options = program.opts();
-let sortingCommand = null
-switch (Algorithm) {
-	case ("default"):
-		sortingCommand = builtinSorting;
-		break;
-	case "merge":
-		sortingCommand = mergeSort;
-		break;
-	case "bubble":
-		sortingCommand = bubbleSort;
-		break;
-	case "selection":
-		sortingCommand = selectionSort;
-		break;
-	case "insertion":
-		sortingCommand = insertionSort;;
-		break;
-	case "quick":
-		sortingCommand = quickSort;
-		break;
-	case "heap":
-		sortingCommand = heapSort;
-		break;
-	default:
-		console.log("No sort method found");
-		exit();
+if (options.algorithm.length != options.count.length || 
+options.algorithm.length != options.strategy.length || 
+options.algorithm.length == 0) {     
+        throw console.error("Number of provided algorithm(s), count(s), language(s), and strategy(s) arguments do not match!");
+		process.exit(1)
+    }
+
+let jsonResults = "";
+for(let i = 0; i < options.algorithm.length; i++){
+	jsonResults += runAlgorithm(options.algorithm[i],options.strategy[i], options.count[i], options.name[i], options) + "\n"
+
 }
 
 
-	let array = []
-	switch (ArrayDetails.Strategy){
-		case "random":
-			array = fullRandomArray(ArrayDetails.Count, ArrayDetails.Max)
-			break
-		case "chunk":
-			array = randomChunkArray(ArrayDetails.Count, ArrayDetails.Max)
-			break
-		case "repeating":
-			array = repeatingValueArray(ArrayDetails.Count, ArrayDetails.Max)
-			break
-		default:
-			console.log("No Strategy was specified")
-			exit()
-	}
-	if (options.output) {
-		stdout.write(`Original Array: ${JSON.stringify(array)}\n`);
-	}
-	const sortedArray = sortingCommand(array)
+console.log(jsonResults)
 
 
-	if (options.output) {
-		stdout.write(`Sorted Array: ${JSON.stringify(sortedArray)}\n`);
-	}
 
-	verify: if(options.verify){
-		const correct = verifySort(sortedArray)
-		if(correct){
-			console.log(`${Algorithm.toUpperCase()} sorted correctly\n`)
-			break verify;
-		}
-		
-		console.error(`${Algorithm.toUpperCase()} there was an error when sorting\n`)
-	}
+
+	
 
 	
 	
