@@ -12,16 +12,31 @@ import {
 	selectionSort,
 	verifySort,
 } from "./sorting.mjs";
+import {writeFile, appendFileSync} from "node:fs";
 
 const UINT32_MAX = (1 << 31) >>> 0 | (1 << 31) - 1;
 
 let Max_Number = Number.MAX_SAFE_INTEGER
 
 
+
+
 const program = new Command();
 
-function collect(value, previous) {
+
+const collect = (value, previous) => {
 	return previous.concat([value.toLowerCase()]);
+}
+
+const writeToFileLocation = (line, file) => {
+	if(file == ""){
+		return;
+	}
+
+	appendFileSync(file, line, (err) => {
+		if (err) throw err;
+		console.log('The "data to append" was appended to file!');
+	}); 
 }
 
 const runAlgorithm = (algorithm, strategy, count, name, options) => {
@@ -77,6 +92,7 @@ const runAlgorithm = (algorithm, strategy, count, name, options) => {
 			console.error(`error: option '-s, --strategy <string>' argument '${strategy}' is invalid. Allowed choices are random, chunk, repeating, ordered, reversed.`);
 			exit()
 	}
+
 	if (options.output) {
 		stdout.write(`Original Array: ${JSON.stringify(array)}\n`);
 	}
@@ -89,7 +105,7 @@ const runAlgorithm = (algorithm, strategy, count, name, options) => {
 		stdout.write(`Sorted Array: ${JSON.stringify(sortedArray)}\n`);
 	}
 
-	verify: if(options.verify){
+	verify: if(options.verbose){
 		const correct = verifySort(sortedArray)
 		if(correct){
 			console.log(`${algorithm.toUpperCase()} sorted correctly\n`)
@@ -102,6 +118,13 @@ const runAlgorithm = (algorithm, strategy, count, name, options) => {
 	return `{"algorithmName": "${algorithm}","algorithmOption": "${strategy}","algorithmLength": ${count},"language": "javascript", "algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken}, "perfData": {}}`
 }
 
+ const clearFile = async () => {
+	writeFile('../temp/javascript.txt', "", (err) => {
+		if (err) throw err;
+		console.log('The "data to append" was appended to file!');
+	});
+}
+
 
 program
 	.name("AlgoGauge NodeJS")
@@ -112,14 +135,17 @@ program
 	.usage("");
 
 program
-	.option("-v, --verify <bool>", "Verify mode", false)
-	.option(
-		"-o, --output <bool>",
-		"Will output the before and after of the sorted array.",
-		false
-	)
-	.option("-j, --json [bool]","Will output the before and after of the sorted array.")
-
+	.option('-v, --verbose [bool]', 'Verify mode', (value) => {
+	  return value.toLowerCase() === 'true'; // Convert string to boolean
+	}, false)
+  
+	.option('-o, --output [bool]', 'Will output the before and after of the sorted array.', (value) => {
+	  return value.toLowerCase() === 'true';
+	}, false)
+  
+	.option('-j, --json [bool]', 'Will output the before and after of the sorted array.', (value) => {
+	  return value.toLowerCase() === 'true';
+	}, false);
 
 
 //All options are required but default where given to all
@@ -127,19 +153,25 @@ program
 	.description(
 		"Runs a given sort algorithm expecting array strategy and count to be given"
 	)
+	.option("-f, --file <string>", "The save location for json, json needs to be true", "")
 	.option("-a --algorithm <algo>", "Select sort algorithm", collect, [])
-	.requiredOption("-c, --count <int>", "the number of", collect, [])
+	.requiredOption("-c, --count [int]", "the number of", collect, [])
 	.option("-s, --strategy <string>", "the array creation method", collect, [])
 	.option("-n, --name <string>", "optional the Canonical Name", collect, [])
-	.option("-m, --max <int>", "the largest number the array could have optional", Number.MAX_SAFE_INTEGER)
+	.option("-m, --max [int]", "the largest number the array could have optional", Number.MAX_SAFE_INTEGER)
 	.action((options) => {		
 		Max_Number = options.max
 	});
 
 
 program.parse();
-
 const options = program.opts();
+
+
+if(options.file != ""){
+	let clearFilePromise =  clearFile();
+}
+
 if (options.algorithm.length != options.count.length || 
 options.algorithm.length != options.strategy.length || 
 options.algorithm.length == 0) {     
@@ -149,21 +181,19 @@ options.algorithm.length == 0) {
 
 let jsonResults = "";
 for(let i = 0; i < options.algorithm.length; i++){
-	jsonResults += runAlgorithm(options.algorithm[i],options.strategy[i], options.count[i], options.name[i], options) + "\n"
+	jsonResults += (runAlgorithm(options.algorithm[i],options.strategy[i], options.count[i], options.name[i], options) + ",\n")
+}
 
+if(options.file != "" && options.json){
+	writeToFileLocation(jsonResults, options.file)
+}
+
+if(options.json){
+	console.log(jsonResults);
 }
 
 
-console.log(jsonResults)
-
-
-
-
 	
 
 	
-	
-	exit(0)
-
-
-
+exit(0)

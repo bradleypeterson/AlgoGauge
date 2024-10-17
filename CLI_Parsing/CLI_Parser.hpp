@@ -30,7 +30,7 @@ using std::vector;
 using std::cerr;
 
 using namespace cxxopts;
-using namespace AlgoGauge;
+using namespace Sorting;
 
 
 
@@ -106,9 +106,9 @@ Options getOptions() {
  * a BaseSort ABC object. Essentially, this pointer will be filled with the actual sorting algorithm that inherits from
  * the BaseSort ABC.
  */
-AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, const Options& options) {
+AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, const Options& options) {
 
-    AlgoGaugeDetails algogaugeDetails;
+    AlgoGauge::AlgoGaugeDetails algogaugeDetails;
 
     if (result.count("help")){
         // check if help is passed, if so, ONLY insert the help message into STDOUT
@@ -149,12 +149,6 @@ AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, const Options&
         * with is it's best practice to remove or comment out unused objects.
         */
 
-//        vector<bool> ran = result["r"].as<vector<bool>>();
-//        vector<bool> rep = result["e"].as<vector<bool>>();
-//        vector<bool> chunks = result["c"].as<vector<bool>>();
-//        vector<bool> rev = result["s"].as<vector<bool>>();
-//        vector<bool> ord = result["o"].as<vector<bool>>();
-//        vector<string> cns = result["n"].as<vector<string>>(); //get the canonical name strings
     algogaugeDetails.Verbose = result["v"].as<bool>();
     algogaugeDetails.Json = result["j"].as<bool>();
 
@@ -185,21 +179,24 @@ AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, const Options&
 
 
     for (int i = 0; i < algo.size(); i++) {
-        struct SortingAlgorithmSettings newObject;
+        struct AlgoGauge::SortingAlgorithmSettings newObject;
         newObject.Language = languageList[i];
         newObject.Algorithm = algorithmList[i];
 
         auto arrayStrategy = strategyList[i];
+        
         std::transform(arrayStrategy.begin(), arrayStrategy.end(), arrayStrategy.begin(), ::tolower);
 
-        if (arrayStrategy == "random") newObject.ArrayStrategy = AlgorithmOptions::randomSet;
-        else if (arrayStrategy == "repeated") newObject.ArrayStrategy = AlgorithmOptions::repeatedSet;
-        else if (arrayStrategy == "chunks")   newObject.ArrayStrategy = AlgorithmOptions::chunkSet;
-        else if (arrayStrategy == "reversed") newObject.ArrayStrategy = AlgorithmOptions::reversedSet;
-        else if (arrayStrategy == "ordered")  newObject.ArrayStrategy = AlgorithmOptions::orderedSet;
-    
+        newObject.ArrayStrategyString = arrayStrategy;
+        if (arrayStrategy == "random") newObject.ArrayStrategy = AlgoGauge::AlgorithmOptions::randomSet;
+        else if (arrayStrategy == "repeated") newObject.ArrayStrategy = AlgoGauge::AlgorithmOptions::repeatedSet;
+        else if (arrayStrategy == "chunks")   newObject.ArrayStrategy = AlgoGauge::AlgorithmOptions::chunkSet;
+        else if (arrayStrategy == "reversed") newObject.ArrayStrategy = AlgoGauge::AlgorithmOptions::reversedSet;
+        else if (arrayStrategy == "ordered")  newObject.ArrayStrategy = AlgoGauge::AlgorithmOptions::orderedSet;
+        else throw std::invalid_argument("There is not array strategy listed");
+
         newObject.ArrayCount = countList[i];
-        if (i >= 0 && i < names.size()) { // Check if index is valid
+        if (i < names.size()) {
             newObject.Name = names[i];     // Assign name if valid
         } else {
             newObject.Name = "";
@@ -208,8 +205,6 @@ AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, const Options&
         algogaugeDetails.SelectedSortingAlgorithms.push_back(newObject);
     }
 
-
-    
 
     //convert the value that is passed to the Perf flag to lowercase. This is mainly meant for
     //if "sample" is passed to the Perf flag so that "sample" is case-insensitive.
@@ -283,107 +278,6 @@ int runProgram(int argc, char *argv[]) {
 }
 
 
-
-
-// std::pair<std::string_view, std::string_view> split_string_view(std::string_view str, char delimiter) {
-//     size_t pos = str.find(delimiter);
-    
-//     if (pos == std::string_view::npos) {
-//         // If the delimiter is not found, return the whole string as the first part and an empty second part
-//         return { str, std::string_view() };
-//     }
-
-//     // Return the substring before the delimiter and the substring after
-//     return { str.substr(0, pos), str.substr(pos + 1) };
-// }
-
-// void parseArguments(std::vector<std::string_view> argv) {
-
-//     SortingAlgorithmSettings currentAlgorithm;
-// 	std::vector<SortingAlgorithmSettings> selectedAlgorithms;
-//     for (std::string_view arg: argv) {
-//         // Check if it's a strategy separator
-//         if (arg.starts_with("--")) {
-// 			arg.remove_prefix(std::min(arg.find_first_not_of("-"), arg.size()));
-
-//     		auto [key, value] = split_string_view(arg, '=');
-
-// 			if(!key.compare("lang")){
-// 				currentAlgorithm.Language = value;
-// 			} else if(!key.compare("strategies")){
-// 				currentAlgorithm.ArrayStrategy = value;
-// 			} else if(!key.compare("count")){
-// 				    auto result = std::from_chars(value.data(), value.data() + value.size(), currentAlgorithm.ArrayCount);
-// 					if (result.ec == std::errc::invalid_argument) {
-// 						std::cout << "Could not convert. Using 100 count";
-// 					}
-// 			} else if(!key.compare("name")){
-// 				currentAlgorithm.Name = value;
-// 			}
-
-// 		   continue;
-//         } 
-// 		if (arg.starts_with('-')){
-// 			arg.remove_prefix(std::min(arg.find_first_not_of("-"), arg.size()));
-
-// 			if(!arg.contains('v')){
-// 				AlgoGaugeDetails.Verbose = true;
-// 			}
-
-// 			if(!arg.contains('p')){
-// 				AlgoGaugeDetails.Perf = true;
-// 			}
-
-// 			if(!arg.contains('s')){
-// 				AlgoGaugeDetails.PerfSample = true;
-// 			}
-
-// 			if(!arg.contains('f')){
-// 				AlgoGaugeDetails.PerfFileWrite = true;
-// 			}
-			
-// 			if(!arg.contains('h')){
-				
-// 			}
-
-
-// 			continue;
-// 		}
-// 		if(!currentAlgorithm.empty){
-// 			// cout << "Adding: " << currentAlgorithm.Algorithm <<  currentAlgorithm.ArrayStrategy << currentAlgorithm.Language << endl;
-// 			if(currentAlgorithm.Name.length() == 0){
-// 				currentAlgorithm.Name = currentAlgorithm.Algorithm + "_" + currentAlgorithm.Language;
-// 			}
-// 			selectedAlgorithms.push_back(currentAlgorithm);
-// 			currentAlgorithm = SortingAlgorithmSettings();
-// 		}
-
-// 		currentAlgorithm.empty = false;
-// 		currentAlgorithm.Algorithm = arg;
-//     }
-
-//     // Add the last strategy collected
-//     if (!currentAlgorithm.empty) {
-//         selectedAlgorithms.push_back(currentAlgorithm);
-//     }
-// 	AlgoGaugeDetails.SelectedAlgorithms = selectedAlgorithms;
-
-
-//     // Print the parsed strategies
-//     for (const auto& strategy : selectedAlgorithms) {
-// 		std::cout << std::endl;
-
-//         std::cout << "Algo:" << strategy.Algorithm<< std::endl;
-//         std::cout << "count: " << strategy.ArrayCount << std::endl;
-//         std::cout << "array stat: " << strategy.ArrayStrategy << std::endl;
-//         std::cout << "lang: " << strategy.Language << std::endl;
-// 		std::cout << std::endl;
-// 		std::cout << std::endl;
-
-//     }
-
-// 	return;
-// }
 
 
 #endif //ALGOGAUGE_CLI_PARSER_HPP

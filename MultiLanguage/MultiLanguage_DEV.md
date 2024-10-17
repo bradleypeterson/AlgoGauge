@@ -10,15 +10,15 @@ This explains the steps need to create another language and how to go about it. 
 
 The following options need to be implemented.
 
-`-o --output <bool>` When output is true the CLI tool should print the original and sorted array ie: Original Array:[]\n Sorted Array:[]; Default: False
+`-o --output <bool>` When output is true the CLI tool should print the original and sorted array ie: Original Array:[]\n Sorted Array:[]
 
-`-v --verify <bool>` Verifies whether the array was correctly sorted should print and error to stderr on failed sort. Done by comparing i < k.; Default: False
+`-v --verify <bool>` Verifies whether the array was correctly sorted should print and error to stderr on failed sort. Done by comparing i < k
 
-`-a --algorithm <string>` Specifics the sorting algorithm to be ran. Needs to at least support ["default", "bubble", "selection", "insertion", "quick", "merge", "heap"] for languages that have a built in sort method default should be that otherwise use set to bubble. Default: default
+`-a --algorithm <string>` Specifics the sorting algorithm to be ran. Needs to at least support ["default", "bubble", "selection", "insertion", "quick", "merge", "heap"] for languages that have a built in sort method default should be that otherwise use set to bubble. 
 
 `-c, --count <int>`, The number of elements being that are to be sorted. Default: 100
 
-`-s, --strategy <string>` The array strategy being used to generate the number. Needs to at least support ["random", "chunk", "repeating", "sorted", "reverse_sorted"] Default: random
+`-s, --strategy <string>` The array strategy being used to generate the number. Needs to at least support ["random", "chunk", "repeating", "sorted", "reverse_sorted"]
 
 `-m, --max <int>`, The largest number that can be randomly selected. Default: UINT32
 

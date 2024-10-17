@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+namespace AlgoGauge {
+
 /**
  * @brief Used for determining valid Algorithm Options.
  * none is default, however, if set, should always throw an error.
@@ -23,6 +25,7 @@ struct HashTableSettings{
 struct SortingAlgorithmSettings {
 	std::string Name = "None";
 	std::string Algorithm = "built_in";
+	std::string ArrayStrategyString = "default";
 	AlgorithmOptions ArrayStrategy = none;
     int ArrayCount = 100;
 	std::string Language = "c++";
@@ -41,4 +44,7 @@ struct AlgoGaugeDetails{
 	std::vector<SortingAlgorithmSettings> SelectedSortingAlgorithms;
 	std::vector<HashTableSettings> SelectedHashTables;
 };
+
+
+} // namespace ns
 #endif // ALGO_GAUGE_DETAILS_HPP
