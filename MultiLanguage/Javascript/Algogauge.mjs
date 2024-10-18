@@ -104,18 +104,16 @@ const runAlgorithm = (algorithm, strategy, count, name, options) => {
 	if (options.output) {
 		stdout.write(`Sorted Array: ${JSON.stringify(sortedArray)}\n`);
 	}
-
+	let correct = "Not Verified";
 	verify: if(options.verbose){
-		const correct = verifySort(sortedArray)
-		if(correct){
-			console.log(`${algorithm.toUpperCase()} sorted correctly\n`)
-			break verify;
+		correct = verifySort(sortedArray)
+		if(!correct){
+			console.error(`${algorithm.toUpperCase()} there was an error when sorting\n`)
 		}
 		
-		console.error(`${algorithm.toUpperCase()} there was an error when sorting\n`)
 	}
 
-	return `{"algorithmName": "${algorithm}","algorithmOption": "${strategy}","algorithmLength": ${count},"language": "javascript", "algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken}, "perfData": {}}`
+	return `{"algorithmName": "${algorithm}","algorithmOption": "${strategy}","algorithmLength": ${count},"language": "javascript", "verified": "${correct}","algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken}, "perfData": {}}`
 }
 
  const clearFile = async () => {
@@ -169,7 +167,7 @@ const options = program.opts();
 
 
 if(options.file != ""){
-	let clearFilePromise =  clearFile();
+	clearFile();
 }
 
 if (options.algorithm.length != options.count.length || 

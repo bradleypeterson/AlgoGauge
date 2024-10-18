@@ -47,16 +47,20 @@ std::string getJsonOutputs(const std::string file){
 	return content;
 }
 
-void printChildProcessSTDOUT(struct subprocess_s &process){
-	// unsigned bytes_read;
+std::string printChildProcessSTDOUT(struct subprocess_s &process){
+	std::string output;
+	char buffer[1024];
+	 while (true) {
+        unsigned bytes_read = subprocess_read_stdout(&process, buffer, sizeof(buffer));
+        if (bytes_read == 0) {
+            break;  // Exit loop when no more bytes are read
+        }
+        output.append(buffer, bytes_read);
+    }
 
-	// do {
-	// 	char buffer[1024] = {0};
-	// 	bytes_read = subprocess_read_stdout(&process, buffer, sizeof(buffer));
-	// 	printf("Read %u bytes - '%s'\n", bytes_read, buffer);
-	//  } while (bytes_read != 0);
+	output.erase(std::remove_if(output.begin(), output.end(),[](char c) { return c == '\n' || c == '\r'; }), output.end());
 
-	// return;
+	return output;
 }
 
 
@@ -64,8 +68,8 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
  	struct subprocess_s process;
 	int exit_code;
 
-    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
-
+    // int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
+    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async, environment, &process);
 
 	// cout << process.child;
     if (result != 0) {
@@ -75,7 +79,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
 	subprocess_join(&process, &exit_code);
 
-	printChildProcessSTDOUT(process);
+	auto stdOUT = printChildProcessSTDOUT(process);
 
 
     if (exit_code == 0) {
@@ -92,7 +96,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 		std::cerr << "Process failed to get destroyed and still might control memory" << std::endl;
 	}
 
-    return getJsonOutputs(jsonReadFilePath);
+    return stdOUT;
 }
 
 
