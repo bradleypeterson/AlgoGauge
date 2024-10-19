@@ -22,7 +22,9 @@ let Max_Number = Number.MAX_SAFE_INTEGER
 
 
 const program = new Command();
-
+const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 const collect = (value, previous) => {
 	return previous.concat([value.toLowerCase()]);
@@ -39,7 +41,7 @@ const writeToFileLocation = (line, file) => {
 	}); 
 }
 
-const runAlgorithm = (algorithm, strategy, count, name, options) => {
+const runAlgorithm = (algorithm, strategy, length, name, options) => {
 	let sortingCommand = null
 	switch (algorithm) {
 		case ("default"):
@@ -71,30 +73,33 @@ const runAlgorithm = (algorithm, strategy, count, name, options) => {
 	let array = []
 	switch (strategy){
 		case "random":
-			array = fullRandomArray(count, Max_Number)
+			array = fullRandomArray(length, Max_Number)
 			break
 		case "chunk":
-			array = randomChunkArray(count, Max_Number)
+			array = randomChunkArray(length, Max_Number)
 			break
 		case "repeating":
-			array = repeatingValueArray(count, Max_Number)
+			array = repeatingValueArray(length, Max_Number)
 			break
 		case "repeating":
-			array = repeatingValueArray(count, Max_Number)
+			array = repeatingValueArray(length, Max_Number)
 			break
 		case "ordered":
-			array = orderedArray(count)
+			array = orderedArray(length)
 			break
 		case "reversed":
-			array = orderedArrayReversed(count)
+			array = orderedArrayReversed(length)
 			break
 		default:
 			console.error(`error: option '-s, --strategy <string>' argument '${strategy}' is invalid. Allowed choices are random, chunk, repeating, ordered, reversed.`);
 			exit()
 	}
+	if(options.verbose){
+		console.log(`Starting sort: ${algorithm.toUpperCase()}`)
+	}
 
 	if (options.output) {
-		stdout.write(`Original Array: ${JSON.stringify(array)}\n`);
+		console.log(`Original Array: ${JSON.stringify(array)}`);
 	}
 	const start = performance.now();
 	const sortedArray = sortingCommand(array)
@@ -102,18 +107,24 @@ const runAlgorithm = (algorithm, strategy, count, name, options) => {
     const timeTaken = performance.now() - start;
 
 	if (options.output) {
-		stdout.write(`Sorted Array: ${JSON.stringify(sortedArray)}\n`);
+		console.log(`Sorted Array: ${JSON.stringify(sortedArray)}`);
 	}
-	let correct = "Not Verified";
-	verify: if(options.verbose){
-		correct = verifySort(sortedArray)
-		if(!correct){
-			console.error(`${algorithm.toUpperCase()} there was an error when sorting\n`)
-		}
-		
+	if(options.verbose){
+		console.log(`Finished sorting: ${algorithm.toUpperCase()}`)
 	}
 
-	return `{"algorithmName": "${algorithm}","algorithmOption": "${strategy}","algorithmLength": ${count},"language": "javascript", "verified": "${correct}","algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken}, "perfData": {}}`
+	const correct = verifySort(sortedArray)
+
+	if(!correct){
+		console.error(`${algorithm.toUpperCase()} there was an error when sorting`)
+	}
+
+
+	if(options.verbose){
+		console.log(`${algorithm.toUpperCase()} the algorithm sorted correctly`)
+	}
+
+	return `{"algorithmName": "${capitalizeFirstLetter(algorithm)}","algorithmOption": "${capitalizeFirstLetter(strategy)}","algorithmLength": ${length},"language": "NodeJS", "verified": "${correct}","algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken}, "perfData": {}}`
 }
 
  const clearFile = async () => {
@@ -133,14 +144,12 @@ program
 	.usage("");
 
 program
-	.option('-v, --verbose [bool]', 'Verify mode', (value) => {
+	.option('-v, --verbose [bool]', 'Verbose mode', (value) => {
 	  return value.toLowerCase() === 'true'; // Convert string to boolean
 	}, false)
-  
-	.option('-o, --output [bool]', 'Will output the before and after of the sorted array.', (value) => {
+	.option('-o, --output [bool]', 'Will output the before and after of the sorted array length should be set to under 100.', (value) => {
 	  return value.toLowerCase() === 'true';
 	}, false)
-  
 	.option('-j, --json [bool]', 'Will output the before and after of the sorted array.', (value) => {
 	  return value.toLowerCase() === 'true';
 	}, false);
@@ -149,11 +158,11 @@ program
 //All options are required but default where given to all
 program
 	.description(
-		"Runs a given sort algorithm expecting array strategy and count to be given"
+		"Runs a given sort algorithm expecting array strategy and length to be given"
 	)
 	.option("-f, --file <string>", "The save location for json, json needs to be true", "")
 	.option("-a --algorithm <algo>", "Select sort algorithm", collect, [])
-	.requiredOption("-c, --count [int]", "the number of", collect, [])
+	.option("-l, --length [int]", "the number of elements in the array", collect, [])
 	.option("-s, --strategy <string>", "the array creation method", collect, [])
 	.option("-n, --name <string>", "optional the Canonical Name", collect, [])
 	.option("-m, --max [int]", "the largest number the array could have optional", Number.MAX_SAFE_INTEGER)
@@ -170,16 +179,16 @@ if(options.file != ""){
 	clearFile();
 }
 
-if (options.algorithm.length != options.count.length || 
+if (options.algorithm.length != options.length.length || 
 options.algorithm.length != options.strategy.length || 
 options.algorithm.length == 0) {     
-        throw console.error("Number of provided algorithm(s), count(s), language(s), and strategy(s) arguments do not match!");
+        throw console.error("Number of provided algorithm(s), length(s), language(s), and strategy(s) arguments do not match!");
 		process.exit(1)
     }
 
 let jsonResults = "";
 for(let i = 0; i < options.algorithm.length; i++){
-	jsonResults += (runAlgorithm(options.algorithm[i],options.strategy[i], options.count[i], options.name[i], options) + ",\n")
+	jsonResults += (runAlgorithm(options.algorithm[i],options.strategy[i], options.length[i], options.name[i], options) + ",\n")
 }
 
 if(options.file != "" && options.json){

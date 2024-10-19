@@ -333,7 +333,7 @@ namespace Sorting {
      */
     template<typename T>
     void BaseSort<T>::runAndCaptureSort() {
-        if (verbose) cout << "Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+        if (verbose) cout << "C++ Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         auto startTime = std::chrono::high_resolution_clock::now(); //record the start time counter
 #ifdef linux
         if (includePerf == "true") {
@@ -353,9 +353,9 @@ namespace Sorting {
 
 
         auto stopTime = std::chrono::high_resolution_clock::now(); //record the stop time counter
-        if (verbose) cout << "Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+        if (verbose) cout << "C++ Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         verifySort();
-        if (verbose) cout << "Sort: \"" << sortName << "\"" << getCanonicalName() << "Verified!" << endl;
+        if (verbose) cout << "C++ Sort: \"" << sortName << "\"" << getCanonicalName() << " Verified!" << endl;
         executionTime = stopTime - startTime; //get the wall time or execution time
 #ifdef linux
         perf.readBuffer(); //read the data collected
@@ -381,7 +381,7 @@ namespace Sorting {
         else perfString = "";
 
         //return the sort results as a human-readable string
-        return string("Sort '")
+        return string("C++ Sort '")
                + sortName
                + string("' ")
                + getCanonicalName()
@@ -800,7 +800,7 @@ void Bubble<T>::runSort() {
                 const bool &verbose = false,
                 const bool &includedValues = false,
                 const string &includePerf = "false"
-        ) : BaseSort<T>("merge", capacity, canonicalName, verbose, includedValues, includePerf) {}
+        ) : BaseSort<T>("Merge", capacity, canonicalName, verbose, includedValues, includePerf) {}
 
         void runSort();
 

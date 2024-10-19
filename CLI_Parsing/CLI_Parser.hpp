@@ -50,11 +50,10 @@ Options getOptions() {
     // Adds the first group of options that are specific to the Algorithm
     options.add_options("Algorithm Name and Length [REQUIRED]")
         ("a,algo,algorithm", "Supported algorithms include: bubble, selection, insertion, quick, merge, heap.", cxxopts::value<vector<string>>(), "Name of the first algorithm to run.")
-        ("c,len,length,count", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), cxxopts::value<vector<int>>(), "Number of items to process")
+        ("l,len,length,count", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), cxxopts::value<vector<int>>(), "Number of items to process")
         // name is not required. May consider moving this to Program Output group instead to avoid confusion
         ("n,name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>()->default_value(""))
-        ("l,lang,language", "The user selected programming language", value<vector<string>>()->default_value("c++"))
-        // ("z, strategy", "The array generation strategy", value<vector<string>>()->default_value("random"))
+        ("x,lang,language", "The user selected programming language", value<vector<string>>()->default_value("c++"))
     ;
 
     // Adds the Options group where one and only one option may be specified per Algorithm.
@@ -119,7 +118,6 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
     }
 
     // get all data
-    auto algo = result["a"].as<vector<string>>();
     // vector<int> len = result["l"].as<vector<int>>();
 
     /* The following lines are currently commented out as they were initially needed, but no longer needed since
@@ -178,7 +176,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
     }
 
 
-    for (int i = 0; i < algo.size(); i++) {
+    for (int i = 0; i < algorithmList.size(); i++) {
         struct AlgoGauge::SortingAlgorithmSettings newObject;
         newObject.Language = languageList[i];
         newObject.Algorithm = algorithmList[i];

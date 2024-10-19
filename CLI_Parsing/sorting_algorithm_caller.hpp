@@ -30,7 +30,7 @@ Sorting::BaseSort<unsigned int>* getAlgorithm(
     std::transform(algorithmName.begin(), algorithmName.end(), algorithmName.begin(), ::tolower); // make input lowercase
 
     //Essentially this is a switch case block that determines which algorithm to create and return
-    if (algorithmName == "bubble") return new Sorting::Bubble<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    if (algorithmName == "bubble" || algorithmName == "default") return new Sorting::Bubble<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "selection") return new Sorting::Selection<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "insertion") return new Sorting::Insertion<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "quick") return new Sorting::Quick<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
@@ -40,12 +40,11 @@ Sorting::BaseSort<unsigned int>* getAlgorithm(
     else throw std::invalid_argument("Algorithm name '" + algorithmName + "' is not listed as a valid algorithm!");
 }
 
-std::string getJsonOutputs(const std::string file){
-	std::ifstream ifs(file);
-	std::string content( (std::istreambuf_iterator<char>(ifs) ),
-                       (std::istreambuf_iterator<char>()) );
-	return content;
-}
+// std::string getJsonOutputs(const std::string file){
+// 	std::ifstream ifs(file);
+// 	std::string content( (std::istreambuf_iterator<char>(ifs) ),(std::istreambuf_iterator<char>()) );
+// 	return content;
+// }
 
 std::string printChildProcessSTDOUT(struct subprocess_s &process){
 	std::string output;
@@ -64,9 +63,11 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process){
 }
 
 
-std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const std::string jsonReadFilePath){
+std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const std::string_view programmingLanguage){
  	struct subprocess_s process;
 	int exit_code;
+	std::string stdJSON = "";
+
 
     // int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
     int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async, environment, &process);
@@ -79,12 +80,19 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
 	subprocess_join(&process, &exit_code);
 
-	auto stdOUT = printChildProcessSTDOUT(process);
+	std::string stdOUT = printChildProcessSTDOUT(process);
 
+	if (!stdOUT.empty() && stdOUT[0] == '{') {
+        stdJSON = stdOUT;
+    }else{
+		cout << stdOUT << std::endl;
+	}
 
-    if (exit_code == 0) {
-        std::cout << "Program executed successfully!" << std::endl;
-    } else {
+	if(exit_code == 0 && verbose){
+		std::cout << programmingLanguage << " Program executed successfully!" << std::endl;
+	} 
+	
+	if(exit_code != 0){
         std::cerr << "Program exited with code " << exit_code << std::endl;
     }
 
@@ -96,7 +104,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 		std::cerr << "Process failed to get destroyed and still might control memory" << std::endl;
 	}
 
-    return stdOUT;
+    return stdJSON;
 }
 
 
@@ -152,20 +160,24 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		const std::string sorting_algorithm = std::format("--algorithm={}", algo.Algorithm);
 
 		const std::string array_strategy = "--strategy=" + algo.ArrayStrategyString;
-		const std::string array_count = std::format("--count={}", algo.ArrayCount);
-		const std::string output = std::format("--output={}", algorithmsController.Output);
-		const std::string verbose = std::format("--verbose={}", algorithmsController.Verbose);
+		const std::string array_count = std::format("--length={}", algo.ArrayCount);
+		
 		const std::string include_json = std::format("--json={}", algorithmsController.Json);
 		const std::string read_json_path = std::format("../MultiLanguage/temp/{}.txt", algo.Language);
 		const std::string temp_path = std::format("--file=../temp/{}.txt",algo.Language);
 
+		// const std::string output = std::format("--output={}", algorithmsController.Output);
+		// const std::string verbose = std::format("--verbose={}", algorithmsController.Verbose);
+		const std::string output = "--output=false";
+		const std::string verbose = "--verbose=false";
+
 
 		const char *environment[] = {NULL};
 
-		if (algo.Language == "node" || algo.Language == "js" || algo.Language == "javascript"){
+		if (algo.Language == "node" || algo.Language == "nodejs"|| algo.Language == "js" || algo.Language == "javascript"){
 			//node Algogauge.mjs -vTrue -c10 -aBubble -aMerge -c10 -sOrdered -sreversed -j -oTrue -c20 -aDefault -sordered --file="../temp/javascript.txt"
 			const char* program_arguments[] = {"node", "../MultiLanguage/Javascript/Algogauge.mjs", sorting_algorithm.c_str(), array_strategy.c_str(), array_count.c_str(), output.c_str(), verbose.c_str(), include_json.c_str(), nullptr};
-			jsonResults += runChildProcess(program_arguments, environment, read_json_path);
+			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
 			continue;
 
 		}
@@ -173,7 +185,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		if (algo.Language == "python" || algo.Language == "python3"){
 			const char* program_arguments[] = {"python3", "../dependencies/Algogauge.mjs", sorting_algorithm.c_str(), nullptr};
 
-			jsonResults += runChildProcess(program_arguments, environment, read_json_path);
+			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
 
 			continue;
 		}
@@ -187,7 +199,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 
 		const char* program_arguments[] = {program_path.c_str(), sorting_algorithm.c_str(), nullptr};
 		std::cout << program_path;
-		jsonResults +=  runChildProcess(program_arguments, environment, read_json_path);
+		jsonResults +=  runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
 
 	}
 	

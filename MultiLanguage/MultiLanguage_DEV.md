@@ -14,9 +14,9 @@ The following options need to be implemented.
 
 `-v --verify <bool>` Verifies whether the array was correctly sorted should print and error to stderr on failed sort. Done by comparing i < k
 
-`-a --algorithm <string>` Specifics the sorting algorithm to be ran. Needs to at least support ["default", "bubble", "selection", "insertion", "quick", "merge", "heap"] for languages that have a built in sort method default should be that otherwise use set to bubble. 
+`-a --algorithm <string>` Specifics the sorting algorithm to be ran. Needs to at least support ["default", "bubble", "selection", "insertion", "quick", "merge", "heap"] for languages that have a built in sort method default should be that otherwise use set to bubble.
 
-`-c, --count <int>`, The number of elements being that are to be sorted. Default: 100
+`-l, --length <int>`, The number of elements being that are to be sorted. Default: 100
 
 `-s, --strategy <string>` The array strategy being used to generate the number. Needs to at least support ["random", "chunk", "repeating", "sorted", "reverse_sorted"]
 
@@ -35,7 +35,6 @@ For array creation the following creation strategies need to be created ["random
 -Random: A random number between 0...Max.
 -Repeating: Select a random number and repeat for the entire size of the array.
 -Chunk: Select a random number and create chunks of size 5 (could optionally allow the user to select it).
-
 
 ## Compiled Languages
 
