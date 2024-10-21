@@ -304,18 +304,17 @@ namespace AlgoGauge {
     cout << "Hash Table CRUD operations completed in " << fp_ms.count() << " milliseconds" << endl;
     cout << endl;
   }
-// END OF ALGOGUAGE
 }
 
 
 # endif
 
-int main() {
-  cout << "RUNNING HASH TABLES..." << endl << endl;
+// int main() {
+  // cout << "RUNNING HASH TABLES..." << endl << endl;
 
   // runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000));
-  runHash(AlgoGauge::ClosedHashTable<string, string> (10000, "linear", 0, 5000));
-  runHash(AlgoGauge::ClosedHashTable<string, string> (10000, "linear", 0, 5000));
+  // runHash(AlgoGauge::ClosedHashTable<string, string> (10000, "linear", 0, 5000));
+  // runHash(AlgoGauge::ClosedHashTable<string, string> (10000, "linear", 0, 5000));
 
   // cout << "Testing CRUD Operation Method..." << endl;
   // hashtable1.crudOperation();
@@ -358,5 +357,5 @@ int main() {
   // runHash(AlgoGauge::ClosedHashTable<string, string>(10));
   // runHash(AlgoGauge::ClosedHashTable<string, string>(100, "linear", 50));
 
-  return 0;
-}
+  // return 0;
+// }
