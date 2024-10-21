@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include "../dependencies/subprocess.h"
 #include "../algorithms/sort_7algs.cpp"
@@ -37,7 +38,7 @@ Sorting::BaseSort<unsigned int>* getAlgorithm(
     else if (algorithmName == "merge") return new Sorting::Merge<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "heap") return new Sorting::Heap<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
     //raise an error if passed algorithmName doesn't match any already existing classes
-    else throw std::invalid_argument("Algorithm name '" + algorithmName + "' is not listed as a valid algorithm!");
+    else throw std::invalid_argument("Algorithm name \"" + algorithmName + "\" is not listed as a valid algorithm!");
 }
 
 // std::string getJsonOutputs(const std::string file){
@@ -47,19 +48,39 @@ Sorting::BaseSort<unsigned int>* getAlgorithm(
 // }
 
 std::string printChildProcessSTDOUT(struct subprocess_s &process){
-	std::string output;
+	std::string jsonString;
+	std::string stdOUT;
 	char buffer[1024];
 	 while (true) {
         unsigned bytes_read = subprocess_read_stdout(&process, buffer, sizeof(buffer));
         if (bytes_read == 0) {
             break;  // Exit loop when no more bytes are read
         }
-        output.append(buffer, bytes_read);
+		stdOUT.append(buffer, bytes_read);
+    }
+	std::vector<std::string> result;
+    std::stringstream ss (stdOUT);
+    std::string item;
+
+    while (getline (ss, item, '\n')) {
+        result.push_back (item);
     }
 
-	output.erase(std::remove_if(output.begin(), output.end(),[](char c) { return c == '\n' || c == '\r'; }), output.end());
+	for (std::string i : result) {
+		if(i.empty()){
+			continue;
+		}
 
-	return output;
+		if(i.front() == '{' ){
+			jsonString += i;
+			continue;
+		}
+
+		std::cout << i << endl;
+	}
+
+
+	return jsonString;
 }
 
 
@@ -156,6 +177,10 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 
 			continue;
 		}
+		if(algorithmsController.Output){
+			std::cerr << "Output is not supported with languages besides C++" << endl;
+			continue;
+		}
 
 		const std::string sorting_algorithm = std::format("--algorithm={}", algo.Algorithm);
 
@@ -166,10 +191,9 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		const std::string read_json_path = std::format("../MultiLanguage/temp/{}.txt", algo.Language);
 		const std::string temp_path = std::format("--file=../temp/{}.txt",algo.Language);
 
-		// const std::string output = std::format("--output={}", algorithmsController.Output);
-		// const std::string verbose = std::format("--verbose={}", algorithmsController.Verbose);
-		const std::string output = "--output=false";
-		const std::string verbose = "--verbose=false";
+		const std::string output = std::format("--output={}", algorithmsController.Output);
+		const std::string verbose = std::format("--verbose={}", algorithmsController.Verbose);
+		// const std::string output = "--output=false";
 
 
 		const char *environment[] = {NULL};
@@ -204,8 +228,9 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	}
 	
 	jsonResults.pop_back(); //remove extraneous comma
-	jsonResults += "]}"; //finish json string
-	if (algorithmsController.Json) cout << jsonResults << endl;
+	jsonResults += "]}"; //finish json string'
+
+	if (algorithmsController.Json) std::cout << jsonResults << endl;
 
 	if (!algorithmsController.FileWritePath.empty()) { //print output to file
             std::ofstream outFile;

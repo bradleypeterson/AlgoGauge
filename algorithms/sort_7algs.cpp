@@ -16,10 +16,12 @@
 #include "RandomNum.hpp"
 #include "../dependencies/Perf.hpp"
 #include "../AlgoGaugeDetails.hpp"
+
 using std::cout;
 using std::cin;
 using std::endl;
 using std::string;
+
 using namespace AlgoGauge;
 
 namespace Sorting {
@@ -381,13 +383,13 @@ namespace Sorting {
         else perfString = "";
 
         //return the sort results as a human-readable string
-        return string("C++ Sort '")
+        return string("C++ Sort \"")
                + sortName
-               + string("' ")
+               + string("\"")
                + getCanonicalName()
-               + string("with Algorithm Option '")
+               + string("with Algorithm Option \"")
                + getAlgorithmOption()
-               + string("' of length ")
+               + string("\" of length ")
                + std::to_string(capacity)
                + string(", completed in ")
                + std::to_string(executionTime.count())

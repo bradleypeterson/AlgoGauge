@@ -69,6 +69,7 @@ const runAlgorithm = (algorithm, strategy, length, name, options) => {
 			console.error(`error: option '-a --algo --algorithm <string>' argument '${algorithm}' is invalid. Allowed choices are built-in, default, bubble, selection, insertion, quick, merge, heap.`);
 			process.exit(1)
 	}
+	const runningAlgorithm = capitalizeFirstLetter(algorithm);
 
 	let array = []
 	switch (strategy){
@@ -94,35 +95,30 @@ const runAlgorithm = (algorithm, strategy, length, name, options) => {
 			console.error(`error: option '-s, --strategy <string>' argument '${strategy}' is invalid. Allowed choices are random, chunk, repeating, ordered, reversed.`);
 			exit()
 	}
-	if(options.verbose){
-		console.log(`Starting sort: ${algorithm.toUpperCase()}`)
-	}
+	if(options.verbose) console.log(`NodeJS Starting sort: \"${runningAlgorithm}\"`);
 
-	if (options.output) {
-		console.log(`Original Array: ${JSON.stringify(array)}`);
-	}
+	if (options.output && options.verbose) console.log(`NodeJS Original Array: ${JSON.stringify(array)}`);
+
 	const start = performance.now();
 	const sortedArray = sortingCommand(array)
 
     const timeTaken = performance.now() - start;
 
-	if (options.output) {
-		console.log(`Sorted Array: ${JSON.stringify(sortedArray)}`);
-	}
-	if(options.verbose){
-		console.log(`Finished sorting: ${algorithm.toUpperCase()}`)
-	}
+	if (options.output && options.verbose) console.log(`NodeJS Sorted Array: ${JSON.stringify(sortedArray)}`);
+
+	if(options.verbose) console.log(`NodeJS Verifying sort: \"${runningAlgorithm}\"`);
 
 	const correct = verifySort(sortedArray)
 
 	if(!correct){
-		console.error(`${algorithm.toUpperCase()} there was an error when sorting`)
+		console.error(`${runningAlgorithm} there was an error when sorting`)
+	}else{
+		if(options.verbose) console.log(`NodeJS Sort: "${runningAlgorithm}" Verified!`);
+		
 	}
 
 
-	if(options.verbose){
-		console.log(`${algorithm.toUpperCase()} the algorithm sorted correctly`)
-	}
+	if(options.verbose) console.log(`NodeJS Sort: \"${algorithm.toUpperCase()}\" with Algorithm Option \"${capitalizeFirstLetter(strategy)}\" of length ${length}, completed in ${timeTaken} milliseconds`);
 
 	return `{"algorithmName": "${capitalizeFirstLetter(algorithm)}","algorithmOption": "${capitalizeFirstLetter(strategy)}","algorithmLength": ${length},"language": "NodeJS", "verified": "${correct}","algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken}, "perfData": {}}`
 }
