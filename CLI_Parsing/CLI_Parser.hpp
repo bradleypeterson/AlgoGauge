@@ -193,7 +193,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
         else if (arrayStrategy == "ordered")  newObject.ArrayStrategy = AlgoGauge::AlgorithmOptions::orderedSet;
         else throw std::invalid_argument("There is not array strategy listed");
 
-        newObject.ArrayCount = countList[i];
+        newObject.ArrayLength = countList[i];
         if (i < names.size()) {
             newObject.Name = names[i];     // Assign name if valid
         } else {

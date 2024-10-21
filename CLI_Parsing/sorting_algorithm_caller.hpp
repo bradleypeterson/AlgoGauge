@@ -144,7 +144,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		if(algo.Language == "c++"){
 			auto newAlgorithm = getAlgorithm(
 					algo.Algorithm,
-					algo.ArrayCount,
+					algo.ArrayLength,
 					algo.Name,
 					algorithmsController.Verbose,
 					algorithmsController.Output,
@@ -182,14 +182,14 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 			continue;
 		}
 
-		const std::string sorting_algorithm = std::format("--algorithm={}", algo.Algorithm);
+		const std::string selectedSortingAlgorithm = std::format("--algorithm={}", algo.Algorithm);
 
-		const std::string array_strategy = "--strategy=" + algo.ArrayStrategyString;
-		const std::string array_count = std::format("--length={}", algo.ArrayCount);
+		const std::string selectedArrayStrategy = "--strategy=" + algo.ArrayStrategyString;
+		const std::string selectedArrayLength = std::format("--length={}", algo.ArrayLength);
 		
-		const std::string include_json = std::format("--json={}", algorithmsController.Json);
-		const std::string read_json_path = std::format("../MultiLanguage/temp/{}.txt", algo.Language);
-		const std::string temp_path = std::format("--file=../temp/{}.txt",algo.Language);
+		const std::string includeJSON = std::format("--json={}", algorithmsController.Json);
+		// const std::string read_json_path = std::format("../MultiLanguage/temp/{}.txt", algo.Language);
+		// const std::string temp_path = std::format("--file=../temp/{}.txt",algo.Language);
 
 		const std::string output = std::format("--output={}", algorithmsController.Output);
 		const std::string verbose = std::format("--verbose={}", algorithmsController.Verbose);
@@ -200,14 +200,14 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 
 		if (algo.Language == "node" || algo.Language == "nodejs"|| algo.Language == "js" || algo.Language == "javascript"){
 			//node Algogauge.mjs -vTrue -c10 -aBubble -aMerge -c10 -sOrdered -sreversed -j -oTrue -c20 -aDefault -sordered --file="../temp/javascript.txt"
-			const char* program_arguments[] = {"node", "../MultiLanguage/Javascript/Algogauge.mjs", sorting_algorithm.c_str(), array_strategy.c_str(), array_count.c_str(), output.c_str(), verbose.c_str(), include_json.c_str(), nullptr};
+			const char* program_arguments[] = {"node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
 			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
 			continue;
 
 		}
 
 		if (algo.Language == "python" || algo.Language == "python3"){
-			const char* program_arguments[] = {"python3", "../dependencies/Algogauge.mjs", sorting_algorithm.c_str(), nullptr};
+			const char* program_arguments[] = {"python3", "../dependencies/Algogauge.mjs", selectedSortingAlgorithm.c_str(), nullptr};
 
 			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
 
@@ -221,7 +221,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		}
 
 
-		const char* program_arguments[] = {program_path.c_str(), sorting_algorithm.c_str(), nullptr};
+		const char* program_arguments[] = {program_path.c_str(), selectedSortingAlgorithm.c_str(), nullptr};
 		std::cout << program_path;
 		jsonResults +=  runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
 
@@ -254,13 +254,13 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	
 //     SortingAlgorithmSettings x;
 //     x.Algorithm = "bubble";
-//     x.ArrayCount = 1000;
+//     x.ArrayLength = 1000;
 //     x.ArrayStrategy = randomSet;
 //     x.Name = "John";
 
 //     SortingAlgorithmSettings y;
 //     y.Algorithm = "merge";
-//     y.ArrayCount = 1000;
+//     y.ArrayLength = 1000;
 //     y.ArrayStrategy = repeatedSet;
 //     y.Name = "carlos";
 
