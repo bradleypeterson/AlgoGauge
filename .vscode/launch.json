@@ -1,0 +1,33 @@
+{
+	"configurations": [
+	  {
+		"name": "C/C++: clang++ build and debug active file",
+		"type": "cppdbg",
+		"request": "launch",
+		"program": "${fileDirname}/${fileBasenameNoExtension}",
+		"args": [
+			"-a bubble",
+			"--count=200",
+			"--length=200",
+
+			"--lang=rust",
+			"--strat=random",
+			"-a merge",
+			"--lang=c++",
+			"--count=400",
+			"--strat=chunk",
+			"--length=400"
+
+		],
+		"stopAtEntry": false,
+		"cwd": "${fileDirname}",
+		"environment": [],
+		"externalConsole": false,
+		"MIMode": "lldb",
+		"preLaunchTask": "C/C++: clang++ build active file",
+		"targetArchitecture": "arm64"
+	  }
+	],
+	"version": "2.0.0"
+  }
+  

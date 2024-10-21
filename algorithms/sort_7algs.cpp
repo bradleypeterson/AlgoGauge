@@ -5,6 +5,9 @@
  * @copyright Weber State University
  */
 
+#ifndef ALGOGAUGE_SORT_7ALGS_CPP
+#define ALGOGAUGE_SORT_7ALGS_CPP
+
 #include <iostream>
 #include <memory>
 #include <fstream>
@@ -12,29 +15,17 @@
 #include <chrono>
 #include "RandomNum.hpp"
 #include "../dependencies/Perf.hpp"
+#include "../AlgoGaugeDetails.hpp"
 
 using std::cout;
 using std::cin;
 using std::endl;
 using std::string;
 
-#ifndef ALGOGAUGE_SORT_7ALGS_CPP
-#define ALGOGAUGE_SORT_7ALGS_CPP
+using namespace AlgoGauge;
 
-namespace AlgoGauge {
+namespace Sorting {
 
-    /**
-     * @brief Used for determining valid Algorithm Options.
-     * none is default, however, if set, should always throw an error.
-     */
-    enum AlgorithmOptions {
-        none = 0,
-        randomSet,
-        repeatedSet,
-        chunkSet,
-        reversedSet,
-        orderedSet
-    };
 
     /**
      * @brief This is used to map to the AlgorithmOptions enum
@@ -344,7 +335,7 @@ namespace AlgoGauge {
      */
     template<typename T>
     void BaseSort<T>::runAndCaptureSort() {
-        if (verbose) cout << "Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+        if (verbose) cout << "C++ Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         auto startTime = std::chrono::high_resolution_clock::now(); //record the start time counter
 #ifdef linux
         if (includePerf == "true") {
@@ -364,9 +355,9 @@ namespace AlgoGauge {
 
 
         auto stopTime = std::chrono::high_resolution_clock::now(); //record the stop time counter
-        if (verbose) cout << "Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+        if (verbose) cout << "C++ Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         verifySort();
-        if (verbose) cout << "Sort: \"" << sortName << "\"" << getCanonicalName() << "Verified!" << endl;
+        if (verbose) cout << "C++ Sort: \"" << sortName << "\"" << getCanonicalName() << " Verified!" << endl;
         executionTime = stopTime - startTime; //get the wall time or execution time
 #ifdef linux
         perf.readBuffer(); //read the data collected
@@ -392,13 +383,13 @@ namespace AlgoGauge {
         else perfString = "";
 
         //return the sort results as a human-readable string
-        return string("Sort '")
+        return string("C++ Sort \"")
                + sortName
-               + string("' ")
+               + string("\"")
                + getCanonicalName()
-               + string("with Algorithm Option '")
+               + string("with Algorithm Option \"")
                + getAlgorithmOption()
-               + string("' of length ")
+               + string("\" of length ")
                + std::to_string(capacity)
                + string(", completed in ")
                + std::to_string(executionTime.count())
@@ -448,7 +439,9 @@ namespace AlgoGauge {
         output += R"("algorithmName": ")" + sortName + "\",";
         output += R"("algorithmOption": ")" + getAlgorithmOption() + "\",";
         output += R"("algorithmLength": )" + std::to_string(capacity) + ",";
+        output += R"("language": "c++",)";
         output += R"("algorithmCanonicalName": ")" + canonicalName + "\",";
+
 
         if (includeValues) {
             output += R"("valuesBeforeSort": [)";
@@ -552,18 +545,31 @@ namespace AlgoGauge {
     /**
      * The logic for executing the bubble sort algorithm.
      */
-    template<typename T>
-    void Bubble<T>::runSort() {
-        for (unsigned int round = 0; round < this->capacity - 1; round++) {
-            for (unsigned int i = 0; i < this->capacity - 1 - round; i++) {
-                if (this->arr[i + 1] < this->arr[i]) {
-                    T temp = this->arr[i];
-                    this->arr[i] = this->arr[i + 1];
-                    this->arr[i + 1] = temp;
-                }
+template<typename T>
+void Bubble<T>::runSort() {
+    bool swapped;
+    unsigned int n = this->capacity;
+
+    do {
+        swapped = false;
+        unsigned int lastUnsorted = 0; // Track the last unsorted position
+
+        for (unsigned int i = 0; i < n - 1; i++) {
+            if (this->arr[i] > this->arr[i + 1]) {
+                // Swap using a temporary variable
+                T temp = this->arr[i];
+                this->arr[i] = this->arr[i + 1];
+                this->arr[i + 1] = temp;
+                swapped = true;
+                lastUnsorted = i + 1; // Update last unsorted position
             }
         }
-    }
+
+        n = lastUnsorted > 0 ? lastUnsorted : n; // Update n only if lastUnsorted has changed
+    } while (swapped && n > 1); // Continue if swaps were made and there's more than one element
+}
+
+
 
     /**
      * This is the class for handling the Selection Sort Algorithm.
@@ -796,7 +802,7 @@ namespace AlgoGauge {
                 const bool &verbose = false,
                 const bool &includedValues = false,
                 const string &includePerf = "false"
-        ) : BaseSort<T>("merge", capacity, canonicalName, verbose, includedValues, includePerf) {}
+        ) : BaseSort<T>("Merge", capacity, canonicalName, verbose, includedValues, includePerf) {}
 
         void runSort();
 
