@@ -16,7 +16,7 @@
 #include <map>
 #include <charconv>
 
-#include "sorting_algorithm_caller.hpp"
+#include "algorithm_caller.hpp"
 
 #include "../algorithms/sort_7algs.cpp"
 #include "../dependencies/cxxopts.hpp"

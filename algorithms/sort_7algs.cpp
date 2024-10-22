@@ -87,7 +87,6 @@ namespace Sorting {
         void runAndCaptureSort();
         void runAndPrintSort();
         void runAndPrintFileSort(const string &filePath, const bool &append = true);
-        string runAndGetJSONSort();
         string getDummyPerfData(bool JSON = false);
 
         virtual void runSort() = 0; // Pure virtual function.
@@ -510,17 +509,6 @@ namespace Sorting {
         runAndCaptureSort();
         printSortToFile(filePath, append);
     }
-
-    /**
-     * This starts the sort and returns the results as a JSON formatted string
-     * @return a string of the sorting results formatted in JSON
-     */
-    template<typename T>
-    string BaseSort<T>::runAndGetJSONSort() {
-        runAndCaptureSort();
-        return getJSONResult();
-    }
-
 
 //Algorithms
 /**

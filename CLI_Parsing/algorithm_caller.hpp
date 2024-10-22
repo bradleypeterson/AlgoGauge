@@ -5,10 +5,14 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <memory>  // For std::unique_ptr
+
 #include "../dependencies/subprocess.h"
 #include "../algorithms/sort_7algs.cpp"
 #include "CLI_Parser.hpp"
 #include "../AlgoGaugeDetails.hpp"
+
+
 
 /**
  * Method for determining which Sorting Algorithm to return
@@ -20,32 +24,67 @@
  * @param includePerf Whether or not this should include Perf metrics within the output
  * @return A sorting algorithm object
  */
-Sorting::BaseSort<unsigned int>* getAlgorithm(
+std::string runCPlusPlusProgram(
     string algorithmName, // Opting for this to be a string and NOT an enum as we can just pass what the user passes as the --algo arg directly and return an error if it doesn't match any algorithms
     const unsigned int& length,
+	const AlgoGauge::AlgorithmOptions& ArrayStrategy,
+
     const string& canonicalName = "",
     const bool& verbose = false,
     const bool& includeValues = false,
     const string& includePerf = "false"
+
 ) {
-    std::transform(algorithmName.begin(), algorithmName.end(), algorithmName.begin(), ::tolower); // make input lowercase
+	std::unique_ptr<Sorting::BaseSort<unsigned int>> SortingAlgorithm;
 
     //Essentially this is a switch case block that determines which algorithm to create and return
-    if (algorithmName == "bubble" || algorithmName == "default") return new Sorting::Bubble<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
-    else if (algorithmName == "selection") return new Sorting::Selection<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
-    else if (algorithmName == "insertion") return new Sorting::Insertion<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
-    else if (algorithmName == "quick") return new Sorting::Quick<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
-    else if (algorithmName == "merge") return new Sorting::Merge<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
-    else if (algorithmName == "heap") return new Sorting::Heap<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+	if (algorithmName == "bubble" || algorithmName == "default") SortingAlgorithm = std::make_unique<Sorting::Bubble<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "selection") SortingAlgorithm = std::make_unique<Sorting::Selection<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "insertion") SortingAlgorithm = std::make_unique<Sorting::Insertion<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "quick") SortingAlgorithm = std::make_unique<Sorting::Quick<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "merge") SortingAlgorithm = std::make_unique<Sorting::Merge<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
+    else if (algorithmName == "heap") SortingAlgorithm = std::make_unique<Sorting::Heap<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
     //raise an error if passed algorithmName doesn't match any already existing classes
     else throw std::invalid_argument("Algorithm name \"" + algorithmName + "\" is not listed as a valid algorithm!");
-}
+    // if (algorithmName == "bubble" || algorithmName == "default") SortingAlgorithm = new Sorting::Bubble<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    // else if (algorithmName == "selection") SortingAlgorithm = new Sorting::Selection<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    // else if (algorithmName == "insertion") SortingAlgorithm = new Sorting::Insertion<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    // else if (algorithmName == "quick") SortingAlgorithm = new Sorting::Quick<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    // else if (algorithmName == "merge") SortingAlgorithm = new Sorting::Merge<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    // else if (algorithmName == "heap") SortingAlgorithm = new Sorting::Heap<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+    // //raise an error if passed algorithmName doesn't match any already existing classes
+    // else throw std::invalid_argument("Algorithm name \"" + algorithmName + "\" is not listed as a valid algorithm!");
 
-// std::string getJsonOutputs(const std::string file){
-// 	std::ifstream ifs(file);
-// 	std::string content( (std::istreambuf_iterator<char>(ifs) ),(std::istreambuf_iterator<char>()) );
-// 	return content;
-// }
+	switch (ArrayStrategy) {
+		case AlgoGauge::AlgorithmOptions::repeatedSet:
+			SortingAlgorithm->loadRepeatedValues();
+			break;
+		case AlgoGauge::AlgorithmOptions::chunkSet:
+			SortingAlgorithm->loadChunkValues();
+			break;
+		case AlgoGauge::AlgorithmOptions::reversedSet:
+			SortingAlgorithm->loadReversedValues();
+			break;
+		case AlgoGauge::AlgorithmOptions::orderedSet:
+			SortingAlgorithm->loadOrderedValues();
+			break;
+		case AlgoGauge::AlgorithmOptions::randomSet:
+			SortingAlgorithm->loadRandomValues();
+			break;
+		default:
+			throw std::invalid_argument("Need to provide a valid Algorithm Option!");
+	}
+
+	SortingAlgorithm->runAndCaptureSort();	
+
+	if (verbose) cout << SortingAlgorithm->getStringResult() << endl;
+	const std::string jsonDetails = SortingAlgorithm->getJSONResult() + ",";
+
+	// delete SortingAlgorithm;
+	// SortingAlgorithm.reset();
+
+	return jsonDetails;
+}
 
 std::string printChildProcessSTDOUT(struct subprocess_s &process){
 	std::string jsonString;
@@ -140,41 +179,17 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	for(auto algo: algorithmsController.SelectedSortingAlgorithms){
 
 		std::transform(algo.Language.begin(), algo.Language.end(), algo.Language.begin(), ::tolower);
+		// std::transform(algo.Name.begin(), algo.Name.end(), algo.Name.begin(), ::tolower); // make input lowercase
 
 		if(algo.Language == "c++"){
-			auto newAlgorithm = getAlgorithm(
-					algo.Algorithm,
-					algo.ArrayLength,
-					algo.Name,
-					algorithmsController.Verbose,
-					algorithmsController.Output,
-					includePerf
-					);
-
-			switch (algo.ArrayStrategy) {
-				case AlgoGauge::AlgorithmOptions::repeatedSet:
-					newAlgorithm->loadRepeatedValues();
-					break;
-				case AlgoGauge::AlgorithmOptions::chunkSet:
-					newAlgorithm->loadChunkValues();
-					break;
-				case AlgoGauge::AlgorithmOptions::reversedSet:
-					newAlgorithm->loadReversedValues();
-					break;
-				case AlgoGauge::AlgorithmOptions::orderedSet:
-					newAlgorithm->loadOrderedValues();
-					break;
-				case AlgoGauge::AlgorithmOptions::randomSet:
-					newAlgorithm->loadRandomValues();
-					break;
-				default:
-					throw std::invalid_argument("Need to provide a valid Algorithm Option!");
-			}
-
-			jsonResults+= newAlgorithm->runAndGetJSONSort() + ",";
-
-			if (algorithmsController.Verbose) cout << newAlgorithm->getStringResult() << endl;
-
+			jsonResults += runCPlusPlusProgram(
+				algo.Algorithm, 
+				algo.ArrayLength, 
+				algo.ArrayStrategy,
+				algo.Name, 
+				algorithmsController.Verbose, 
+				algorithmsController.Output, 
+				includePerf);
 			continue;
 		}
 		if(algorithmsController.Output){
