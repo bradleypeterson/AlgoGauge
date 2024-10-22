@@ -18,6 +18,7 @@ enum AlgorithmOptions {
 	orderedSet
 };
 
+
 struct HashTableSettings{
 
 };

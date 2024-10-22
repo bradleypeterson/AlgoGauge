@@ -228,7 +228,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	}
 	
 	jsonResults.pop_back(); //remove extraneous comma
-	jsonResults += "]}"; //finish json string'
+	jsonResults += "]}"; //finish json string
 
 	if (algorithmsController.Json) std::cout << jsonResults << endl;
 

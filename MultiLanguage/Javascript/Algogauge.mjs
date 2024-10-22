@@ -118,9 +118,9 @@ const runAlgorithm = (algorithm, strategy, length, name, options) => {
 	}
 
 
-	if(options.verbose) console.log(`NodeJS Sort: \"${algorithm.toUpperCase()}\" with Algorithm Option \"${capitalizeFirstLetter(strategy)}\" of length ${length}, completed in ${timeTaken} milliseconds`);
+	if(options.verbose) console.log(`NodeJS Sort: \"${runningAlgorithm}\" with Algorithm Option \"${capitalizeFirstLetter(strategy)}\" of length ${length}, completed in ${timeTaken} milliseconds`);
 
-	return `{"algorithmName": "${capitalizeFirstLetter(algorithm)}","algorithmOption": "${capitalizeFirstLetter(strategy)}","algorithmLength": ${length},"language": "NodeJS", "verified": "${correct}","algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken}, "perfData": {}}`
+	return `{"algorithmName": "${runningAlgorithm}","algorithmOption": "${capitalizeFirstLetter(strategy)}","algorithmLength": ${length},"language": "NodeJS", "verified": "${correct}","algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken}, "perfData": {}}`
 }
 
  const clearFile = async () => {
