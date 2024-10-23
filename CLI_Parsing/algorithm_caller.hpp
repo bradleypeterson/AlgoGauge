@@ -111,7 +111,7 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process){
 		}
 
 		if(i.front() == '{' ){
-			jsonString += i;
+			jsonString += i + ",";
 			continue;
 		}
 

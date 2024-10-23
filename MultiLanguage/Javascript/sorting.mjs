@@ -2,54 +2,6 @@ export const builtinSorting = (arr) => {
 	return arr.sort((a, b) => a - b);
 };
 
-const mergeSortElements = (arr, firstIndex, lastIndex) => {
-	if (lastIndex - firstIndex < 2) {
-		return;
-	}
-	// Find a middle
-	let middleIndex = Math.floor((lastIndex - firstIndex) / 2) + firstIndex;
-
-	mergeSortElements(arr, firstIndex, middleIndex);
-	mergeSortElements(arr, middleIndex, lastIndex);
-
-	let leftHalfSize = middleIndex - firstIndex;
-
-	let leftArray = [];
-
-	for (let i = 0; i < leftHalfSize; i++) {
-		leftArray[i] = arr[firstIndex + i];
-	}
-	let rightHalfSize = lastIndex - middleIndex;
-	let rightArray = [];
-	for (let i = 0; i < rightHalfSize; i++) {
-		rightArray[i] = arr[middleIndex + i];
-	}
-	let leftIndex = 0;
-	let rightIndex = 0;
-	let arrIndex = firstIndex;
-
-	while (leftIndex < leftHalfSize && rightIndex < rightHalfSize) {
-		if (leftArray[leftIndex] <= rightArray[rightIndex]) {
-			arr[arrIndex] = leftArray[leftIndex];
-			leftIndex++;
-		} else {
-			arr[arrIndex] = rightArray[rightIndex];
-			rightIndex++;
-		}
-		arrIndex++;
-	}
-	while (leftIndex < leftHalfSize) {
-		arr[arrIndex] = leftArray[leftIndex];
-		leftIndex++;
-		arrIndex++;
-	}
-	while (rightIndex < rightHalfSize) {
-		arr[arrIndex] = rightArray[rightIndex];
-		rightIndex++;
-		arrIndex++;
-	}
-};
-
 export const mergeSort = (arr, firstIndex = 0, lastIndex = arr.length) => {
 	if (lastIndex - firstIndex < 2) {
 		return;
@@ -103,9 +55,8 @@ export const mergeSort = (arr, firstIndex = 0, lastIndex = arr.length) => {
 
 const quickSortPartition = (arr, first = 0, last = arr.length) => {
 	let pivot = arr[first],
-		index,
 		smallIndex = first;
-	for (index = first + 1; index < last; index++) {
+	for (let index = first + 1; index < last; index++) {
 		if (arr[index] < pivot) {
 			smallIndex++;
 			[arr[smallIndex], arr[index]] = [arr[index], arr[smallIndex]];
@@ -132,7 +83,7 @@ export const quickSort = (arr, firstIndex = 0, length = arr.length) => {
 };
 
 export const bubbleSort = (arr) => {
-	let swapped;
+	let swapped = false;
 	let n = arr.length;
 
 	do {
@@ -211,7 +162,7 @@ const heapify = (arr, index, lastUnsortedIndex) => {
 };
 
 export const heapSort = (arr) => {
-	let i = arr.length / 2;
+	let i = Math.floor(arr.length / 2);
 	while (i > 0) {
 		i--;
 		heapify(arr, i, arr.length);
@@ -221,7 +172,7 @@ export const heapSort = (arr) => {
 	let lastUnsortedIndex = arr.length;
 	while (lastUnsortedIndex > 0) {
 		lastUnsortedIndex--;
-		[arr[0], arr[lastUnsortedIndex]] = [arr[0], arr[lastUnsortedIndex]];
+		[arr[0], arr[lastUnsortedIndex]] = [arr[lastUnsortedIndex], arr[0]];
 
 		heapify(arr, 0, lastUnsortedIndex);
 	}
