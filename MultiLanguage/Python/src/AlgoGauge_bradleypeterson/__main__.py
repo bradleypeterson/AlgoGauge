@@ -28,6 +28,7 @@ parser.add_argument('-s', '--strategy', action='append', help= "the array creati
 
 parser.add_argument('-f', '--file', action='append', help='The save location for json, json needs to be true')
 parser.add_argument('-n', '--name', action='append', help='optional the Canonical Name')
+parser.add_argument('--ignore', action='store_false', help='does nothing used by c++ and implicit arguments')
 
 
 
@@ -45,6 +46,7 @@ def main():
         exit(1);
     
     json_results = "";
+    
     for index, item in enumerate(args.length):
         json_results += run_algorithm(
             algorithm=args.algorithm[index],
@@ -55,8 +57,9 @@ def main():
             max_value= MAX_NUMBER,
             name=args.name[index] if args.name and args.name[index]else ""
         )
+        json_results += ","
         
-    if (args.json): print(json_results)
+    if (args.json): print(json_results[:-1])
     return 0
 
 if __name__ == "__main__":

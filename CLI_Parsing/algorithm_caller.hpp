@@ -130,7 +130,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
 
     // int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
-    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async, environment, &process);
+    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async | subprocess_option_combined_stdout_stderr, environment, &process);
 
 	// cout << process.child;
     if (result != 0) {
@@ -202,12 +202,12 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		const std::string selectedArrayStrategy = "--strategy=" + algo.ArrayStrategyString;
 		const std::string selectedArrayLength = std::format("--length={}", algo.ArrayLength);
 		
-		const std::string includeJSON = std::format("--json={}", algorithmsController.Json);
+		const std::string includeJSON = algorithmsController.Json ? "--json": "";
 		// const std::string read_json_path = std::format("../MultiLanguage/temp/{}.txt", algo.Language);
 		// const std::string temp_path = std::format("--file=../temp/{}.txt",algo.Language);
 
-		const std::string output = std::format("--output={}", algorithmsController.Output);
-		const std::string verbose = std::format("--verbose={}", algorithmsController.Verbose);
+		const std::string output = algorithmsController.Output ? "--output" : "--ignore";
+		const std::string verbose = algorithmsController.Verbose ? "--verbose": "--ignore";
 		// const std::string output = "--output=false";
 
 
@@ -221,8 +221,8 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 
 		}
 
-		if (algo.Language == "python" || algo.Language == "python3"){
-			const char* program_arguments[] = {"python3", "../dependencies/Algogauge.mjs", selectedSortingAlgorithm.c_str(), nullptr};
+		if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
+			const char* program_arguments[] = {"python3", "../MultiLanguage/Python/src/AlgoGauge_bradleypeterson/__main__.py", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
 
 			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
 

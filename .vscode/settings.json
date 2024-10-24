@@ -66,5 +66,8 @@
 	"C_Cpp.default.cppStandard": "gnu++23",
 	"C_Cpp.default.cStandard": "gnu23",
 	"C_Cpp_Runner.cppStandard": "gnu++23",
-	"C_Cpp.errorSquiggles": "disabled"
+	"C_Cpp.errorSquiggles": "disabled",
+	"cSpell.words": [
+		"bradleypeterson"
+	]
 }

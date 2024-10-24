@@ -45,15 +45,11 @@ program
 	.usage("");
 
 program
-	.option('-v, --verbose [bool]', 'Verbose mode', (value) => {
-	  return value.toLowerCase() === 'true'; // Convert string to boolean
-	}, false)
-	.option('-o, --output [bool]', 'Will output the before and after of the sorted array length should be set to under 100.', (value) => {
-	  return value.toLowerCase() === 'true';
-	}, false)
-	.option('-j, --json [bool]', 'Will output the before and after of the sorted array.', (value) => {
-	  return value.toLowerCase() === 'true';
-	}, false);
+	.option('-v, --verbose [bool]', 'Verbose mode', false)
+	.option('-o, --output [bool]', 'Will output the before and after of the sorted array length should be set to under 100.', false)
+	.option('-j, --json [bool]', 'Will output the before and after of the sorted array.', false)
+	.option('--ignore', 'does nothing used by c++ and implicit arguments')
+
 
 
 //All options are required but default where given to all

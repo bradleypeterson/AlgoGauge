@@ -438,7 +438,7 @@ namespace Sorting {
         output += R"("algorithmName": ")" + sortName + "\",";
         output += R"("algorithmOption": ")" + getAlgorithmOption() + "\",";
         output += R"("algorithmLength": )" + std::to_string(capacity) + ",";
-        output += R"("language": "c++",)";
+        output += R"("language": "C++",)";
         output += R"("algorithmCanonicalName": ")" + canonicalName + "\",";
 
 

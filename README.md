@@ -378,7 +378,7 @@ Results written in JSON at: './results.json'
   - [ ] Grid layout for multiple cards (Four cards per row max)
   - [ ] Toggle Dark Mode and Light Mode support
   - [ ] Better history layout ???
-  - [ ] GEt rid of user input size ??? 
+  - [ ] GEt rid of user input size ???
   - [ ] When a close education popup I want to go back to the experiment
 - [ ] Instructor video and education overhaul
 - [ ] Parallel vs Serial
