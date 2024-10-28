@@ -41,6 +41,7 @@ def main():
     if(args.length is None or args.strategy is None or args.algorithm is None):
         parser.print_help()
         exit(1)
+        
     if(len(args.length) != len(args.strategy) or len(args.length) != len(args.algorithm)):
         print("Number of provided algorithm(s), length(s), language(s), and strategy(s) arguments do not match!")
         exit(1);
@@ -55,7 +56,7 @@ def main():
             verbose=args.verbose if args.verbose else False,
             output=args.output if args.output else False,
             max_value= MAX_NUMBER,
-            name=args.name[index] if args.name and args.name[index]else ""
+            name=args.name[index] if args.name and args.name[index] else ""
         )
         json_results += ","
         

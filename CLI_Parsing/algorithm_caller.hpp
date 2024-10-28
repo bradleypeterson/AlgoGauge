@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <memory>  // For std::unique_ptr
+# include <assert.h>
 
 #include "../dependencies/subprocess.h"
 #include "../algorithms/sort_7algs.cpp"
@@ -169,6 +170,8 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
 
 void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
+	// int x = 7;
+    // assert (x==5);
 	std::string includePerf = std::to_string(algorithmsController.Perf);
 	if(algorithmsController.PerfSample){
 		includePerf = "sample";
@@ -202,9 +205,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		const std::string selectedArrayStrategy = "--strategy=" + algo.ArrayStrategyString;
 		const std::string selectedArrayLength = std::format("--length={}", algo.ArrayLength);
 		
-		const std::string includeJSON = algorithmsController.Json ? "--json": "";
-		// const std::string read_json_path = std::format("../MultiLanguage/temp/{}.txt", algo.Language);
-		// const std::string temp_path = std::format("--file=../temp/{}.txt",algo.Language);
+		const std::string includeJSON = algorithmsController.Json ? "--json": "--ignore";
 
 		const std::string output = algorithmsController.Output ? "--output" : "--ignore";
 		const std::string verbose = algorithmsController.Verbose ? "--verbose": "--ignore";
@@ -229,7 +230,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 			continue;
 		}
 
-			std::string program_path;
+		std::string program_path;
 
 		if(algo.Language == "rust"){
 			program_path = "../MultiLanguage/testing/rust_binary";

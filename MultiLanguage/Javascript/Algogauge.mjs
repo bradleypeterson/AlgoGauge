@@ -1,7 +1,7 @@
 import {Command} from "commander";
 
 
-import { exit} from "process";
+import {exit} from "node:process";
 
 import {writeFile, appendFileSync} from "node:fs";
 import {runAlgorithm} from "./runAlgorithms.mjs"
