@@ -1,5 +1,5 @@
  /**
- * @authors Brad Peterson Ph.D., Cooper Maitoza, et al.
+ * @authors Cooper Maitoza, Brad Peterson Ph.D., et al.
  * @copyright Weber State University
  */
 #ifndef ALGOGAUGE_HASH_TABLE_CPP
@@ -27,7 +27,6 @@ using std::pair;
   == layout == 
   two classes:
     closed hash tables:
-      
     open hash tables
   
   testing functions:
@@ -38,9 +37,9 @@ using std::pair;
        CRUD operations test (existing data = true, either or = false)
        load test (bool)
        worst probe count or time to complete (string)
-    
-    ex. runHashTable(ClosedHashTable<unsigned int, >(<capacity>, 1000000, "linear", 30));
-    ex. runHashTable(ClosedHashTable(10, 1000, "quadratic", 99));
+
+    sort algo example: 
+      else if (algorithmName == "heap") return new Sorting::Heap<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
 */
 
 namespace AlgoGauge {
@@ -48,60 +47,69 @@ namespace AlgoGauge {
   template <typename T, typename U>
   class ClosedHashTable {
   public:
-    ClosedHashTable(const int capacity);
-    ClosedHashTable(const int capacity, const string probing_Type, const int hash_table_fullness, const int CRUDTestAmount);
+    ClosedHashTable(
+      const int     capacity, 
+      const string  probing_Type, 
+      const int     hash_table_fullness, 
+      const int     CRUDTestAmount, 
+      const bool    verbose = false, 
+      const string  includePerf = "sample");
     ~ClosedHashTable();
 
-    void crudOperation(const int);
+    void    crudOperation(const int);
 
     // Getters
-    int getHashTableFullness();
-    int getCapacity();
-    string getProbingType();
-    float getAmountFilled();
-    int getCRUDTestAmount();
+    int     getHashTableFullness();
+    int     getCapacity();
+    string  getProbingType();
+    float   getAmountFilled();
+    int     getCRUDTestAmount();
+    string  getPerfOption();
+    string  getDummyPerfData(bool JSON);
+
 
   private:
     // Hash Table methods
-    void create(const T& key, const U& value);
-    U retrieve(const T& key) const;
-    void destroy(const T& key);
+    void    create(const T& key, const U& value);
+    U       retrieve(const T& key) const;
+    void    destroy(const T& key);
 
     // Testing methods
-    void fillHashTable();
-    void loadValues(const int amount);
-    void destroyValues(const int amount, const bool onlyExist);
-    void lookupValues(const int amount, const bool onlyExist);
+    void    fillHashTable();
+    void    loadValues(const int amount);
+    void    destroyValues(const int amount, const bool onlyExist);
+    void    lookupValues(const int amount, const bool onlyExist);
+    void    loadPerf();
 
-    // Private 
-    int* statusArray = nullptr;
+    // Private data members
+    int*        statusArray = nullptr;
     pair<T, U>* kvArray = nullptr;	
-    int capacity = 10; // array size
-    string probing_type = "linear";
-    int hash_table_fullness = 0; // default hash table fullness.
-    int amountFilled = 0;
-    int CRUDTestAmount;
+
+    bool        verbose;
+    string      includePerf;
+    int         capacity = 10; // array size
+    string      probing_type = "linear";
+    int         hash_table_fullness = 0; // default hash table fullness.
+    int         amountFilled = 0;
+    int         CRUDTestAmount;
+  #ifdef linux
+    Perf::Perf  perf; // This is where perf object get's created.
+  #endif
   };
 
-  // first Closed Hash Table Constructor Method
-  template <typename T, typename U>
-  ClosedHashTable<T, U>::ClosedHashTable(const int capacity) {
-    this->capacity = capacity;
-    this->statusArray = new int[capacity];
-    for (int i = 0; i < capacity; i++) {
-      statusArray[i] = 0;
-    }
-    this->kvArray = new pair<T, U>[capacity];
-  }
 
   // second Closed Hash Table Constructor Method
   template <typename T, typename U>
-  ClosedHashTable<T, U>::ClosedHashTable(const int capacity, const string probing_Type, const int hash_table_fullness, const int CRUDTestAmount) {
+  ClosedHashTable<T, U>::ClosedHashTable(const int capacity, const string probing_Type, const int hash_table_fullness, const int CRUDTestAmount, const bool verbose, const string includePerf) {
     this->probing_type = probing_Type;
     this->hash_table_fullness = hash_table_fullness;
     this->amountFilled = hash_table_fullness;
     this->capacity = capacity;
     this->CRUDTestAmount = CRUDTestAmount;
+    this->verbose = verbose;
+    this->includePerf = includePerf;
+    this->loadPerf(); // initilize perf setup
+
     this->statusArray = new int[capacity];
     for (int i = 0; i < capacity; i++) {
       statusArray[i] = 0;
@@ -111,12 +119,14 @@ namespace AlgoGauge {
     this->fillHashTable();
   }
 
+
   // Closed Hash Table destructor Method
   template <typename T, typename U>
   ClosedHashTable<T, U>::~ClosedHashTable() {
     delete[] this->statusArray;
     delete[] this->kvArray;
   }
+
 
   // Closed Hash Table create Method
   template <typename T, typename U>
@@ -136,6 +146,7 @@ namespace AlgoGauge {
       }
     }
   }
+
 
   // Closed Hash Table Destroy Method
   template <typename T, typename U>
@@ -159,6 +170,7 @@ namespace AlgoGauge {
     }
     // cout << "NO VALUE " << key << " FOUND." << endl;
   }
+
 
   // Closed Hash Table retrive Method
   template <typename T, typename U>
@@ -191,6 +203,7 @@ namespace AlgoGauge {
     // throw std::logic_error("that key wasn't found");
   }
 
+
   // filling up hash table
   template <typename T, typename U>
   void ClosedHashTable<T, U>::fillHashTable(){
@@ -203,6 +216,7 @@ namespace AlgoGauge {
     }
   }
 
+
   // load values method
   template <typename T, typename U>
   void ClosedHashTable<T, U>::loadValues(const int amount){
@@ -214,6 +228,7 @@ namespace AlgoGauge {
     }
     this->amountFilled += amount;
   }
+
 
   // destroy values for a given amount, has an option for only existing values in hash
   // table.
@@ -228,6 +243,7 @@ namespace AlgoGauge {
     this->amountFilled -= amount;
   }
 
+
   // looks up values in hash table for a certin amount of times. Has the option to only
   // look up existing values.
   template <typename T, typename U>
@@ -240,6 +256,7 @@ namespace AlgoGauge {
     }
   }
 
+
   // This method creates a bunch of test CRUD operations for testing.
   // get's a random CRUD operation a 100 times (loadValues, lookupValues, destroyValues)
   // runs the CRUD operation for an amount of testOperationAmount (loadValues(testOperationAmount))
@@ -249,6 +266,14 @@ namespace AlgoGauge {
     this->lookupValues(testOperationAmount, false);
     this->destroyValues(testOperationAmount, false);
   }
+
+
+  // Returns the privite perf datamember.
+  template <typename T, typename U>
+  string ClosedHashTable<T, U>::getPerfOption() {
+    return this->includePerf;
+  }
+
 
   // returns a float of how full the hash table is.
   template <typename T, typename U>
@@ -261,11 +286,13 @@ namespace AlgoGauge {
     return (count / (capacity * 1.0)) * 100;
   }
 
+
   // getter for hash_table_fullness privite data member.
   template <typename T, typename U>
   int ClosedHashTable<T,U>::getHashTableFullness() {
     return this->hash_table_fullness;
   }
+
 
   // getter for capacity privite data member.
   template <typename T, typename U>
@@ -273,48 +300,163 @@ namespace AlgoGauge {
     return this->capacity;
   }
 
+
   // getter for probing_type privite data member.
   template <typename T, typename U>
   string ClosedHashTable<T , U>::getProbingType(){
     return this->probing_type;
   }
 
+
   template <typename T, typename U>
   int ClosedHashTable<T , U>::getCRUDTestAmount(){
     return this->CRUDTestAmount;
   }
 
+
+  //FIXME: Initializes perf data. Sets which hardware and software events to collect from. (Remove some of these if your system has too little performance CPU registers)
+  template<typename T, typename U>
+  void ClosedHashTable<T, U>::loadPerf() {
+  #ifdef linux
+    //CPU Hardware Events
+    perf.addNewPerfEvent("cpu cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+    perf.addNewPerfEvent("bus cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES);
+    perf.addNewPerfEvent("cpu instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
+    perf.addNewPerfEvent("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
+    perf.addNewPerfEvent("cache misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+    perf.addNewPerfEvent("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
+    perf.addNewPerfEvent("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
+    perf.addNewPerfEvent("branch misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
+
+    //CPU Software (OS) Events
+    perf.addNewPerfEvent("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
+    perf.addNewPerfEvent("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
+    perf.addNewPerfEvent("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
+    perf.addNewPerfEvent("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
+
+    //CPU Cache Events
+    perf.addNewPerfEvent(
+        "L1 data cache read accesses",
+        PERF_TYPE_HW_CACHE,
+        (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+    );
+    perf.addNewPerfEvent(
+        "L1 instruction cache read accesses",
+        PERF_TYPE_HW_CACHE,
+        (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+    );
+    perf.addNewPerfEvent(
+        "L1 data cache prefetch accesses",
+        PERF_TYPE_HW_CACHE,
+        (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+    );
+    perf.addNewPerfEvent(
+        "L1 instruction cache prefetch accesses",
+        PERF_TYPE_HW_CACHE,
+        (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+    );
+  #endif
+  }
+
+
+  template<typename T, typename U>
+  string ClosedHashTable<T, U>::getDummyPerfData(bool JSON) {
+    string allEvents[17][2] = { //create the static dummy data
+      {"PERF NOTE", "\"INCLUDED DATA IS DUMMY DATA!\""},
+      {"cpu cycles", "5432316545"},
+      {"bus cycles", "1561896"},
+      {"cpu instructions", "5151651"},
+      {"cache references", "198456156"},
+      {"cache misses", "198415652"},
+      {"branch predictions", "51894156489"},
+      {"retired branch instructions", "98528445"},
+      {"branch misses", "7415437"},
+      {"total page faults", "574"},
+      {"minor page faults", "242"},
+      {"major page faults", "473"},
+      {"context switches", "4"},
+      {"L1 data cache read accesses", "369545"},
+      {"L1 instruction cache read accesses", "841616"},
+      {"L1 data cache prefetch accesses", "261485"},
+      {"L1 instruction cache prefetch accesses", "2117485"}
+    };
+
+    string returnString; //create the string that will be returned
+    int size = sizeof(allEvents)/sizeof(*allEvents); //get the size of the array
+    //loop through the dummy data and format it according to if it's JSON or not
+    if (JSON) {
+      returnString += "{";
+      for (int i = 0; i < size; i++) {
+        returnString += "\"" + allEvents[i][0];
+        returnString += "\": " + allEvents[i][1];
+        if (i + 1 != size) returnString += ", ";
+      }
+      returnString += "}";
+    } else {
+      for (int i = 0; i < size; i++) {
+        returnString += allEvents[i][0];
+        returnString += ": " + allEvents[i][1];
+        if (i + 1 != size) returnString += "; ";
+      }
+    }
+    return returnString;
+  }
+
+
   // Testing function to run hash tables with parameters.
   template <typename T, typename U>
-  void runHash(ClosedHashTable<T, U> &&hashObj) {
-    cout << "Running closed hash table:" << endl;
-    cout << "Capacity: " << hashObj.getCapacity() << endl;
-    cout << "Probing Type: " << hashObj.getProbingType() << endl;
-    cout << "Hash Table Fullness: " << hashObj.getHashTableFullness() << endl;
-    cout << "Filling up hash table with values to " << hashObj.getHashTableFullness() << " percent." << endl;
-    cout << "Testing CRUD operations with " << hashObj.getCRUDTestAmount() << " values." << endl;
-    // Filling up hash table is outside of the timmer.
+  string runHash(ClosedHashTable<T, U> &&hashObj) {
     auto t1 = std::chrono::high_resolution_clock::now();
+  #ifdef linux
+    if (includePerf == "true") {
+      //reset the perf registers
+      ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
+      //start recording on the perf registers
+      ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
 
-    //runing adding and deleting stuff
-    hashObj.crudOperation(hashObj.getCRUDTestAmount());
+      hashObj.crudOperation(hashObj.getCRUDTestAmount());
 
+      //stop recording on the perf registers
+      ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
+    } else { //don't record perf values if not specified
+
+      hashObj.crudOperation(hashObj.getCRUDTestAmount());
+
+    }
+  #endif
     auto t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
-    cout << "Hash Table CRUD operations completed in " << fp_ms.count() << " milliseconds" << endl;
-    cout << endl;
-  }
-}
 
+    string output;
+    output += "{ \"algorithmName\": \"Closed Hash Tables\", ";
+    output += "\"algorithmCapacity\": \"" + std::to_string(hashObj.getCapacity()) + ", ";
+    output += "\"language\": \"c++\", "; 
+    output += "\"probingType\": \"" + hashObj.getProbingType() + "\", ";
+    output += "\"algorithmRunTime_ms\": " + std::to_string(fp_ms.count()) + ", ";
+    output += "\"perfData\": "; //always return the perf data object regardless. If no perf data, perf object will just be empty
+
+    if (hashObj.getPerfOption() == "sample") {
+        output += hashObj.getDummyPerfData(true);
+    }
+  #ifdef linux
+    else if (includePerf == "true") {
+        output += perf.getBufferJSON();
+    }
+  #endif
+    else {
+      output += "{}";
+    }
+
+    return output + "}";
+  }
+
+
+}
 
 # endif
 
-// int main() {
-  // cout << "RUNNING HASH TABLES..." << endl << endl;
-
-  // runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000));
-  // runHash(AlgoGauge::ClosedHashTable<string, string> (10000, "linear", 0, 5000));
-  // runHash(AlgoGauge::ClosedHashTable<string, string> (10000, "linear", 0, 5000));
+int main() {
+  cout << runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "sample")) << endl;
 
   // cout << "Testing CRUD Operation Method..." << endl;
   // hashtable1.crudOperation();
@@ -332,7 +474,6 @@ namespace AlgoGauge {
   // cout << endl;
 
   // cout << "testing size method." << endl;
-  // AlgoGauge::ClosedHashTable<string, string> hashtable2(100, "linear", 50);
   // cout << "the hash table is " << hashtable2.getAmountFilled() << "\% filled" << endl; 
   // cout << endl;
 
@@ -358,4 +499,4 @@ namespace AlgoGauge {
   // runHash(AlgoGauge::ClosedHashTable<string, string>(100, "linear", 50));
 
   // return 0;
-// }
+}
