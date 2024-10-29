@@ -56,30 +56,35 @@ namespace AlgoGauge {
       const string  includePerf = "sample");
     ~ClosedHashTable();
 
-    void    crudOperation(const int);
+    // Public Funtions
+    void    	crudOperation(const int);
 
     // Getters
-    int     getHashTableFullness();
-    int     getCapacity();
-    string  getProbingType();
-    float   getAmountFilled();
-    int     getCRUDTestAmount();
-    string  getPerfOption();
-    string  getDummyPerfData(bool JSON);
+    int     	getHashTableFullness();
+    int     	getCapacity();
+    string  	getProbingType();
+    float   	getAmountFilled();
+    int     	getCRUDTestAmount();
+    string  	getPerfOption();
+    string  	getDummyPerfData(bool JSON);
 
+    // Public Data Members
+  #ifdef linux
+    Perf::Perf 	perf; // This is where perf object get's created.
+  #endif
 
   private:
     // Hash Table methods
-    void    create(const T& key, const U& value);
-    U       retrieve(const T& key) const;
-    void    destroy(const T& key);
+    void    	create(const T& key, const U& value);
+    U       	retrieve(const T& key) const;
+    void    	destroy(const T& key);
 
     // Testing methods
-    void    fillHashTable();
-    void    loadValues(const int amount);
-    void    destroyValues(const int amount, const bool onlyExist);
-    void    lookupValues(const int amount, const bool onlyExist);
-    void    loadPerf();
+    void    	fillHashTable();
+    void    	loadValues(const int amount);
+    void    	destroyValues(const int amount, const bool onlyExist);
+    void    	lookupValues(const int amount, const bool onlyExist);
+    void    	loadPerf();
 
     // Private data members
     int*        statusArray = nullptr;
@@ -92,9 +97,6 @@ namespace AlgoGauge {
     int         hash_table_fullness = 0; // default hash table fullness.
     int         amountFilled = 0;
     int         CRUDTestAmount;
-  #ifdef linux
-    Perf::Perf  perf; // This is where perf object get's created.
-  #endif
   };
 
 
@@ -408,16 +410,16 @@ namespace AlgoGauge {
   string runHash(ClosedHashTable<T, U> &&hashObj) {
     auto t1 = std::chrono::high_resolution_clock::now();
   #ifdef linux
-    if (includePerf == "true") {
+    if (hashObj.getPerfOption() == "true") {
       //reset the perf registers
-      ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
+      ioctl(hashObj.perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
       //start recording on the perf registers
-      ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
+      ioctl(hashObj.perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
 
       hashObj.crudOperation(hashObj.getCRUDTestAmount());
 
       //stop recording on the perf registers
-      ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
+      ioctl(hashObj.perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
     } else { //don't record perf values if not specified
 
       hashObj.crudOperation(hashObj.getCRUDTestAmount());
@@ -439,8 +441,8 @@ namespace AlgoGauge {
         output += hashObj.getDummyPerfData(true);
     }
   #ifdef linux
-    else if (includePerf == "true") {
-        output += perf.getBufferJSON();
+    else if (hashObj.getPerfOption() == "true") {
+        output += hashObj.perf.getBufferJSON();
     }
   #endif
     else {
@@ -456,7 +458,7 @@ namespace AlgoGauge {
 # endif
 
 int main() {
-  cout << runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "sample")) << endl;
+  cout << runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "true")) << endl;
 
   // cout << "Testing CRUD Operation Method..." << endl;
   // hashtable1.crudOperation();
