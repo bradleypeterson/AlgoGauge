@@ -6,7 +6,9 @@
 #include <sstream>
 #include <vector>
 #include <memory>  // For std::unique_ptr
-# include <assert.h>
+#include <assert.h>
+#include <algorithm>
+#include <cctype>
 
 #include "../dependencies/subprocess.h"
 #include "../algorithms/sort_7algs.cpp"
