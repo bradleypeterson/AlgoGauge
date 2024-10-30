@@ -39,7 +39,7 @@ std::string runCPlusPlusProgram(
 
 ) {
 	std::unique_ptr<Sorting::BaseSort<unsigned int>> SortingAlgorithm;
-
+	std::cout << includePerf << "perf";
     //Essentially this is a switch case block that determines which algorithm to create and return
 	if (algorithmName == "bubble" || algorithmName == "default") SortingAlgorithm = std::make_unique<Sorting::Bubble<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "selection") SortingAlgorithm = std::make_unique<Sorting::Selection<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
@@ -174,7 +174,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	// int x = 7;
     // assert (x==5);
-	std::string includePerf = std::to_string(algorithmsController.Perf);
+	std::string includePerf = algorithmsController.Perf ? "true" : "false";
 	if(algorithmsController.PerfSample){
 		includePerf = "sample";
 	}

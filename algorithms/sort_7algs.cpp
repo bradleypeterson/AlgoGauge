@@ -211,6 +211,7 @@ namespace Sorting {
     void BaseSort<T>::loadPerf() {
         
 #ifdef linux
+	//:cout << PERF_COUNT_HW_CPU_CYCLES;
         //CPU Hardware Events
         perf.addNewPerfEvent("cpu cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
         perf.addNewPerfEvent("bus cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES);
@@ -338,6 +339,7 @@ namespace Sorting {
         auto startTime = std::chrono::high_resolution_clock::now(); //record the start time counter
 #ifdef linux
         if (includePerf == "true") {
+		std::cout << "C++ Running with perf" << std::endl;
             //reset the perf registers
             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
             //start recording on the perf registers
