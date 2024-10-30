@@ -1,5 +1,6 @@
 /**
- * @brief TODO
+ * @brief This file houses all the Algorithm classes and functions that are available to be used
+ * @note This file contains some algorithm classes that are not currently in use. At the time of this writing, these algorithms were out of scope to implement
  * @authors Brad Peterson Ph.D., John Z. DeGrey, et al.
  * @copyright Weber State University
  */
@@ -47,8 +48,10 @@ namespace AlgoGauge {
             "Ordered"
     };
 
-
-    template<typename T>
+    /**
+     * The Base Abstract Class that all sorting algorithms should inherit from
+     */
+    template <typename T>
     class BaseSort {
     public:
         //constructors and destructors
@@ -120,6 +123,15 @@ namespace AlgoGauge {
         void loadPerf();
     };
 
+    /**
+     * Default and only constructor for this ABC
+     * @param sortName The name of the sort
+     * @param capacity The number of items to sort
+     * @param canonicalName A canonical name to provide to keep track of each sorting algorithm
+     * @param verbose Whether to print out everything or not
+     * @param includeValues Whether to include values in the output or not
+     * @param includePerf Whether to include perf values in the output or not
+     */
     template<typename T>
     BaseSort<T>::BaseSort(
             const string &sortName,
@@ -130,7 +142,7 @@ namespace AlgoGauge {
             const string &includePerf
     ) {
         this->sortName = sortName;
-        if (capacity > 0 && capacity < UINT32_MAX) this->capacity = capacity;
+        if (capacity > 0 && capacity < UINT32_MAX) this->capacity = capacity; //make sure capacity is more than 0 and less than an unsigned 32 bit int
         else throw std::invalid_argument("Length must be greater than 0 and less than " + std::to_string(UINT32_MAX));
         this->arr = new T[capacity];
         this->valuesPriorToSort = new T[capacity];
@@ -140,15 +152,21 @@ namespace AlgoGauge {
         this->verbose = verbose;
         this->includeValues = includeValues;
         this->includePerf = includePerf;
-        this->loadPerf();
+        this->loadPerf(); //initialize perf setup
     }
 
+    /**
+     * Default and only destructor. Deletes all dynamic memory
+     */
     template<typename T>
     BaseSort<T>::~BaseSort() {
         delete[] arr;
         delete[] valuesPriorToSort;
     }
 
+    /**
+     * This loads random values into the set to be sorted
+     */
     template<typename T>
     void BaseSort<T>::loadRandomValues() {
         algorithmOption = AlgorithmOptions::randomSet;
@@ -160,6 +178,9 @@ namespace AlgoGauge {
         }
     }
 
+    /**
+     * This loads the same random value to the whole set of values to be sorted
+     */
     template<typename T>
     void BaseSort<T>::loadRepeatedValues() {
         algorithmOption = AlgorithmOptions::repeatedSet;
@@ -173,6 +194,9 @@ namespace AlgoGauge {
             arr[i] = valuesPriorToSort[i] = randNum; //We copy this so that we can have a history before sorting
     }
 
+    /**
+     * This loads chunks of random and repeated data to the set of values to be sorted
+     */
     template<typename T>
     void BaseSort<T>::loadChunkValues() {
         algorithmOption = AlgorithmOptions::chunkSet;
@@ -190,8 +214,12 @@ namespace AlgoGauge {
         }
     }
 
+    /**
+     * Initializes perf data. Sets which hardware and software events to collect from. (Remove some of these if your system has too little performance CPU registers)
+     */
     template<typename T>
     void BaseSort<T>::loadPerf() {
+        
 #ifdef linux
         //CPU Hardware Events
         perf.addNewPerfEvent("cpu cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
@@ -233,9 +261,14 @@ namespace AlgoGauge {
 #endif
     }
 
+    /**
+     * Generates static perf data so that Perf data can be used on non-linux environments.
+     * @param JSON Whether the dummy data should be returned in JSON format
+     * @return Dummy data of static perf data
+     */
     template<typename T>
     string BaseSort<T>::getDummyPerfData(bool JSON) {
-        string allEvents[17][2] = {
+        string allEvents[17][2] = { //create the static dummy data
             {"PERF NOTE", "\"INCLUDED DATA IS DUMMY DATA!\""},
             {"cpu cycles", "5432316545"},
             {"bus cycles", "1561896"},
@@ -255,8 +288,9 @@ namespace AlgoGauge {
             {"L1 instruction cache prefetch accesses", "2117485"}
         };
 
-        string returnString;
-        int size = sizeof(allEvents)/sizeof(*allEvents);
+        string returnString; //create the string that will be returned
+        int size = sizeof(allEvents)/sizeof(*allEvents); //get the size of the array
+        //loop through the dummy data and format it according to if it's JSON or not
         if (JSON) {
             returnString += "{";
             for (int i = 0; i < size; i++) {
@@ -275,18 +309,27 @@ namespace AlgoGauge {
         return returnString;
     }
 
+    /**
+     * This loads values that are already sorted in reverse order
+     */
     template<typename T>
     void BaseSort<T>::loadReversedValues() {
         algorithmOption = AlgorithmOptions::reversedSet;
         for (unsigned int i = capacity; i > 0; i--) arr[i - 1] = valuesPriorToSort[i - 1] = i - 1;
     }
 
+    /**
+     * This loads values that are already sorted in order
+     */
     template<typename T>
     void BaseSort<T>::loadOrderedValues() {
         algorithmOption = AlgorithmOptions::orderedSet;
         for (unsigned int i = 0; i < capacity; i++) arr[i] = valuesPriorToSort[i] = i;
     }
 
+    /**
+     * This verifies the set is sorted or not.
+     */
     template<typename T>
     void BaseSort<T>::verifySort() const {
         for (unsigned int i = 0; i < capacity - 1; i++) {
@@ -296,35 +339,47 @@ namespace AlgoGauge {
         }
     }
 
+    /**
+     * This runs the sorting algorithm and captures the results
+     */
     template<typename T>
     void BaseSort<T>::runAndCaptureSort() {
         if (verbose) cout << "Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
-        auto startTime = std::chrono::high_resolution_clock::now();
+        auto startTime = std::chrono::high_resolution_clock::now(); //record the start time counter
 #ifdef linux
         if (includePerf == "true") {
+            //reset the perf registers
             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
+            //start recording on the perf registers
             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
             runSort();
+            //stop recording on the perf registers
             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
-        } else {
-#endif
-        runSort();
-#ifdef linux
+        } else { //don't record perf values if not specified
+            runSort();
         }
+#else
+    runSort();
 #endif
 
-        auto stopTime = std::chrono::high_resolution_clock::now();
+
+        auto stopTime = std::chrono::high_resolution_clock::now(); //record the stop time counter
         if (verbose) cout << "Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         verifySort();
         if (verbose) cout << "Sort: \"" << sortName << "\"" << getCanonicalName() << "Verified!" << endl;
-        executionTime = stopTime - startTime;
+        executionTime = stopTime - startTime; //get the wall time or execution time
 #ifdef linux
-        perf.readBuffer();
+        perf.readBuffer(); //read the data collected
 #endif
     }
 
+    /**
+     * Returns the result of the sort in string format
+     * @return The result of the sort in string format
+     */
     template<typename T>
     string BaseSort<T>::getStringResult() {
+        //add perf data if perf is specified, otherwise, create the perfString as an empty string
         string perfString = "; Perf Data: ";
         if (includePerf == "sample") {
             perfString += getDummyPerfData();
@@ -336,6 +391,7 @@ namespace AlgoGauge {
 #endif
         else perfString = "";
 
+        //return the sort results as a human-readable string
         return string("Sort '")
                + sortName
                + string("' ")
@@ -350,6 +406,11 @@ namespace AlgoGauge {
                + perfString;
     }
 
+    /**
+     * Gets the values from before the sort occurred and after the sort occurred. This is only recommended for debugging
+     * purposes
+     * @return The values from before the sort occurred and after the sort occurred.
+     */
     template<typename T>
     string BaseSort<T>::getValuesRange() {
         string returnString;
@@ -369,11 +430,18 @@ namespace AlgoGauge {
         return returnString;
     }
 
+    /**
+     * Prints the values before and after the sort to STDOUT
+     */
     template<typename T>
     void BaseSort<T>::printValues() const {
         cout << "Values for sort: \"" << sortName << "\"" + getCanonicalName() << getValuesRange() << endl;
     }
 
+    /**
+     * Gets the result of a sort in JSON format
+     * @return A string object containing the results of a sort in JSON format
+     */
     template<typename T>
     string BaseSort<T>::getJSONResult() {
         string output = "{";
@@ -388,20 +456,20 @@ namespace AlgoGauge {
                 output += std::to_string(valuesPriorToSort[i]) + ",";
             }
 
-            output.pop_back();
+            output.pop_back(); //remove extraneous commas
             output += R"(],"valuesAfterSort": [)";
 
             for (unsigned int i = 0; i < capacity; i++) {
                 output += std::to_string(arr[i]) + ",";
             }
 
-            output.pop_back();
+            output.pop_back(); //remove extraneous commas
             output += "],";
         }
 
         output += "\"algorithmRunTime_ms\": " + std::to_string(executionTime.count());
 
-        output += ", \"perfData\": ";
+        output += ", \"perfData\": "; //always return the perf data object regardless. If no perf data, perf object will just be empty
         if (includePerf == "sample") {
             output += getDummyPerfData(true);
         }
@@ -415,6 +483,11 @@ namespace AlgoGauge {
         return output + "}";
     }
 
+    /**
+     * This both prints the output to STDOUT and to the specified file
+     * @param filePath The path to the file to write the output to
+     * @param append Whether or not this should overwrite the file or append to it
+     */
     template<typename T>
     void BaseSort<T>::printSortToFile(const std::string &filePath, const bool &append) const {
         std::ofstream outFile;
@@ -423,6 +496,9 @@ namespace AlgoGauge {
         outFile.close();
     }
 
+    /**
+     * This starts the sort and prints out the results
+     */
     template<typename T>
     void BaseSort<T>::runAndPrintSort() {
         if (includeValues) cout << "Values before sort:" << endl << getValuesRange() << endl;
@@ -431,12 +507,21 @@ namespace AlgoGauge {
         cout << getStringResult() << endl;
     }
 
+    /**
+     * This starts the sort and writes the results to a file
+     * @param filePath The path to the file to write the output to
+     * @param append Whether or not this should overwrite the file or append to it
+     */
     template<typename T>
     void BaseSort<T>::runAndPrintFileSort(const std::string &filePath, const bool &append) {
         runAndCaptureSort();
         printSortToFile(filePath, append);
     }
 
+    /**
+     * This starts the sort and returns the results as a JSON formatted string
+     * @return a string of the sorting results formatted in JSON
+     */
     template<typename T>
     string BaseSort<T>::runAndGetJSONSort() {
         runAndCaptureSort();
@@ -445,6 +530,9 @@ namespace AlgoGauge {
 
 
 //Algorithms
+/**
+ * This is the class for handling the Bubble Sort Algorithm.
+ */
     template<typename T>
     class Bubble : public BaseSort<T> {
     public:
@@ -461,6 +549,9 @@ namespace AlgoGauge {
     private:
     };
 
+    /**
+     * The logic for executing the bubble sort algorithm.
+     */
     template<typename T>
     void Bubble<T>::runSort() {
         for (unsigned int round = 0; round < this->capacity - 1; round++) {
@@ -474,6 +565,9 @@ namespace AlgoGauge {
         }
     }
 
+    /**
+     * This is the class for handling the Selection Sort Algorithm.
+     */
     template<typename T>
     class Selection : public BaseSort<T> {
     public:
@@ -490,6 +584,9 @@ namespace AlgoGauge {
     private:
     };
 
+    /**
+     * The logic for executing the selection sort algorithm.
+     */
     template<typename T>
     void Selection<T>::runSort() {
         // The outer loop's job is to...
@@ -508,6 +605,9 @@ namespace AlgoGauge {
         }
     }
 
+    /**
+     * This is the class for handling the Insertion Sort Algorithm.
+     */
     template<typename T>
     class Insertion : public BaseSort<T> {
     public:
@@ -524,6 +624,9 @@ namespace AlgoGauge {
     private:
     };
 
+    /**
+     * The logic for executing the insertion sort algorithm.
+     */
     template<typename T>
     void Insertion<T>::runSort() {
         // The outer loop's job is to...
@@ -542,6 +645,9 @@ namespace AlgoGauge {
         }
     }
 
+    /**
+     * This is the class for handling the Quick Sort Algorithm.
+     */
     template<typename T>
     class Quick : public BaseSort<T> {
     public:
@@ -561,11 +667,21 @@ namespace AlgoGauge {
         unsigned int quickSortPartition(unsigned int first, unsigned int last);
     };
 
+    /**
+     * This is the starter function for the quick sort algorithm.
+     * @IMPORTANT Only run this function as it starts the other is a recursive function
+     */
     template<typename T>
     void Quick<T>::runSort() {
         runSort(0, this->capacity);
     }
 
+    /**
+     * This is the recursive function for the quick sort algorithm.
+     * @param first The first element iterator (should be 0 if first recursion call)
+     * @param last The last element iterator + 1 (also for pivots)
+     * @IMPORTANT DO NOT RUN THIS FUNCTION! IT IS TO BE CALLED FROM THE runSort() WITHOUT ANY PARAMS!!!
+     */
     template<typename T>
     void Quick<T>::runSort(unsigned int first, unsigned int last) {
         if (first < last) {
@@ -602,7 +718,9 @@ namespace AlgoGauge {
         return smallIndex;
     }
 
-
+    /**
+     * This is the class for handling the Heap Sort Algorithm.
+     */
     template<typename T>
     class Heap : public BaseSort<T> {
     public:
@@ -642,6 +760,9 @@ namespace AlgoGauge {
         }
     }
 
+    /**
+     * The logic for executing the heap sort algorithm.
+     */
     template<typename T>
     void Heap<T>::runSort() {
 
@@ -663,6 +784,9 @@ namespace AlgoGauge {
         }
     }
 
+    /**
+     * This is the class for handling the Merge Sort Algorithm.
+     */
     template<typename T>
     class Merge : public BaseSort<T> {
     public:
@@ -681,11 +805,21 @@ namespace AlgoGauge {
     };
 
 
+    /**
+     * This is the starter function for the merge sort algorithm.
+     * @IMPORTANT Only run this function as it starts the other is a recursive function
+     */
     template<typename T>
     void Merge<T>::runSort() {
         runSort(0, this->capacity);
     }
 
+    /**
+     * This is the recursive function for the merge sort algorithm.
+     * @param firstIndex The first element iterator (should be 0 if first recursion call)
+     * @param lastIndex The last element iterator + 1
+     * @IMPORTANT DO NOT RUN THIS FUNCTION! IT IS TO BE CALLED FROM THE runSort() WITHOUT ANY PARAMS!!!
+     */
     template<typename T>
     void Merge<T>::runSort(unsigned int firstIndex, unsigned int lastIndex) {
         if (lastIndex - firstIndex < 2) {
@@ -736,6 +870,11 @@ namespace AlgoGauge {
         delete[] rightArray;
 
     }
+
+
+// THE REST ARE CURRENTLY NOT USED!
+
+
 
     template<typename T, unsigned int K>
     class ArrayKMerge : public BaseSort<T> {
@@ -978,6 +1117,12 @@ namespace AlgoGauge {
 
     }
 
+    /**
+     * Runs and prints out the sort. This is no longer used. This was included in the original
+     * file that was handed to me by Brad. Since I converted this file to a library, this function
+     * now only exists as reference or to be used as a quick way to understand how these work.
+     * @param sortObj The sorting algorithm to process
+     */
     template<typename T>
     void runMySort(BaseSort<T> &&sortObj) {
         cout << "Running sort: " << sortObj.getName() << endl;
@@ -997,7 +1142,11 @@ namespace AlgoGauge {
 
 # endif
 
-/* Unable to link to this with this other main() function.
+/*
+ * This is from the original file that Brad handed over to me. This block isn't useful as a library,
+ * but can help to visualize if needed.
+ *
+ * Unable to link to this with this other main() function.
    If you uncomment this portion, make sure to only compile
    and run this file. Otherwise, you'll be greeted with a
    lovely compile error.
