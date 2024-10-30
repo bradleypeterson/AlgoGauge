@@ -200,10 +200,10 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 			continue;
 		}
 
-		const std::string selectedSortingAlgorithm = std::format("--algorithm={}", algo.Algorithm);
+		const std::string selectedSortingAlgorithm = "--algorithm=" + algo.Algorithm;
 
 		const std::string selectedArrayStrategy = "--strategy=" + algo.ArrayStrategyString;
-		const std::string selectedArrayLength = std::format("--length={}", algo.ArrayLength);
+		const std::string selectedArrayLength = "--length=" + std::to_string(algo.ArrayLength);
 		
 		const std::string includeJSON = algorithmsController.Json ? "--json": "--ignore";
 
