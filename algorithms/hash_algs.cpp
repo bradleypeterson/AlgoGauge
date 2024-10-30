@@ -38,8 +38,10 @@ using std::pair;
        load test (bool)
        worst probe count or time to complete (string)
 
+
     sort algo example: 
       else if (algorithmName == "heap") return new Sorting::Heap<unsigned int>(length, canonicalName, verbose, includeValues, includePerf);
+
 */
 
 namespace AlgoGauge {
@@ -47,6 +49,7 @@ namespace AlgoGauge {
   template <typename T, typename U>
   class ClosedHashTable {
   public:
+
     ClosedHashTable(
       const int     capacity, 
       const string  probing_Type, 
@@ -111,7 +114,6 @@ namespace AlgoGauge {
     this->verbose = verbose;
     this->includePerf = includePerf;
     this->loadPerf(); // initilize perf setup
-
     this->statusArray = new int[capacity];
     for (int i = 0; i < capacity; i++) {
       statusArray[i] = 0;
@@ -218,7 +220,7 @@ namespace AlgoGauge {
     }
   }
 
-
+  
   // load values method
   template <typename T, typename U>
   void ClosedHashTable<T, U>::loadValues(const int amount){
@@ -276,7 +278,7 @@ namespace AlgoGauge {
     return this->includePerf;
   }
 
-
+  
   // returns a float of how full the hash table is.
   template <typename T, typename U>
   float ClosedHashTable<T, U>::getAmountFilled() {
@@ -457,8 +459,9 @@ namespace AlgoGauge {
 
 # endif
 
-int main() {
-  cout << runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "true")) << endl;
+// int main() {
+  // cout << runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "true")) << endl;
+
 
   // cout << "Testing CRUD Operation Method..." << endl;
   // hashtable1.crudOperation();
@@ -476,6 +479,7 @@ int main() {
   // cout << endl;
 
   // cout << "testing size method." << endl;
+  // AlgoGauge::ClosedHashTable<string, string> hashtable2(100, "linear", 50);
   // cout << "the hash table is " << hashtable2.getAmountFilled() << "\% filled" << endl; 
   // cout << endl;
 
@@ -501,4 +505,4 @@ int main() {
   // runHash(AlgoGauge::ClosedHashTable<string, string>(100, "linear", 50));
 
   // return 0;
-}
+// }

@@ -5,12 +5,12 @@
  * @copyright Weber State University
  */
 
-#include <iostream>
-#include <random>
 
 #ifndef ALGOGAUGE_RANDOMNUM_HPP
 #define ALGOGAUGE_RANDOMNUM_HPP
 
+#include <iostream>
+#include <random>
 /**
  * Initial class for holding all the Random Number generators
  * @tparam T defaults to unsigned 32 bit int. May use something different if preferred
