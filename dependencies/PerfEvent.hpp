@@ -70,17 +70,13 @@ struct PerfEvent {
    std::chrono::time_point<std::chrono::steady_clock> stopTime;
 
    PerfEvent() {
-      uint64_t apple_avalanche_pmu_type = static_cast<uint64_t>(getPMUType("/sys/devices/platform/pmu-p/apple_avalanche_pmu/type"));
+      registerCounter("cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+      registerCounter("kcycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, KERNEL);
+      registerCounter("instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
+      registerCounter("L1-misses", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D|(PERF_COUNT_HW_CACHE_OP_READ<<8)|(PERF_COUNT_HW_CACHE_RESULT_MISS<<16));
+      registerCounter("LLC-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+      registerCounter("branch-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
       registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
-      registerCounter("context-switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
-      cout << apple_avalanche_pmu_type << PERF_COUNT_HW_CPU_CYCLES;
-      registerCounter("cpu-cycles", apple_avalanche_pmu_type, PERF_COUNT_HW_CPU_CYCLES);
-      // registerCounter("kcycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, KERNEL);
-      // registerCounter("instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
-      // registerCounter("L1-misses", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D|(PERF_COUNT_HW_CACHE_OP_READ<<8)|(PERF_COUNT_HW_CACHE_RESULT_MISS<<16));
-      // registerCounter("LLC-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
-      // registerCounter("branch-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
-      // registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
       // additional counters can be found in linux/perf_event.h
 
       for (unsigned i=0; i<events.size(); i++) {
@@ -94,17 +90,6 @@ struct PerfEvent {
          }
       }
    }
-
-   int getPMUType(const std::string& pmu_path) {
-        std::ifstream pmu_file(pmu_path);
-        int pmu_type;
-        if (pmu_file >> pmu_type) {
-            return pmu_type;
-        } else {
-            std::cerr << "Failed to read PMU type from " << pmu_path << std::endl;
-            return -1;
-        }
-    }
 
    void registerCounter(const std::string& name, uint64_t type, uint64_t eventID, EventDomain domain = ALL) {
       names.push_back(name);
@@ -183,7 +168,7 @@ struct PerfEvent {
    template <typename T>
    static void printCounter(std::ostream& headerOut, std::ostream& dataOut, std::string name, T counterValue, bool addComma=true) {
       std::stringstream stream;
-      stream << std::fixed << std::setprecision(2) << counterValue;
+      stream << std::fixed << std::setprecision(8) << counterValue;
       PerfEvent::printCounter(headerOut,dataOut,name,stream.str(),addComma);
    }
 
@@ -246,6 +231,24 @@ struct PerfEvent {
       printCounterVertical(infoOut,"IPC",getIPC(),eNameWidth);
       printCounterVertical(infoOut,"CPUs",getCPUs(),eNameWidth);
       printCounterVertical(infoOut,"GHz",getGHz(),eNameWidth);
+   }
+
+    std::string printJsonString(uint64_t normalizationConstant = 1, uint8_t precision= 6){
+      std::string jsonString = "{";
+      for(unsigned i=0; i<events.size(); i++){
+         std::stringstream stream;
+         stream << std::setprecision(precision) << events[i].readCounter()/static_cast<double>(normalizationConstant);
+         jsonString += "\"" + names[i] + "\":" + stream.str() + ",";
+      }
+      std::ostringstream stream;
+      stream << "\"scale\":" << std::setprecision(precision) << normalizationConstant << ",";
+      stream << "\"GHz\":" << std::fixed << std::setprecision(precision) << getGHz() << ",";
+      stream << "\"IPC\":" << std::fixed << std::setprecision(precision) << getIPC() << ",";
+      stream << "\"CPUs\":" << std::fixed << std::setprecision(precision) << getCPUs();
+
+      jsonString += stream.str() + "}";
+
+      return jsonString;
    }
 };
 
@@ -333,6 +336,8 @@ struct PerfEventBlock {
       std::cout << data.str() << std::endl;
    }
 };
+
+
 
 #else
 #include <ostream>
