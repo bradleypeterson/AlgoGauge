@@ -14,7 +14,6 @@
 #include <string>
 #include <chrono>
 #include "RandomNum.hpp"
-#include "../dependencies/Perf.hpp"
 #include "../AlgoGaugeDetails.hpp"
 #include "../dependencies/PerfEvent.hpp"
 
@@ -290,6 +289,7 @@ namespace Sorting {
      */
     template<typename T>
     void BaseSort<T>::runAndCaptureSort() {
+
         PerfEvent perfObject;
         if (verbose) cout << "C++ Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         
@@ -310,6 +310,7 @@ namespace Sorting {
 
         if (includePerf == "true") this->perfObjectString = perfObject.getPerfJSONString();
 
+        if(includePerf == "sample") this->perfObjectString = perfObject.getPerfJSONStringDummy();
 // #ifdef linux
 //         if (includePerf == "true") {
 // 		    // std::cout << "C++ Running with perf" << std::endl;

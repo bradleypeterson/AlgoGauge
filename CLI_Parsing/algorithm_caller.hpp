@@ -90,6 +90,7 @@ std::string runCPlusPlusProgram(
 	return jsonDetails;
 }
 
+
 std::string printChildProcessSTDOUT(struct subprocess_s &process, const std::string& perfDetails){
 	std::string jsonString;
 	std::string stdOUT;
@@ -178,7 +179,6 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
         std::cerr << "Program exited with code " << exit_code << std::endl;
     }
 
-	e.printReportVertical(std::cout, 1);
 	std::string stdOUT = printChildProcessSTDOUT(process, perf ? e.getPerfJSONString(): "{}");
 
 	if(verbose && perf){
@@ -201,16 +201,12 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 }
 
 
-void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
-	// int x = 7;
-    // assert (x==5);
+std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
+	std::string jsonResults;
 	std::string includePerf = algorithmsController.Perf ? "true" : "false";
 	if(algorithmsController.PerfSample){
 		includePerf = "sample";
 	}
-	
-	std::string jsonResults = "{\"algorithms\": ["; //create the json results object even if not specified
-
 	for(auto algo: algorithmsController.SelectedSortingAlgorithms){
 
 		std::transform(algo.Language.begin(), algo.Language.end(), algo.Language.begin(), ::tolower);
@@ -248,7 +244,9 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 
 		if (algo.Language == "node" || algo.Language == "nodejs"|| algo.Language == "js" || algo.Language == "javascript"){
 			//node Algogauge.mjs -vTrue -c10 -aBubble -aMerge -c10 -sOrdered -sreversed -j -oTrue -c20 -aDefault -sordered --file="../temp/javascript.txt"
-			const char* program_arguments[] = {"perf","stat","node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
+			//			const char* program_arguments[] = {"perf", "stat","node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
+
+			const char* program_arguments[] = {"node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
 			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf, algo.Language);
 			continue;
 
@@ -268,13 +266,23 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 			program_path = "../MultiLanguage/testing/rust_binary";
 		}
 
-
 		const char* program_arguments[] = {program_path.c_str(), selectedSortingAlgorithm.c_str(), nullptr};
 		std::cout << program_path;
 		jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf, algo.Language);
 
 	}
+	return jsonResults;
+}
+
+
+void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
+	// int x = 7;
+    // assert (x==5);
 	
+	std::string jsonResults = "{\"algorithms\": ["; //create the json results object even if not specified
+
+	
+	jsonResults += runSortingAlgorithms(algorithmsController);
 	jsonResults.pop_back(); //remove extraneous comma
 	jsonResults += "]}"; //finish json string
 

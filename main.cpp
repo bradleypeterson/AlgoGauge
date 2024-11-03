@@ -24,17 +24,14 @@ int main(int argc, char *argv[]) {
      *      ./AlgoGauge --algo quick --len 1000 --algo bubble --len 1000 --algo selection --len 1000 --algo insertion --len 1000 --algo merge --len 1000 --algo heap --len 1000 -rrrrrr
      */    
 
-    PerfEvent e;
-    e.startCounters();
-    int n = 10;
-    for (int i=0; i<n; i++){
-        sleep(0.01);
-    }    
-    e.stopCounters();
-    e.printReport(std::cout, n); // use n as scale factor
-    // cout << e.getPerfJSONString(); // use n as scale factor
-    // e.getPrintReport();
-    cout <<e.getPerfRepotDummy();
+    // PerfEvent e;
+    // e.startCounters();
+    // int n = 10;
+    // for (int i=0; i<n; i++){
+    //     sleep(0.01);
+    // }    
+    // e.stopCounters();
+
     // std::cout << std::endl;
    
     runProgram(argc, argv);
