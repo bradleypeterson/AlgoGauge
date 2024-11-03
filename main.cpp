@@ -6,7 +6,6 @@
 
 #include "CLI_Parsing/CLI_Parser.hpp"
 #include "dependencies/PerfEvent.hpp"
-#include "PerfEvent.hpp"
 
 int main(int argc, char *argv[]) {
     /*
@@ -32,10 +31,11 @@ int main(int argc, char *argv[]) {
         sleep(0.01);
     }    
     e.stopCounters();
-    e.printReportVertical(std::cout, n); // use n as scale factor
-    cout << e.printJsonString(); // use n as scale factor
-
-    std::cout << std::endl;
+    e.printReport(std::cout, n); // use n as scale factor
+    // cout << e.getPerfJSONString(); // use n as scale factor
+    // e.getPrintReport();
+    cout <<e.getPerfRepotDummy();
+    // std::cout << std::endl;
    
     runProgram(argc, argv);
     return 0;  // returning 0 regardless of error

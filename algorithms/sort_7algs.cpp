@@ -16,6 +16,8 @@
 #include "RandomNum.hpp"
 #include "../dependencies/Perf.hpp"
 #include "../AlgoGaugeDetails.hpp"
+#include "../dependencies/PerfEvent.hpp"
+
 
 using std::cout;
 using std::cin;
@@ -81,15 +83,12 @@ namespace Sorting {
         void loadChunkValues();
         void loadReversedValues();
         void loadOrderedValues();
-        void printValues() const;
         void verifySort() const;
         void printSortToFile(const string &filePath, const bool &append = true) const;
         void runAndCaptureSort();
         void runAndPrintSort();
         void runAndPrintFileSort(const string &filePath, const bool &append = true);
-        string getDummyPerfData(bool JSON = false);
 
-        virtual void runSort() = 0; // Pure virtual function.
         // It makes the class **abstract**.  In other words,
         // nothing can instantiate an object of this class.
 
@@ -103,14 +102,16 @@ namespace Sorting {
         bool verbose;
         bool includeValues;
         string includePerf;
-#ifdef linux
-        Perf::Perf perf;
-#endif
+        string perfObjectString = "{}";
+
+        virtual void runSort() = 0; // Pure virtual function.
+        void printValues() const;
+
 
     private:
         unsigned int *valuesPriorToSort; //Stores the values prior to sorting
         std::chrono::duration<double, std::milli> executionTime;
-        void loadPerf();
+        // void loadPerf();
     };
 
     /**
@@ -142,7 +143,7 @@ namespace Sorting {
         this->verbose = verbose;
         this->includeValues = includeValues;
         this->includePerf = includePerf;
-        this->loadPerf(); //initialize perf setup
+        // this->loadPerf(); //initialize perf setup
     }
 
     /**
@@ -207,6 +208,7 @@ namespace Sorting {
     /**
      * Initializes perf data. Sets which hardware and software events to collect from. (Remove some of these if your system has too little performance CPU registers)
      */
+    /*
     template<typename T>
     void BaseSort<T>::loadPerf() {
         
@@ -249,55 +251,9 @@ namespace Sorting {
             (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
         );
 #endif
-    }
+    }*/
 
-    /**
-     * Generates static perf data so that Perf data can be used on non-linux environments.
-     * @param JSON Whether the dummy data should be returned in JSON format
-     * @return Dummy data of static perf data
-     */
-    template<typename T>
-    string BaseSort<T>::getDummyPerfData(bool JSON) {
-        string allEvents[17][2] = { //create the static dummy data
-            {"PERF NOTE", "\"INCLUDED DATA IS DUMMY DATA!\""},
-            {"cpu cycles", "5432316545"},
-            {"bus cycles", "1561896"},
-            {"cpu instructions", "5151651"},
-            {"cache references", "198456156"},
-            {"cache misses", "198415652"},
-            {"branch predictions", "51894156489"},
-            {"retired branch instructions", "98528445"},
-            {"branch misses", "7415437"},
-            {"total page faults", "574"},
-            {"minor page faults", "242"},
-            {"major page faults", "473"},
-            {"context switches", "4"},
-            {"L1 data cache read accesses", "369545"},
-            {"L1 instruction cache read accesses", "841616"},
-            {"L1 data cache prefetch accesses", "261485"},
-            {"L1 instruction cache prefetch accesses", "2117485"}
-        };
 
-        string returnString; //create the string that will be returned
-        int size = sizeof(allEvents)/sizeof(*allEvents); //get the size of the array
-        //loop through the dummy data and format it according to if it's JSON or not
-        if (JSON) {
-            returnString += "{";
-            for (int i = 0; i < size; i++) {
-                returnString += "\"" + allEvents[i][0];
-                returnString += "\": " + allEvents[i][1];
-                if (i + 1 != size) returnString += ", ";
-            }
-            returnString += "}";
-        } else {
-            for (int i = 0; i < size; i++) {
-                returnString += allEvents[i][0];
-                returnString += ": " + allEvents[i][1];
-                if (i + 1 != size) returnString += "; ";
-            }
-        }
-        return returnString;
-    }
 
     /**
      * This loads values that are already sorted in reverse order
@@ -334,34 +290,43 @@ namespace Sorting {
      */
     template<typename T>
     void BaseSort<T>::runAndCaptureSort() {
+        PerfEvent perfObject;
         if (verbose) cout << "C++ Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+        
         auto startTime = std::chrono::high_resolution_clock::now(); //record the start time counter
-#ifdef linux
-        if (includePerf == "true") {
-		std::cout << "C++ Running with perf" << std::endl;
-            //reset the perf registers
-            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
-            //start recording on the perf registers
-            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
-            runSort();
-            //stop recording on the perf registers
-            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
-        } else { //don't record perf values if not specified
-            runSort();
-        }
-#else
-    runSort();
-#endif
+        if (includePerf == "true") perfObject.startCounters();
 
+        runSort();
 
+        if (includePerf == "true") perfObject.stopCounters();
         auto stopTime = std::chrono::high_resolution_clock::now(); //record the stop time counter
+
         if (verbose) cout << "C++ Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+
         verifySort();
+
         if (verbose) cout << "C++ Sort: \"" << sortName << "\"" << getCanonicalName() << " Verified!" << endl;
-        executionTime = stopTime - startTime; //get the wall time or execution time
-#ifdef linux
-        perf.readBuffer(); //read the data collected
-#endif
+        executionTime = stopTime - startTime;
+
+        if (includePerf == "true") this->perfObjectString = perfObject.getPerfJSONString();
+
+// #ifdef linux
+//         if (includePerf == "true") {
+// 		    // std::cout << "C++ Running with perf" << std::endl;
+//             //reset the perf registers
+//             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
+//             //start recording on the perf registers
+//             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
+//             runSort();
+//             //stop recording on the perf registers
+//             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
+//         } else { //don't record perf values if not specified
+//             perfObject.startCounters();
+//             runSort();
+//         }
+// #else
+//     runSort();
+// #endif
     }
 
     /**
@@ -373,14 +338,16 @@ namespace Sorting {
         //add perf data if perf is specified, otherwise, create the perfString as an empty string
         string perfString = "; Perf Data: ";
         if (includePerf == "sample") {
-            perfString += getDummyPerfData();
+            // perfString += getDummyPerfData();
         }
+        else perfString = perfObjectString;
+
+
 #ifdef linux
-        else if (includePerf == "true") {
-            perfString += perf.getBufferString();
-        }
+        // else if (includePerf == "true") {
+        //     perfString += perfObjectString;           
+        // }
 #endif
-        else perfString = "";
 
         //return the sort results as a human-readable string
         return string("C++ Sort \"")
@@ -463,16 +430,8 @@ namespace Sorting {
         output += "\"algorithmRunTime_ms\": " + std::to_string(executionTime.count());
 
         output += ", \"perfData\": "; //always return the perf data object regardless. If no perf data, perf object will just be empty
-        if (includePerf == "sample") {
-            output += getDummyPerfData(true);
-        }
-#ifdef linux
-        else if (includePerf == "true") {
-            output += perf.getBufferJSON();
-        }
-#endif
-        else output += "{}";
-
+        output += perfObjectString;
+            
         return output + "}";
     }
 

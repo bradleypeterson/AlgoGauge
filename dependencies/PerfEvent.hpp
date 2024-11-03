@@ -25,7 +25,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #pragma once
 
-#if defined(__linux__)
 
 #include <chrono>
 #include <cstring>
@@ -69,26 +68,85 @@ struct PerfEvent {
    std::chrono::time_point<std::chrono::steady_clock> startTime;
    std::chrono::time_point<std::chrono::steady_clock> stopTime;
 
-   PerfEvent() {
-      registerCounter("cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
-      registerCounter("kcycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, KERNEL);
-      registerCounter("instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
-      registerCounter("L1-misses", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D|(PERF_COUNT_HW_CACHE_OP_READ<<8)|(PERF_COUNT_HW_CACHE_RESULT_MISS<<16));
-      registerCounter("LLC-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
-      registerCounter("branch-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
-      registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
-      // additional counters can be found in linux/perf_event.h
+   const std::vector<std::pair<std::string, std::string>> dummyData = {
+        {"task-clock", "364444262.00"},
+        {"context switches", "214.00"},
+        {"cycles", "595348804.49"},
+        {"kcycles", "170739620.86"},
+        {"instructions", "1009631347.96"},
+        {"L1-misses", "5583046.54"},
+        {"LLC-misses", "897165.96"},
+        {"branch predictions", "182104579.70"},
+        {"branch-misses", "3082415.94"},
+        {"cache references", "5131660.31"},
+        {"retired branch instructions", "161551834.08"},
+        {"total page faults", "10020.00"},
+        {"minor page faults", "10020.00"},
+        {"major page faults", "0.00"},
+        {"context switches", "214.00"},
+        {"scale", "1"},
+        {"IPC", "1.70"},
+        {"CPUs", "0.37"},
+        {"GHz", "1.63"}
+   };
 
-      for (unsigned i=0; i<events.size(); i++) {
-         auto& event = events[i];
-         event.fd = static_cast<int>(syscall(__NR_perf_event_open, &event.pe, 0, -1, -1, 0));
-         if (event.fd < 0) {
-            std::cerr << "Error opening counter " << names[i] << std::endl;
-            events.resize(0);
-            names.resize(0);
-            return;
+   PerfEvent(pid_t pid = 0) {
+      #if defined(__linux__)
+         registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
+         registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
+
+         registerCounter("cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+         registerCounter("kcycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, KERNEL);
+
+         registerCounter("instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
+
+         registerCounter("L1-misses", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D|(PERF_COUNT_HW_CACHE_OP_READ<<8)|(PERF_COUNT_HW_CACHE_RESULT_MISS<<16));
+         registerCounter("LLC-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+         registerCounter("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
+         registerCounter("branch-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
+
+         registerCounter("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
+         registerCounter("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
+
+         registerCounter("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
+         registerCounter("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
+         registerCounter("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
+         registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
+
+         // additional counters can be found in linux/perf_event.h
+         // std::vector<std::pair<std::string, std::string>> allEvents = {
+         //    {"PERF NOTE", "\"INCLUDED DATA IS DUMMY DATA!\""},
+         //    {"cpu cycles", "5432316545"},
+         //    {"bus cycles", "1561896"},
+         //    {"cpu instructions", "5151651"},
+         //    {"cache references", "198456156"},
+         //    {"cache misses", "198415652"},
+         //    {"branch predictions", "51894156489"},
+         //    {"retired branch instructions", "98528445"},
+         //    {"branch misses", "7415437"},
+         //    {"total page faults", "574"},
+         //    {"minor page faults", "242"},
+         //    {"major page faults", "473"},
+         //    {"context switches", "4"},
+         //    {"L1 data cache read accesses", "369545"},
+         //    {"L1 instruction cache read accesses", "841616"},
+         //    {"L1 data cache prefetch accesses", "261485"},
+         //    {"L1 instruction cache prefetch accesses", "2117485"},
+         //    {"scale", "1"},
+            
+         //    {"IPC", "1.80"}
+         // };
+         for (unsigned i=0; i<events.size(); i++) {
+            auto& event = events[i];
+            event.fd = static_cast<int>(syscall(__NR_perf_event_open, &event.pe, pid, -1, -1, 0)); //int syscall(SYS_perf_event_open, struct perf_event_attr *attr, pid_t pid, int cpu, int group_fd, unsigned long flags);
+            if (event.fd < 0) {
+               std::cerr << "Error opening counter " << names[i] << std::endl;
+               events.resize(0);
+               names.resize(0);
+               return;
+            }
          }
-      }
+      #endif
    }
 
    void registerCounter(const std::string& name, uint64_t type, uint64_t eventID, EventDomain domain = ALL) {
@@ -110,14 +168,16 @@ struct PerfEvent {
    }
 
    void startCounters() {
-      for (unsigned i=0; i<events.size(); i++) {
-         auto& event = events[i];
-         ioctl(event.fd, PERF_EVENT_IOC_RESET, 0);
-         ioctl(event.fd, PERF_EVENT_IOC_ENABLE, 0);
-         if (read(event.fd, &event.prev, sizeof(uint64_t) * 3) != sizeof(uint64_t) * 3)
-            std::cerr << "Error reading counter " << names[i] << std::endl;
-      }
-      startTime = std::chrono::steady_clock::now();
+      #if defined(__linux__)
+         for (unsigned i=0; i<events.size(); i++) {
+            auto& event = events[i];
+            ioctl(event.fd, PERF_EVENT_IOC_RESET, 0);
+            ioctl(event.fd, PERF_EVENT_IOC_ENABLE, 0);
+            if (read(event.fd, &event.prev, sizeof(uint64_t) * 3) != sizeof(uint64_t) * 3)
+               std::cerr << "Error reading counter " << names[i] << std::endl;
+         }
+         startTime = std::chrono::steady_clock::now();
+      #endif
    }
 
    ~PerfEvent() {
@@ -127,13 +187,15 @@ struct PerfEvent {
    }
 
    void stopCounters() {
-      stopTime = std::chrono::steady_clock::now();
-      for (unsigned i=0; i<events.size(); i++) {
-         auto& event = events[i];
-         if (read(event.fd, &event.data, sizeof(uint64_t) * 3) != sizeof(uint64_t) * 3)
-            std::cerr << "Error reading counter " << names[i] << std::endl;
-         ioctl(event.fd, PERF_EVENT_IOC_DISABLE, 0);
-      }
+      #if defined(__linux__)
+         stopTime = std::chrono::steady_clock::now();
+         for (unsigned i=0; i<events.size(); i++) {
+            auto& event = events[i];
+            if (read(event.fd, &event.data, sizeof(uint64_t) * 3) != sizeof(uint64_t) * 3)
+               std::cerr << "Error reading counter " << names[i] << std::endl;
+            ioctl(event.fd, PERF_EVENT_IOC_DISABLE, 0);
+         }
+      #endif
    }
 
    double getDuration() {
@@ -144,8 +206,14 @@ struct PerfEvent {
       return getCounter("instructions") / getCounter("cycles");
    }
 
+
+
    double getCPUs() {
       return getCounter("task-clock") / (getDuration() * 1e9);
+   }
+
+   double getClockTicksPerMS(){
+      return  getCounter("task-clock");
    }
 
    double getGHz() {
@@ -233,24 +301,76 @@ struct PerfEvent {
       printCounterVertical(infoOut,"GHz",getGHz(),eNameWidth);
    }
 
-    std::string printJsonString(uint64_t normalizationConstant = 1, uint8_t precision= 6){
-      std::string jsonString = "{";
-      for(unsigned i=0; i<events.size(); i++){
-         std::stringstream stream;
-         stream << std::setprecision(precision) << events[i].readCounter()/static_cast<double>(normalizationConstant);
-         jsonString += "\"" + names[i] + "\":" + stream.str() + ",";
-      }
-      std::ostringstream stream;
-      stream << "\"scale\":" << std::setprecision(precision) << normalizationConstant << ",";
-      stream << "\"GHz\":" << std::fixed << std::setprecision(precision) << getGHz() << ",";
-      stream << "\"IPC\":" << std::fixed << std::setprecision(precision) << getIPC() << ",";
-      stream << "\"CPUs\":" << std::fixed << std::setprecision(precision) << getCPUs();
 
-      jsonString += stream.str() + "}";
+   std::string getPrintReport(uint64_t normalizationConstant = 1, uint8_t precision= 6){
+      #if defined(__linux__)
+         std::stringstream info;
+         printReportVerticalUtil(info,normalizationConstant);
+         return info.str() + "\n";
 
-      return jsonString;
+      #else
+
+         retrun getPerfRepotDummy(normalizationConstant, precision);
+      #endif
    }
+
+   std::string getPerfRepotDummy(uint64_t normalizationConstant = 1, uint8_t precision= 6){
+      std::string report;
+
+      int eNameWidth = 5;
+      // Calculate the maximum width for the event names
+      for (const auto& event : dummyData) {
+         eNameWidth = std::max(static_cast<int>(event.first.length()), eNameWidth);
+      }
+      // Build the report string with formatted output
+      for (const auto& event : dummyData) {
+         std::ostringstream stream;
+         stream << std::left << std::setw(eNameWidth) << event.first << " : " << event.second << '\n';
+         report += stream.str();
+      }
+      
+      return report;
+   }
+
+
+
+   std::string getPerfJSONString(uint64_t normalizationConstant = 1, uint8_t precision= 6){
+      #if defined(__linux__)
+         std::string jsonString = "{";
+         for(unsigned i=0; i<events.size(); i++){
+            std::stringstream stream;
+            stream << std::setprecision(precision) << events[i].readCounter()/static_cast<double>(normalizationConstant);
+            jsonString += "\"" + names[i] + "\":" + stream.str() + ",";
+         }
+         std::ostringstream stream;
+         stream << "\"scale\":" << std::setprecision(precision) << normalizationConstant << ",";
+         stream << "\"GHz\":" << std::fixed << std::setprecision(precision) << getGHz() << ",";
+         stream << "\"IPC\":" << std::fixed << std::setprecision(precision) << getIPC() << ",";
+         stream << "\"CPUs\":" << std::fixed << std::setprecision(precision) << getCPUs();
+
+         jsonString += stream.str() + "}";
+
+         return jsonString;
+      #else
+         return getPerfJSONStringDummy(normalizationConstant, precision);
+      #endif
+   }
+
+   std::string getPerfJSONStringDummy(uint64_t normalizationConstant = 1, uint8_t precision= 6){
+      string returnString = "{"; //create the string that will be returned
+      //loop through the dummy data and format it according to if it's JSON or not
+      size_t i = 0;
+      for (const auto& event : dummyData) {
+         returnString += "\"" + event.first + "\": " + event.second;
+         if (++i != dummyData.size()) returnString += ", ";
+      }
+      returnString += "}";
+      return returnString;
+   }
+
 };
+
+#if defined(__linux__)
 
 struct BenchmarkParameters {
 
@@ -337,17 +457,7 @@ struct PerfEventBlock {
    }
 };
 
-
-
 #else
-#include <ostream>
-struct PerfEvent {
-   void startCounters() {}
-   void stopCounters() {}
-   void printReport(std::ostream&, uint64_t) {}
-   template <class T> void setParam(const std::string&, const T&) {};
-};
-
 struct BenchmarkParameters {
 };
 
