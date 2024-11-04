@@ -19,9 +19,9 @@ enum AlgorithmOptions {
 };
 
 
-struct HashTableSettings{
+// struct HashTableSettings{
 
-};
+// };
 
 struct SortingAlgorithmSettings {
 	std::string Name = "None";
@@ -43,7 +43,7 @@ struct AlgoGaugeDetails{
     std::string FileWritePath = "";
 	bool Unique = false;
 	std::vector<SortingAlgorithmSettings> SelectedSortingAlgorithms;
-	std::vector<HashTableSettings> SelectedHashTables;
+	// std::vector<HashTableSettings> SelectedHashTables;
 };
 
 
