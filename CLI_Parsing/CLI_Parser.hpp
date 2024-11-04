@@ -48,12 +48,30 @@ Options getOptions(string type) {
     // Sets up the initial Options object. Specifies the program name and description
     Options options("AlgoGauge", "This is the command line version of the AlgoGauge Program.");
 
+    // Options that are presented if parameter <type> is "hash_tables". 
+    // EX. "./Algogauge hash_tables -t closed -c 100 -n 1000 -j"
     if (type == "hash_tables") {
-        options.add_options("Algorithm Name and Length [REQUIRED]")
+        options.add_options("Hash Table Type, Capacity, and Number [REQUIRED]")
             ("t,type", "Supported Hash Table Types: Closed.", cxxopts::value<std::string>(), "Hash table type")
-            ("c,capacity", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), cxxopts::value<vector<int>>(), "The size of the Hash Table.")
+            ("c,capacity", "Provide a number (int > 0) that determines hash table size.", cxxopts::value<int>(), "The size of the Hash Table.")
+            ("n,num,number", "Provide a number of testing operations of hash table to preform.", cxxopts::value<int>(), "Number for test operations.")
         ;
+
+        options.add_options("Hash Table options [OPTIONAL]")
+            ("probe","Supported hash table probing types: linear", cxxopts::value<std::string>()->default_value("linear"), "Hash table probe type.")
+            ("l,load", "Provide an int value between 0 (0%) and 100 (100%) to load into hash table.", cxxopts::value<int>()->default_value("0"), "The percent to load the hash table.")
+            ("v,verbose", "Runs the program in Verbose mode", cxxopts::value<bool>()->implicit_value("true"), "Results will be passed to STDOUT and errors to STDERR regardless of flag.")
+            ("h,help", "Prints this help page.")
+            ("j,json", "Prints the output as a json formatted object", cxxopts::value<bool>()->implicit_value("true"), "Pass this flag if you want the STDOUT to be JSON formatted.")
+            ("p,perf", "Includes Perf data in the output. Actual Perf data only works on Linux.", cxxopts::value<bool>()->implicit_value("true")->default_value("false"),"If you are not on Linux and want to use this anyways, you can set this to \"sample\". e.g. --perf=sample")
+            ("sample", "Includes sample perf data in the output.", cxxopts::value<bool>()->implicit_value("true")->default_value("false"))
+        ;
+
+        // Custom help message that displays when -h or --help is passed instead of the typical USAGE: ...
+        options.custom_help(R"(--type [hash table type] --capacity [some int between 0 - 100] --number [crud operation] [OPTIONALS: --probe, -l, -v, -p])" );
     }
+    // Options that are presented if parameter <type> is "sorting_algorithms". 
+    // EX. "./AlgoGauge sorting_algorithms -a bubble -l 100 -j"
     else if (type == "sorting_algorithms") {
 
         // Adds the first group of options that are specific to the Algorithm
@@ -94,13 +112,14 @@ Options getOptions(string type) {
             )
             ("sample", "Includes sample perf data in the output.", cxxopts::value<bool>()->implicit_value("true")->default_value("false"))
         ;
+
+        // Custom help message that displays when -h or --help is passed instead of the typical USAGE: ...
+        options.custom_help(R"(--algo (some algorithm) --len [some int > 0][OPTIONALS: -r | -e | -c | -s | -o] [-f "some file", -v, -j, -i, -p])" );
     }
     else {
-        cout << "Usage: ./AlgoGauge <type>" << endl;
+        cout << "Usage: ./AlgoGauge <TYPE> [PARAMETERS]";
+        exit(1);
     }
-
-    // Custom help message that displays when -h or --help is passed instead of the typical USAGE: ...
-    options.custom_help(R"(--type (type of algo) --algo (some algorithm) --len [some int > 0][OPTIONALS: -r | -e | -c | -s | -o] [-f "some file", -v, -j, -i, -p])" );
 
     return options;
 }
@@ -129,11 +148,6 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
         return algogaugeDetails; //line instead of two. However, for readability’s sake, it may be worth changing this.
     }
 
-
-
-    // get all data
-    // vector<int> len = result["l"].as<vector<int>>();
-
     /* The following lines are currently commented out as they were initially needed, but no longer needed since
         * we are manually pulling these out later on. We are manually pulling these out because we need to make the
         * number of algorithms passed matches the number of lengths passed, and number of algorithm options passed.
@@ -161,16 +175,23 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
         * with is it's best practice to remove or comment out unused objects.
     */
 
+    // Checks to see if we are working with hash tables, if true, set algogaugeDetails the results of the parser. 
+    // specific SelectedHashTables options.
     if (type == "hash_tables") {
+        algogaugeDetails.SelectedHashTables.Type = result["t"].as<std::string>();
+        algogaugeDetails.SelectedHashTables.Capacity = result["c"].as<int>();
+        algogaugeDetails.SelectedHashTables.Number = result["n"].as<int>();
+        algogaugeDetails.SelectedHashTables.Probe = result["probe"].as<std::string>();
+        algogaugeDetails.SelectedHashTables.Load = result["l"].as<int>();
         algogaugeDetails.Verbose = result["v"].as<bool>();
         algogaugeDetails.Json = result["j"].as<bool>();
         algogaugeDetails.PerfSample = result["sample"].as<bool>();
         algogaugeDetails.Perf = result["p"].as<bool>() || result["sample"].as<bool>();
-        algogaugeDetails.Output = result["o"].as<bool>();
-        algogaugeDetails.FileWritePath = result["file"].as<string>();
 
         return algogaugeDetails;
     } 
+    // Checks to see if we are working with sorting algorithms.
+    // if true, set algogaugeDetails the results of the parser. 
     else if (type == "sorting_algorithms") {
         algogaugeDetails.Verbose = result["v"].as<bool>();
         algogaugeDetails.Json = result["j"].as<bool>();
@@ -257,6 +278,8 @@ int runProgram(int argc, char *argv[]) {
         Options options = getOptions(type); //get the initial Options object
         auto result = options.parse(argc, argv); //have the cxxopts library parse the CLI args
         auto algo = parseAndGetAlgorithms(result, options, type); //get all valid algorithms
+        // TODO: implement hash table functionality to processAlgorithms function. 
+        //       may need to pass type.
         processAlgorithms(algo);
 
     //all possible errors are caught and returned here to STDERR

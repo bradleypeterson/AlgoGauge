@@ -454,7 +454,6 @@ namespace AlgoGauge {
     return output + "}";
   }
 
-
 }
 
 # endif
