@@ -100,9 +100,8 @@ struct PerfEvent
 
 	/// @brief This is the constutor for PERF it holds all the attributes that should be tracked task-clock cycles etc.
 	/// @param pid Optionally pass in the PID of what process track default 0 or the caller function
-	PerfEvent(pid_t pid = 0)
-	{
-#if defined(__linux__)
+	PerfEvent(pid_t pid = 0){
+	#if defined(__linux__)
 		registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
 		registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
 
@@ -148,27 +147,24 @@ struct PerfEvent
 
 		//    {"IPC", "1.80"}
 		// };
-		for (unsigned i = 0; i < events.size(); i++)
-		{
+		for (unsigned i = 0; i < events.size(); i++){
 			auto &event = events[i];
 			event.fd = static_cast<int>(syscall(__NR_perf_event_open, &event.pe, pid, -1, -1, 0)); // int syscall(SYS_perf_event_open, struct perf_event_attr *attr, pid_t pid, int cpu, int group_fd, unsigned long flags);
-			if (event.fd < 0)
-			{
+			if (event.fd < 0){
 				std::cerr << "Error opening counter " << names[i] << std::endl;
 				events.resize(0);
 				names.resize(0);
 				return;
 			}
 		}
-#endif
+	#endif
 	}
 	/// @brief Used to register your own events that aren't found in the constructor. Find more in linux/perf_event.h
 	/// @param name The name of the event
 	/// @param type The PERF_TYPE: Hardware, Software...
 	/// @param eventID What is getting tracked ex: PERF_COUNT_HW_INSTRUCTIONS
 	/// @param domain Where the event is found and tracked
-	void registerCounter(const std::string &name, uint64_t type, uint64_t eventID, EventDomain domain = ALL)
-	{
+	void registerCounter(const std::string &name, uint64_t type, uint64_t eventID, EventDomain domain = ALL){
 		names.push_back(name);
 		events.push_back(event());
 		auto &event = events.back();
@@ -187,9 +183,8 @@ struct PerfEvent
 	}
 
 	/// @brief Start recording the registered counters
-	void startCounters()
-	{
-#if defined(__linux__)
+	void startCounters(){
+	#if defined(__linux__)
 		for (unsigned i = 0; i < events.size(); i++)
 		{
 			auto &event = events[i];
@@ -199,20 +194,18 @@ struct PerfEvent
 				std::cerr << "Error reading counter " << names[i] << std::endl;
 		}
 		startTime = std::chrono::steady_clock::now();
-#endif
+	#endif
 	}
 	/// @brief Deconstrutor
-	~PerfEvent()
-	{
+	~PerfEvent(){
 		for (auto &event : events)
 		{
 			close(event.fd);
 		}
 	}
 	/// @brief Stop recording the registered counters
-	void stopCounters()
-	{
-#if defined(__linux__)
+	void stopCounters(){
+	#if defined(__linux__)
 		stopTime = std::chrono::steady_clock::now();
 		for (unsigned i = 0; i < events.size(); i++)
 		{
@@ -221,48 +214,42 @@ struct PerfEvent
 				std::cerr << "Error reading counter " << names[i] << std::endl;
 			ioctl(event.fd, PERF_EVENT_IOC_DISABLE, 0);
 		}
-#endif
+	#endif
 	}
 
 	/// @brief Get how long the Counters where recording
 	/// @return The time
-	double getDuration()
-	{
+	double getDuration(){
 		return std::chrono::duration<double>(stopTime - startTime).count();
 	}
 	/// @brief Get how many instructions per cylce where called
 	/// @return A number
-	double getIPC()
-	{
+	double getIPC(){
 		return getCounter("instructions") / getCounter("cycles");
 	}
 
 	/// @brief Get how many CPUs where used and how much
 	/// @return A number
-	double getCPUs()
-	{
+	double getCPUs(){
 		return getCounter("task-clock") / (getDuration() * 1e9);
 	}
 
 	/// @brief Number of ticks per ms
 	/// @return the number of ticks
-	double getClockTicksPerMS()
-	{
+	double getClockTicksPerMS(){
 		return getCounter("task-clock");
 	}
 
 	/// @brief Computes the CPU frequency in GHz based on cycle and task clock counters.
 	/// @return The computed frequency in GHz.
-	double getGHz()
-	{
+	double getGHz(){
 		return getCounter("cycles") / getCounter("task-clock");
 	}
 
 	/// @brief Used to get the details of a specific counter
 	/// @param name The name of the counter you want back
 	/// @return What the counter recorded
-	double getCounter(const std::string &name)
-	{
+	double getCounter(const std::string &name){
 		for (unsigned i = 0; i < events.size(); i++)
 			if (names[i] == name)
 				return events[i].readCounter();
@@ -275,8 +262,7 @@ struct PerfEvent
 	/// @param name
 	/// @param counterValue
 	/// @param addComma
-	static void printCounter(std::ostream &headerOut, std::ostream &dataOut, std::string name, std::string counterValue, bool addComma = true)
-	{
+	static void printCounter(std::ostream &headerOut, std::ostream &dataOut, std::string name, std::string counterValue, bool addComma = true){
 		auto width = std::max(name.length(), counterValue.length());
 		headerOut << std::setw(static_cast<int>(width)) << name << (addComma ? "," : "") << " ";
 		dataOut << std::setw(static_cast<int>(width)) << counterValue << (addComma ? "," : "") << " ";
@@ -290,8 +276,7 @@ struct PerfEvent
 	/// @param counterValue
 	/// @param addComma
 	template <typename T>
-	static void printCounter(std::ostream &headerOut, std::ostream &dataOut, std::string name, T counterValue, bool addComma = true)
-	{
+	static void printCounter(std::ostream &headerOut, std::ostream &dataOut, std::string name, T counterValue, bool addComma = true){
 		std::stringstream stream;
 		stream << std::fixed << std::setprecision(8) << counterValue;
 		PerfEvent::printCounter(headerOut, dataOut, name, stream.str(), addComma);
@@ -300,8 +285,7 @@ struct PerfEvent
 	/// @brief A default method as part of the library
 	/// @param out
 	/// @param normalizationConstant
-	void printReport(std::ostream &out, uint64_t normalizationConstant)
-	{
+	void printReport(std::ostream &out, uint64_t normalizationConstant){
 		std::stringstream header;
 		std::stringstream data;
 		printReport(header, data, normalizationConstant);
@@ -313,8 +297,7 @@ struct PerfEvent
 	/// @param headerOut
 	/// @param dataOut
 	/// @param normalizationConstant
-	void printReport(std::ostream &headerOut, std::ostream &dataOut, uint64_t normalizationConstant)
-	{
+	void printReport(std::ostream &headerOut, std::ostream &dataOut, uint64_t normalizationConstant){
 		if (!events.size())
 			return;
 
@@ -341,15 +324,13 @@ struct PerfEvent
 
 private:
 	template <typename T>
-	static void printCounterVertical(std::ostream &infoOut, std::string name, T counterValue, int eNameWidth)
-	{
+	static void printCounterVertical(std::ostream &infoOut, std::string name, T counterValue, int eNameWidth){
 		std::stringstream stream;
 		stream << std::fixed << std::setprecision(2) << counterValue;
 		infoOut << std::setw(eNameWidth) << std::left << name << " : " << stream.str() << std::endl;
 	}
 
-	void printReportVerticalUtil(std::ostream &infoOut, uint64_t normalizationConstant)
-	{
+	void printReportVerticalUtil(std::ostream &infoOut, uint64_t normalizationConstant){
 		if (!events.size())
 			return;
 

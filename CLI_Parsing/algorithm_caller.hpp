@@ -151,7 +151,7 @@ std::string get_process_name(pid_t pid) {
     return process_name;
 }
 
-std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const bool& perf, const std::string_view programmingLanguage){
+std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const bool& perf){
  	struct subprocess_s process;
 	int exit_code;
 	std::string stdJSON = "";
@@ -159,8 +159,10 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
     // int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
     int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path| subprocess_option_combined_stdout_stderr, environment, &process);
+	const auto processName = get_process_name(process.child);
+
 	if(verbose){
-		std::cout << "PID of child process: "<<  get_process_name(process.child) << " " << process.child << std::endl;
+		std::cout << "PID of child process: "<< processName << " " << process.child << std::endl;
 	}
 	PerfEvent e(process.child);
 	// cout << process.child;
@@ -174,7 +176,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 	e.stopCounters();
 
 	if(exit_code == 0 && verbose){
-		std::cout << programmingLanguage << " Program executed successfully!" << std::endl;
+		std::cout << processName << " Program executed successfully!" << std::endl;
 	} else if(exit_code != 0){
         std::cerr << "Program exited with code " << exit_code << std::endl;
     }
@@ -182,7 +184,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 	std::string stdOUT = printChildProcessSTDOUT(process, perf ? e.getPerfJSONString(): "{}");
 
 	if(verbose && perf){
-		std::cout << "PERF data as recorded by c++: " << e.getPerfJSONString() << endl;
+		std::cout << "PERF data as recorded by c++ for " << processName << ": " << e.getPerfJSONString() << endl;
 	}
 
 	if (!stdOUT.empty() && stdOUT[0] == '{') {
@@ -247,7 +249,7 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 			//			const char* program_arguments[] = {"perf", "stat","node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
 
 			const char* program_arguments[] = {"node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
-			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf, algo.Language);
+			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 			continue;
 
 		}
@@ -255,7 +257,7 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 		if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
 			const char* program_arguments[] = {"python3", "../MultiLanguage/Python/src/AlgoGauge_bradleypeterson/__main__.py", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
 
-			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf, algo.Language);
+			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
 			continue;
 		}
@@ -268,7 +270,7 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 
 		const char* program_arguments[] = {program_path.c_str(), selectedSortingAlgorithm.c_str(), nullptr};
 		std::cout << program_path;
-		jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf, algo.Language);
+		jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
 	}
 	return jsonResults;
@@ -289,12 +291,13 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	if (algorithmsController.Json) std::cout << jsonResults << endl;
 
 	if (!algorithmsController.FileWritePath.empty()) { //print output to file
-            std::ofstream outFile;
-            outFile.open(algorithmsController.FileWritePath);
-            outFile << jsonResults;
-            outFile.close();
+		std::ofstream outFile;
+		outFile.open(algorithmsController.FileWritePath);
+		outFile << jsonResults;
+		outFile.close();
+		if (algorithmsController.Verbose) cout << "Results written in JSON at: '" << algorithmsController.FileWritePath << "'" << endl;
 	}
-	if (algorithmsController.Verbose && !algorithmsController.FileWritePath.empty()) cout << "Results written in JSON at: '" << algorithmsController.FileWritePath << "'" << endl;
+
 
     cout << endl;
 }

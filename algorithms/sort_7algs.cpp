@@ -83,10 +83,8 @@ namespace Sorting {
         void loadReversedValues();
         void loadOrderedValues();
         void verifySort() const;
-        void printSortToFile(const string &filePath, const bool &append = true) const;
         void runAndCaptureSort();
         void runAndPrintSort();
-        void runAndPrintFileSort(const string &filePath, const bool &append = true);
 
         // It makes the class **abstract**.  In other words,
         // nothing can instantiate an object of this class.
@@ -138,7 +136,7 @@ namespace Sorting {
         this->valuesPriorToSort = new T[capacity];
         this->canonicalName = canonicalName;
         this->algorithmOption = AlgorithmOptions::none;
-        this->executionTime = (std::chrono::high_resolution_clock::now() - std::chrono::high_resolution_clock::now());
+        this->executionTime = (std::chrono::steady_clock::now() - std::chrono::steady_clock::now());
         this->verbose = verbose;
         this->includeValues = includeValues;
         this->includePerf = includePerf;
@@ -290,16 +288,26 @@ namespace Sorting {
     template<typename T>
     void BaseSort<T>::runAndCaptureSort() {
 
+        const bool perf = includePerf == "true" ? true: false;
+        const bool sample = includePerf == "sample"? true: false;
+
         PerfEvent perfObject;
         if (verbose) cout << "C++ Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         
-        auto startTime = std::chrono::high_resolution_clock::now(); //record the start time counter
-        if (includePerf == "true") perfObject.startCounters();
+        auto startTime = std::chrono::steady_clock::now(); //record the start time counter
+
+        if (perf && !sample){
+            if(verbose) std::cout << "Starting PERF" << std::endl;
+            perfObject.startCounters();
+        }
 
         runSort();
 
-        if (includePerf == "true") perfObject.stopCounters();
-        auto stopTime = std::chrono::high_resolution_clock::now(); //record the stop time counter
+        if (perf && !sample){
+            perfObject.stopCounters();
+            if(verbose) std::cout << "Stopping PERF" << std::endl;
+        }
+        auto stopTime = std::chrono::steady_clock::now(); //record the stop time counter
 
         if (verbose) cout << "C++ Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
 
@@ -307,10 +315,15 @@ namespace Sorting {
 
         if (verbose) cout << "C++ Sort: \"" << sortName << "\"" << getCanonicalName() << " Verified!" << endl;
         executionTime = stopTime - startTime;
+        std::cout << perfObject.getDuration() << std::endl;
 
-        if (includePerf == "true") this->perfObjectString = perfObject.getPerfJSONString();
+        if (perf && !sample) this->perfObjectString = perfObject.getPerfJSONString();
 
-        if(includePerf == "sample") this->perfObjectString = perfObject.getPerfJSONStringDummy();
+        if(sample){
+            if(verbose) std::cout << "Sample PERF Data Insert" << std::endl;
+            this->perfObjectString = perfObject.getPerfJSONStringDummy();
+        }
+
 // #ifdef linux
 //         if (includePerf == "true") {
 // 		    // std::cout << "C++ Running with perf" << std::endl;
@@ -338,11 +351,7 @@ namespace Sorting {
     string BaseSort<T>::getStringResult() {
         //add perf data if perf is specified, otherwise, create the perfString as an empty string
         string perfString = "; Perf Data: ";
-        if (includePerf == "sample") {
-            // perfString += getDummyPerfData();
-        }
-        else perfString = perfObjectString;
-
+        perfString = perfObjectString;
 
 #ifdef linux
         // else if (includePerf == "true") {
@@ -441,36 +450,18 @@ namespace Sorting {
      * @param filePath The path to the file to write the output to
      * @param append Whether or not this should overwrite the file or append to it
      */
-    template<typename T>
-    void BaseSort<T>::printSortToFile(const std::string &filePath, const bool &append) const {
-        std::ofstream outFile;
-        append ? outFile.open(filePath, std::ios::app) : outFile.open(filePath);
-        outFile << getJSONResult();
-        outFile.close();
-    }
+
 
     /**
      * This starts the sort and prints out the results
      */
     template<typename T>
-    void BaseSort<T>::runAndPrintSort() {
-        if (includeValues) cout << "Values before sort:" << endl << getValuesRange() << endl;
+    void BaseSort<T>::runAndPrintSort(const bool& printToScreen = false) {
+        if (includeValues && printToScreen) cout << "Values before sort:" << endl << getValuesRange() << endl;
         runAndCaptureSort();
-        if (includeValues) cout << "Values after sort:" << endl << getValuesRange() << endl;
-        cout << getStringResult() << endl;
+        if (includeValues && printToScreen) cout << "Values after sort:" << endl << getValuesRange() << endl;
+        if(printToScreen) cout << getStringResult() << endl;
     }
-
-    /**
-     * This starts the sort and writes the results to a file
-     * @param filePath The path to the file to write the output to
-     * @param append Whether or not this should overwrite the file or append to it
-     */
-    template<typename T>
-    void BaseSort<T>::runAndPrintFileSort(const std::string &filePath, const bool &append) {
-        runAndCaptureSort();
-        printSortToFile(filePath, append);
-    }
-
 //Algorithms
 /**
  * This is the class for handling the Bubble Sort Algorithm.
@@ -1083,9 +1074,9 @@ void Bubble<T>::runSort() {
         cout << "Running sort: " << sortObj.getName() << endl;
         sortObj.loadRandomValues();
         sortObj.printValues();
-        auto t1 = std::chrono::high_resolution_clock::now();
+        auto t1 = std::chrono::steady_clock::now();
         sortObj.runSort();
-        auto t2 = std::chrono::high_resolution_clock::now();
+        auto t2 = std::chrono::steady_clock::now();
 
         sortObj.printValues();
         sortObj.verifySort();
