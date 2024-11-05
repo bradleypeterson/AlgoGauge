@@ -34,9 +34,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string>
 #include <vector>
 
+#if defined(__linux__)
 #include <asm/unistd.h>
 #include <linux/perf_event.h>
 #include <sys/ioctl.h>
+
+
 #include <unistd.h>
 
 struct PerfEvent
@@ -96,12 +99,12 @@ struct PerfEvent
 		{"scale", 1.0},
 		{"IPC", 1.70},
 		{"CPUs", 0.37},
-		{"GHz", 1.63}};
+		{"GHz", 1.63}
+	};
 
 	/// @brief This is the constutor for PERF it holds all the attributes that should be tracked task-clock cycles etc.
 	/// @param pid Optionally pass in the PID of what process track default 0 or the caller function
 	PerfEvent(pid_t pid = 0){
-	#if defined(__linux__)
 		registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
 		registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
 
@@ -157,7 +160,6 @@ struct PerfEvent
 				return;
 			}
 		}
-	#endif
 	}
 	/// @brief Used to register your own events that aren't found in the constructor. Find more in linux/perf_event.h
 	/// @param name The name of the event
@@ -184,7 +186,6 @@ struct PerfEvent
 
 	/// @brief Start recording the registered counters
 	void startCounters(){
-	#if defined(__linux__)
 		for (unsigned i = 0; i < events.size(); i++)
 		{
 			auto &event = events[i];
@@ -194,7 +195,7 @@ struct PerfEvent
 				std::cerr << "Error reading counter " << names[i] << std::endl;
 		}
 		startTime = std::chrono::steady_clock::now();
-	#endif
+	
 	}
 	/// @brief Deconstrutor
 	~PerfEvent(){
@@ -205,7 +206,6 @@ struct PerfEvent
 	}
 	/// @brief Stop recording the registered counters
 	void stopCounters(){
-	#if defined(__linux__)
 		stopTime = std::chrono::steady_clock::now();
 		for (unsigned i = 0; i < events.size(); i++)
 		{
@@ -214,7 +214,6 @@ struct PerfEvent
 				std::cerr << "Error reading counter " << names[i] << std::endl;
 			ioctl(event.fd, PERF_EVENT_IOC_DISABLE, 0);
 		}
-	#endif
 	}
 
 	/// @brief Get how long the Counters where recording
@@ -360,16 +359,11 @@ public:
 	/// @param normalizationConstant Used to scale the results may be required depending on CPU
 	/// @param precision How many decimal places should be kept
 	/// @return A string
-	std::string getPrintReport(uint64_t normalizationConstant = 1, uint8_t precision = 6)
-	{
-#if defined(__linux__)
+	std::string getPrintReport(uint64_t normalizationConstant = 1, uint8_t precision = 6){
 		std::stringstream info;
 		printReportVerticalUtil(info, normalizationConstant);
 		return info.str() + "\n";
 
-#else
-		return getPerfRepotDummy(normalizationConstant, precision);
-#endif
 	}
 
 	/// @brief The dummy data report is a run that was copied. And is printed for computers that aren't linux.
@@ -409,7 +403,6 @@ public:
 	/// @return A JSON-formatted string representing the performance data.
 	std::string getPerfJSONString(uint64_t normalizationConstant = 1, uint8_t precision = 6)
 	{
-#if defined(__linux__)
 		std::string jsonString = "{";
 		for (unsigned i = 0; i < events.size(); i++)
 		{
@@ -426,9 +419,6 @@ public:
 		jsonString += stream.str() + "}";
 
 		return jsonString;
-#else
-		return getPerfJSONStringDummy(normalizationConstant, precision);
-#endif
 	}
 
 	/// @brief Generates a JSON string from dummy performance data with optional normalization and precision.
@@ -453,6 +443,66 @@ public:
 	}
 };
 
+#else
+
+struct PerfEvent {
+
+	PerfEvent(pid_t pid = 0){
+
+	}
+	const std::vector<std::pair<std::string, double>> dummyData = {
+	{"task-clock", 364444262.00},
+	{"context switches", 214.00},
+	{"cycles", 595348804.49},
+	{"kcycles", 170739620.86},
+	{"instructions", 1009631347.96},
+	{"L1-misses", 5583046.54},
+	{"LLC-misses", 897165.96},
+	{"branch predictions", 182104579.70},
+	{"branch-misses", 3082415.94},
+	{"cache references", 5131660.31},
+	{"retired branch instructions", 161551834.08},
+	{"total page faults", 10020.00},
+	{"minor page faults", 10020.00},
+	{"major page faults", 0.00},
+	{"context switches", 214.00},
+	{"scale", 1.0},
+	{"IPC", 1.70},
+	{"CPUs", 0.37},
+	{"GHz", 1.63}};
+
+
+   void startCounters() {}
+   void stopCounters() {}
+   void printReport(std::ostream&, uint64_t) {}
+   template <class T> void setParam(const std::string&, const T&) {};
+	double getDuration(){
+		return 0;
+	}
+   std::string getPerfJSONString(uint64_t normalizationConstant = 1, uint8_t precision = 6)
+	{
+		return getPerfJSONStringDummy(normalizationConstant, precision);
+	}
+
+	std::string getPerfJSONStringDummy(uint64_t normalizationConstant = 1, uint8_t precision = 6)
+	{
+		std::string returnString = "{";
+		size_t i = 0;
+
+		for (const auto &event : dummyData)
+		{
+			std::ostringstream stream;
+			stream << std::fixed << std::setprecision(precision) << event.second / normalizationConstant;
+			returnString += "\"" + event.first + "\": " + stream.str();
+			if (++i != dummyData.size())
+				returnString += ", ";
+		}
+		returnString += "}";
+		return returnString;
+	}
+};
+
+#endif
 
 /// Unused
 #if defined(__linux__)
