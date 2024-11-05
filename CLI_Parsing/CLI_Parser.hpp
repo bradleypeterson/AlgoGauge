@@ -17,6 +17,7 @@
 #include <charconv>
 
 #include "algorithm_caller.hpp"
+#include "../algorithms/hash_algs.cpp"
 
 #include "../algorithms/sort_7algs.cpp"
 #include "../dependencies/cxxopts.hpp"
@@ -91,7 +92,6 @@ Options getOptions() {
 
     return options;
 }
-
 
 
 /**
