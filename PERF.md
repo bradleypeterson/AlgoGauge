@@ -12,5 +12,5 @@ perf_event_paranoid After discussing perf_event_paranoid should be set to -1. Th
 
 `echo 0 | sudo tee /proc/sys/kernel/perf_event_paranoid`
 
-`echo "kernel.perf_event_paranoid = 0" | sudo tee -a /etc/sysctl.conf`
+`echo "kernel.perf_event_paranoid = -1" | sudo tee -a /etc/sysctl.conf`
 `sudo sysctl -p`
