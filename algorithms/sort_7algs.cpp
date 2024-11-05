@@ -84,7 +84,7 @@ namespace Sorting {
         void loadOrderedValues();
         void verifySort() const;
         void runAndCaptureSort();
-        void runAndPrintSort();
+        void runAndPrintSort(const bool& printToScreen = false);
 
         // It makes the class **abstract**.  In other words,
         // nothing can instantiate an object of this class.
@@ -305,7 +305,7 @@ namespace Sorting {
 
         if (perf && !sample){
             perfObject.stopCounters();
-            if(verbose) std::cout << "Stopping PERF" << std::endl;
+            if(verbose) std::cout << "Stopping PERF it ran for: " << perfObject.getDuration()<< std::endl;
         }
         auto stopTime = std::chrono::steady_clock::now(); //record the stop time counter
 
@@ -315,7 +315,6 @@ namespace Sorting {
 
         if (verbose) cout << "C++ Sort: \"" << sortName << "\"" << getCanonicalName() << " Verified!" << endl;
         executionTime = stopTime - startTime;
-        std::cout << perfObject.getDuration() << std::endl;
 
         if (perf && !sample) this->perfObjectString = perfObject.getPerfJSONString();
 
