@@ -18,6 +18,12 @@ enum AlgorithmOptions {
 	orderedSet
 };
 
+enum PERF{
+	perfOFF,
+	perfON,
+	sample
+};
+
 
 struct HashTableSettings{
 	std::string Type = "Closed";
@@ -40,14 +46,12 @@ struct SortingAlgorithmSettings {
 struct AlgoGaugeDetails{
 	bool Verbose = false;
 	bool Output = false;
-	bool Perf = false;
-	bool PerfFileWrite = false;
-	bool PerfSample = false;
+	PERF Perf = perfOFF;
     bool Json = false;
     std::string FileWritePath = "";
 	bool Unique = false;
 	std::vector<SortingAlgorithmSettings> SelectedSortingAlgorithms;
-	HashTableSettings SelectedHashTables;
+	std::vector<HashTableSettings> SelectedHashTables;
 };
 
 

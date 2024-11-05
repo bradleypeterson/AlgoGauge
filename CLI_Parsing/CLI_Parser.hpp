@@ -15,6 +15,8 @@
 #include <ranges>
 #include <map>
 #include <charconv>
+#include <deque>
+
 
 #include "algorithm_caller.hpp"
 #include "../algorithms/hash_algs.cpp"
@@ -47,87 +49,44 @@ Options getOptions(string type) {
 
     // Sets up the initial Options object. Specifies the program name and description
     Options options("AlgoGauge", "This is the command line version of the AlgoGauge Program.");
-
-    // Options that are presented if parameter <type> is "hash_tables". 
-    // EX. "./Algogauge hash_tables -t closed -c 100 -n 1000 -j"
-    if (type == "hash_tables") {
-        options.add_options("Hash Table Type, Capacity, and Number [REQUIRED]")
-            ("t,type", "Supported Hash Table Types: Closed.", cxxopts::value<std::string>(), "Hash table type")
-            ("c,capacity", "Provide a number (int > 0) that determines hash table size.", cxxopts::value<int>(), "The size of the Hash Table.")
-            ("n,num,number", "Provide a number of testing operations of hash table to preform.", cxxopts::value<int>(), "Number for test operations.")
-        ;
-
-        options.add_options("Hash Table options [OPTIONAL]")
-            ("probe","Supported hash table probing types: linear", cxxopts::value<std::string>()->default_value("linear"), "Hash table probe type.")
-            ("l,load", "Provide an int value between 0 (0%) and 100 (100%) to load into hash table.", cxxopts::value<int>()->default_value("0"), "The percent to load the hash table.")
-            ("v,verbose", "Runs the program in Verbose mode", cxxopts::value<bool>()->implicit_value("true"), "Results will be passed to STDOUT and errors to STDERR regardless of flag.")
-            ("h,help", "Prints this help page.")
-            ("j,json", "Prints the output as a json formatted object", cxxopts::value<bool>()->implicit_value("true"), "Pass this flag if you want the STDOUT to be JSON formatted.")
-            ("p,perf", "Includes Perf data in the output. Actual Perf data only works on Linux.", cxxopts::value<bool>()->implicit_value("true")->default_value("false"),"If you are not on Linux and want to use this anyways, you can set this to \"sample\". e.g. --perf=sample")
-            ("sample", "Includes sample perf data in the output.", cxxopts::value<bool>()->implicit_value("true")->default_value("false"))
-        ;
-
-        // Custom help message that displays when -h or --help is passed instead of the typical USAGE: ...
-        options.custom_help(R"(--type [hash table type] --capacity [some int between 0 - 100] --number [crud operation] [OPTIONALS: --probe, -l, -v, -p])" );
-    }
-    // Options that are presented if parameter <type> is "sorting_algorithms". 
-    // EX. "./AlgoGauge sorting_algorithms -a bubble -l 100 -j"
-    else if (type == "sorting_algorithms") {
-
-    // Adds the first group of options that are specific to the Algorithm
-    options.add_options("Algorithm Name and Length [REQUIRED]")
-        ("a,algo,algorithm", "Supported algorithms include: default, bubble, selection, insertion, quick, merge, heap.", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
-        ("l,len,length,count", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), cxxopts::value<vector<int>>(), "Number of items to process")
-        // name is not required. May consider moving this to Program Output group instead to avoid confusion
-        ("n,name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>()->default_value(""))
-        ("x,lang,language", "The user selected programming language", value<vector<string>>()->default_value("c++"))
+    // Adds the final group for setting any additional program wide settings
+    options.add_options("Program Settings [OPTIONAL]")
+        ("v,verbose", "Runs the program in Verbose mode", cxxopts::value<bool>()->implicit_value("true"))
+        ("o,output", "Will output the arrays in the output. It is highly recommended to use a small length (less than 100).", cxxopts::value<bool>()->implicit_value("true"))
+        ("h,help", "Prints this help page.")
+#ifdef __linux
+        ("p,perf", "Includes Perf data in the output.", cxxopts::value<bool>()->implicit_value("true"))
+#else
+        ("p perf", "Includes PERF data in the output. Actual PERF only works on linux all perf data returned will be sample (dummy) data", cxxopts::value<bool>()->implicit_value("true"))
+#endif
+        ("sample", "Return PERF sample (dummy) data data in the output.", cxxopts::value<bool>()->implicit_value("true"))
     ;
-        // Adds the first group of options that are specific to the Algorithm
-        options.add_options("Algorithm Name and Length [REQUIRED]")
-            ("a,algo,algorithm", "Supported sorting algorithms include: bubble, selection, insertion, quick, merge, heap.", cxxopts::value<vector<string>>(), "Name of the first algorithm to run.")
-            ("l,len,length,count", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), cxxopts::value<vector<int>>(), "Number of items to process")
-            // name is not required. May consider moving this to Program Output group instead to avoid confusion
-            ("n,name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>()->default_value(""))
-            ("x,lang,language", "The user selected programming language", value<vector<string>>()->default_value("c++"))
-        ;
+    // Adds the output settings group to allow the user to change where the output of the program should go
+    options.add_options("Program Output [OPTIONAL]")
 
-        // Adds the Options group where one and only one option may be specified per Algorithm.
-        options.add_options("Algorithm Options [ONE REQUIRED]")
-            ("s,strat,strategy", "Determines how the array will be generated [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]", cxxopts::value<vector<std::string>>()->default_value("random"))
-            // ("r,ran,rand,random", "Generated data will be a random set", cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
-            // ("e,rep,repeated", "Generated data set will have repeated values", cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
-            // ("z,chunks", "Generated data set will have various subsets that will contain both random and in order values",  cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
-            // ("rev,reversed", "Generated data set will be in reverse order e.g. (9-0)",  cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
-            // ("o,ord,ordered", "Generated data set will be ordered e.g. (0-9)",  cxxopts::value<vector<bool>>()->implicit_value("true")->default_value("false"))
-        ;
+        ("f,file","The file path and name to output the file to",value<string>(),
+        "File path must include the file name (extension not required). Regardless of file extension, file content's structure will always be JSON.")
 
-        // Adds the output settings group to allow the user to change where the output of the program should go
-        options.add_options("Program Output [OPTIONAL]")
-            (
-            "f,file","The file path and name to output the file to",value<string>()->default_value(""),
-            "File path must include the file name (extension not required). Regardless of file extension, file content's structure will always be JSON."
-            )
-            ("j,json", "Prints the output as a json formatted object", cxxopts::value<bool>()->implicit_value("true"), "Pass this flag if you want the STDOUT to be JSON formatted.")
-        ;
+        ("j,json", "Prints the output as a json formatted object", cxxopts::value<bool>()->implicit_value("true"), "Pass this flag if you want the STDOUT to be JSON formatted.")
 
-        // Adds the final group for setting any additional program wide settings
-        options.add_options("Program Settings [OPTIONAL]")
-            ("v,verbose", "Runs the program in Verbose mode", cxxopts::value<bool>()->implicit_value("true"), "Results will be passed to STDOUT and errors to STDERR regardless of flag.")
-            ("o,output", "Will output the arrays in the output. It is highly recommended to use a small length (less than 100).", cxxopts::value<bool>()->implicit_value("true"))
-            ("h,help", "Prints this help page.")
-            ("p,perf", "Includes Perf data in the output. Actual Perf data only works on Linux.", cxxopts::value<bool>()->implicit_value("true")->default_value("false"),
-                "If you are not on Linux you can include it anyway and perf data will be sample (dummy) data"
-            )
-            ("sample", "Includes sample perf data in the output.", cxxopts::value<bool>()->implicit_value("true")->default_value("false"))
-        ;
+    ;
 
-        // Custom help message that displays when -h or --help is passed instead of the typical USAGE: ...
-        options.custom_help(R"(--algo (some algorithm) --len [some int > 0][OPTIONALS: -r | -e | -c | -s | -o] [-f "some file", -v, -j, -i, -p])" );
-    }
-    else {
-        cout << "Usage: ./AlgoGauge <TYPE> [PARAMETERS]";
-        exit(1);
-    }
+    options.add_options("Algorithm Name and Length [REQUIRED]")
+        ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
+        ("s, strat, type, strategy", "Sorting: [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]\nHash Table: [closed]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
+        ("n, num, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
+    ;
+
+    options.add_options("Required Sorting Algotithm")
+        ("x,lang,language", "Options: C++, Py/Python3, JS/NodeJS", value<vector<string>>()->default_value("c++"), "What programming langauge will process the sorting algorithm");
+    ;
+    options.add_options("Required Hash Table")
+        ("c, capacity", "Provide a number (int > 0) that determines hash table size.", cxxopts::value<int>(), "How many elements can be stored in the Hash Table")
+        ("d, density", "Provide an int value between 0 (0%) and 100 (100%) to load into hash table.", cxxopts::value<double>(), "How full or the density of the starting hash table as a percentage")
+    ;
+    options.add_options("Optional Options")
+        ("y, name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>()->default_value(""))
+    ;
 
     return options;
 }
@@ -185,44 +144,61 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
 
     // Checks to see if we are working with hash tables, if true, set algogaugeDetails the results of the parser. 
     // specific SelectedHashTables options.
-    if (type == "hash_tables") {
-        algogaugeDetails.SelectedHashTables.Type = result["t"].as<std::string>();
-        algogaugeDetails.SelectedHashTables.Capacity = result["c"].as<int>();
-        algogaugeDetails.SelectedHashTables.Number = result["n"].as<int>();
-        algogaugeDetails.SelectedHashTables.Probe = result["probe"].as<std::string>();
-        algogaugeDetails.SelectedHashTables.Load = result["l"].as<int>();
-        algogaugeDetails.Verbose = result["v"].as<bool>();
-        algogaugeDetails.Json = result["j"].as<bool>();
-        algogaugeDetails.PerfSample = result["sample"].as<bool>();
-        algogaugeDetails.Perf = result["p"].as<bool>() || result["sample"].as<bool>();
 
-        return algogaugeDetails;
-    } 
-    // Checks to see if we are working with sorting algorithms.
-    // if true, set algogaugeDetails the results of the parser. 
-    else if (type == "sorting_algorithms") {
-        algogaugeDetails.Verbose = result["v"].as<bool>();
-        algogaugeDetails.Json = result["j"].as<bool>();
-        algogaugeDetails.PerfSample = result["sample"].as<bool>();
-        algogaugeDetails.Perf = result["p"].as<bool>() || result["sample"].as<bool>();
-        algogaugeDetails.Output = result["o"].as<bool>();
-        algogaugeDetails.FileWritePath = result["file"].as<string>();
+    algogaugeDetails.Verbose = result["verbose"].as<bool>();
+    algogaugeDetails.Output = result["output"].as<bool>();
 
-        auto algorithmList = result["algorithm"].as<vector<std::string>>();
-        auto countList = result["count"].as<vector<int>>();
-        auto languageList = result["language"].as<vector<std::string>>();
-        auto strategyList = result["strategy"].as<vector<std::string>>();
-        auto names = result["name"].as<vector<std::string>>();
+    if (result["sample"].as<bool>()) {
+        algogaugeDetails.Perf = sample;
+    } else if (result["perf"].as<bool>()) {
+        algogaugeDetails.Perf = perfON;
+    } else {
+        algogaugeDetails.Perf = perfOFF;
+    }
 
-        // check to make sure data has the same number of required arguments
-        if (algorithmList.size() != countList.size() || 
-            algorithmList.size() != languageList.size() || 
-            algorithmList.size() != strategyList.size() || 
-            algorithmList.size() == 0) {
-            
-            throw std::invalid_argument("Number of provided algorithm(s), count(s), language(s), and strategy(s) arguments do not match!");
+    algogaugeDetails.Json = result["json"].as<bool>();
+    algogaugeDetails.FileWritePath = result["file"].as<string>();
+
+    auto algorithmList = result["algorithm"].as<vector<std::string>>();
+    auto strategyList = result["strategy"].as<vector<std::string>>();
+    auto numberList = result["number"].as<vector<int>>();
+
+    auto languageList = result["language"].as<vector<std::string>>();
+    auto capacityList = result["capacity"].as<vector<int>>();
+    auto densityList = result["density"].as<vector<int>>();
+
+
+    auto names = result["name"].as<vector<std::string>>();
+    
+
+    for(int i =0; i < algorithmList.size(); i++){
+        if(algorithmList[i] == "linear"){
+            struct AlgoGauge::HashTableSettings newHastTable;
+            newHastTable.Probe = algorithmList[i];
+            newHastTable.Number = numberList.front();
+            numberList.erase(numberList.begin());
+
+            algogaugeDetails.SelectedHashTables.push_back(newHastTable);
         }
 
+
+    }
+    
+       
+        return algogaugeDetails;
+    
+
+        
+
+        // check to make sure data has the same number of required arguments
+        // if (algorithmList.size() != countList.size() || 
+        //     algorithmList.size() != languageList.size() || 
+        //     algorithmList.size() != strategyList.size() || 
+        //     algorithmList.size() == 0) {
+            
+        //     throw std::invalid_argument("Number of provided algorithm(s), count(s), language(s), and strategy(s) arguments do not match!");
+        // }
+// 
 
         for (int i = 0; i < algorithmList.size(); i++) {
             struct AlgoGauge::SortingAlgorithmSettings newObject;
@@ -241,7 +217,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
             else if (arrayStrategy == "ordered")  newObject.ArrayStrategy = AlgoGauge::AlgorithmOptions::orderedSet;
             else throw std::invalid_argument("There is not array strategy listed");
 
-            newObject.ArrayLength = countList[i];
+            // newObject.ArrayLength = countList[i];
             if (i < names.size()) {
                 newObject.Name = names[i];     // Assign name if valid
             } else {
@@ -261,13 +237,10 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
     if (algogaugeDetails.Perf && !algogaugeDetails.PerfSample) {
         std::cerr << "Warning: PERF is not supported on this system. PERF functionality is only available on Linux distributions. The program will continue to run, but any PERF data will be replaced with sample (dummy) values. To avoid this warning, remove the 'p' or 'perf' option from your arguments, or add --sample to explicitly request dummy data." << std::endl;
     }
+        return algogaugeDetails;
+#else
+    return algogaugeDetails;
 #endif
-
-        return algogaugeDetails;
-    } 
-    else {
-        return algogaugeDetails;
-    }
 }
 
 

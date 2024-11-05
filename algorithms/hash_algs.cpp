@@ -377,21 +377,7 @@ namespace AlgoGauge {
   string runHash(ClosedHashTable<T, U> &&hashObj) {
     auto t1 = std::chrono::high_resolution_clock::now();
   #ifdef linux
-    if (hashObj.getPerfOption() == "true") {
-      //reset the perf registers
-      ioctl(hashObj.perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
-      //start recording on the perf registers
-      ioctl(hashObj.perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
-
-      hashObj.crudOperation(hashObj.getCRUDTestAmount());
-
-      //stop recording on the perf registers
-      ioctl(hashObj.perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
-    } else { //don't record perf values if not specified
-
-      hashObj.crudOperation(hashObj.getCRUDTestAmount());
-
-    }
+    
   #endif
     auto t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> fp_ms = t2 - t1;

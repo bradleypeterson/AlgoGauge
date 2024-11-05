@@ -36,8 +36,7 @@ std::string runCPlusPlusProgram(
     const string& canonicalName = "",
     const bool& verbose = false,
     const bool& includeValues = false,
-    const string& includePerf = "false"
-
+    const AlgoGauge::PERF& includePerf = perfOFF
 ) {
 	std::unique_ptr<Sorting::BaseSort<unsigned int>> SortingAlgorithm;
 	// std::cout << includePerf << "perf";
@@ -205,10 +204,6 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
 std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	std::string jsonResults;
-	std::string includePerf = algorithmsController.Perf ? "true" : "false";
-	if(algorithmsController.PerfSample){
-		includePerf = "sample";
-	}
 	for(auto algo: algorithmsController.SelectedSortingAlgorithms){
 
 		std::transform(algo.Language.begin(), algo.Language.end(), algo.Language.begin(), ::tolower);
@@ -222,7 +217,7 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 				algo.Name, 
 				algorithmsController.Verbose, 
 				algorithmsController.Output, 
-				includePerf);
+				algorithmsController.Perf);
 			continue;
 		}
 		if(algorithmsController.Output){
