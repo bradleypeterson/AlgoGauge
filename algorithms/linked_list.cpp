@@ -41,18 +41,21 @@ namespace AlgoGauge {
         }
         LinkedList() : head(nullptr), tail(nullptr), count(0) {}
         //testers
-        static void LinkedListPushBackTime(int listSize, int numAdded, const T& value = T());
-        static void LinkedListPopBackTime(int listSize, int numDeleted);
-        static void LinkedListPushFrontTime(int listSize, int numAdded, const T& value);
-        static void LinkedListPopFrontTime(int listSize, int numDeleted);
+        static string LinkedListPushBackTime(int listSize, int numAdded, bool verbose, bool includeValues);
+        static string LinkedListPushFrontTime(int listSize, int numAdded, bool verbose, bool includeValues);
+        static string LinkedListPopBackTime(int listSize, int numDeleted, bool verbose, bool includeValues);
+        static string LinkedListPopFrontTime(int listSize, int numDeleted, bool verbose, bool includeValues);
+        static string LinkedListPushPopFrontTime(int listSize, int numDeleted, bool verbose, bool includeValues);
+        static string LinkedListPushPopBackTime(int listSize, int numDeleted, bool verbose, bool includeValues);
 
-        //
+        //Linked List Functions
         void push_back(const T& data);
         void push_front(const T& data);
         void pop_back();
         void pop_front();
         void test_push_back();
-        void print_List() const {
+
+        string print_List(){
             Node<T>* current = head;
             while (current != nullptr) {
                 cout << current->data << " ";
@@ -164,46 +167,40 @@ namespace AlgoGauge {
         count--;
     }
 
-    void testLinkedList() {
-
-        LinkedList<int> list;
-
-        cout << "Testing push_back function\n" << endl;
-        list.push_back(10);
-        list.push_back(20);
-        list.push_back(30);
-        list.print_List();
-        cout << "Now testing push_front\n list should display 10 20 30 40 50\n";
-        list.push_front(40);
-        list.push_front(50);
-        list.push_front(60);
-        list.print_List();
-        cout << "Now testing pop_front\n list should display 10 20 30\n";
-        list.pop_front();
-        list.pop_front();
-        list.pop_front();
-        list.print_List();
-        cout << "Now testing pop_back\n list should display 10\n";
-        list.pop_back();
-        list.pop_back();
-        list.print_List();
-    }
-
-    //testing functions 
+    //Timed functions 
 
     //POP BACK
-    //amount of time to pop_back "numDeleted" to a linked list of "listSize" 
+    //amount of time to pop_back "numDeleted" to a linked list of "listSize"
+    //verbose - print result to STDOUT, error to STDERR
+    //include values - prints old and new linked list ( Recommend not doing large linked list for output )  
     template<typename T>
-    void LinkedList<T>::LinkedListPopBackTime(int listSize, int numDeleted) {
-    
+    string LinkedList<T>::LinkedListPopBackTime(int listSize, int numDeleted, bool verbose, bool includeValues) {
+        if (verbose){
+            cout << "Checking number removed is less than list size." << endl;
+        }
+
         if (numDeleted > listSize) {
-            cout << "Cannot delete (" << numDeleted << ") from a list size of (" << listSize << ")." << endl;
-            return;
+            if (verbose){
+                std::cerr << "POP BACK: Cannot delete (" << numDeleted << ") from a list size of (" << listSize << ")." << endl;
+            }
+            return "{\"ERROR\":\"Call to Pop back rejected, number poped was greater than list size\"}";
+        }
+
+        if (verbose){
+            cout << "Creating Linked list of length " << listSize << endl;
         }
 
         LinkedList<T> list;
         for (int i = 0; i < listSize; i++) {
             list.push_back(T());  
+        }
+
+        if (includeValues){
+            list.print_List();
+        }        
+
+        if (verbose){
+            cout << "Starting Timer to pop back " << numDeleted << " nodes" << endl;
         }
 
         auto sTime = std::chrono::high_resolution_clock::now();
@@ -213,22 +210,59 @@ namespace AlgoGauge {
         auto eTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> fp_ms = eTime - sTime;
 
-        cout << "POP_BACK: Removing " << numDeleted << " nodes from a Linked List of size " << listSize << " took " << fp_ms.count() << " milliseconds." << endl;
+        if (verbose){
+            cout << "Timer stopped" << endl;
+        }
+                
+        if (includeValues){
+            list.print_List();
+        } 
+
+        string output = "{";
+        output += R"("algorithmName": ")" + string("Pop Back") + "\",";
+        output += R"("listSize": )" + std::to_string(listSize) + ",";
+        output += R"("number": )" + std::to_string(numDeleted) + ",";
+        output += R"("timeTaken": )" + std::to_string(fp_ms.count()) + "}";
+
+        if (verbose){
+            cout << output << endl;
+        }
+
+        return output;
     }
 
     //POP FRONT 
-    //amount of time to pop_back "numDeleted" to a linked list of "listSize" 
+    //amount of time to pop_back "numDeleted" to a linked list of "listSize"
+    //verbose - print result to STDOUT, error to STDERR
+    //include values - prints old and new linked list ( Recommend not doing large linked list for output ) 
     template<typename T>
-    void LinkedList<T>::LinkedListPopFrontTime(int listSize, int numDeleted) {
-    
+    string LinkedList<T>::LinkedListPopFrontTime(int listSize, int numDeleted, bool verbose, bool includeValues) {
+        if (verbose){
+            cout << "Checking number deleted is less than list size" << endl;
+        }
+
         if (numDeleted > listSize) {
-            cout << "POP FRONT: Cannot delete (" << numDeleted << ") from a list size of (" << listSize << ")." << endl;
-            return;
+            if (verbose){
+                std::cerr << "POP FRONT: Cannot delete (" << numDeleted << ") from a list size of (" << listSize << ")." << endl;
+            }
+            return "{\"ERROR\":\"Call to Pop Front rejected, number poped was greater than list size\"}";
         }
         
+        if (verbose){
+            cout << "Creating Linked list of length "<< listSize << endl;
+        }
+
         LinkedList<T> list;
         for (int i = 0; i < listSize; i++) {
             list.push_back(T());  
+        }
+
+        if (includeValues){
+            list.print_List();
+        } 
+
+        if (verbose){
+            cout << "Starting Timer to pop front " << numDeleted  << " nodes"<< endl;
         }
 
         auto sTime = std::chrono::high_resolution_clock::now();
@@ -236,82 +270,306 @@ namespace AlgoGauge {
             list.pop_front();
         }
         auto eTime = std::chrono::high_resolution_clock::now();
-        
         std::chrono::duration<double, std::milli> fp_ms = eTime - sTime;
-        
-        cout << "POP_FRONT: Removing " << numDeleted << " nodes from a Linked List of size " << listSize << " took " << fp_ms.count() << " milliseconds." << endl;
+
+        if (verbose){
+            cout << "Timer stopped" << endl;
+        }
+
+        if (includeValues){
+            list.print_List();
+        } 
+
+        string output = "{";
+        output += R"("algorithmName": ")" + string("Pop Front") + "\",";
+        output += R"("listSize": )" + std::to_string(listSize) + ","; 
+        output += R"("number": )" + std::to_string(numDeleted) + ",";
+        output += R"("timeTaken": )" + std::to_string(fp_ms.count()) + "}";  
+
+        if (verbose){
+            cout << output << "\n" << endl;
+        }
+
+        return output;
     }
 
 
     //PUSH BACK
     //amount of time to push_back "numAdded" to a linked list of "listSize"
+    //verbose - print result to STDOUT, error to STDERR
+    //include values - prints old and new linked list ( Recommend not doing large linked list for output ) 
     template<typename T>
-    void LinkedList<T>::LinkedListPushBackTime(int listSize, int numAdded, const T& value){
+    string LinkedList<T>::LinkedListPushBackTime(int listSize, int numAdded, bool verbose, bool includeValues){
         
+        if (verbose){
+            cout << "Creating Linked list of length " << listSize << endl;
+        }
         LinkedList<T> list;
         for (int i = 0; i < listSize; i++) {
-                list.push_back(value);
+                list.push_back(42);
+        }
+
+        if (includeValues){
+            list.print_List();
+        } 
+
+        if (verbose){
+            cout << "Starting timer to push back "<< numAdded << " nodes" << endl;
         }
 
         auto sTime= std::chrono::high_resolution_clock::now();
         for (int i = 0; i < numAdded; i++) {
-                list.push_back(value);
+                list.push_back(21);
         }
+
         auto eTime= std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> fp_ms = eTime - sTime;
-        cout << "PUSH_BACK: Adding in " << numAdded << " nodes to a Linked List of size " << listSize << " took " <<  fp_ms.count() << " milliseconds" << endl;
+
+        if (verbose){
+            cout << "Timer stopped." << endl;
+        }
+
+        if (includeValues){
+            list.print_List();
+        }
+
+        string output = "{";
+        output += R"("algorithmName": ")" + string("Push Back") + "\",";
+        output += R"("listSize": )" + std::to_string(listSize) + ","; 
+        output += R"("number": )" + std::to_string(numAdded) + ",";
+        output += R"("timeTaken": )" + std::to_string(fp_ms.count()) + "}";  
+
+        if (verbose){
+            cout << output << "\n" << endl;
+        }
+
+        return output;
     }
 
     //PUSH FRONT
     //amount of time to push_front "numAdded" to a linked list of "listSize"
+    //verbose - print result to STDOUT, error to STDERR
+    //include values - prints old and new linked list ( Recommend not doing large linked list for output ) 
     template<typename T>
-    void LinkedList<T>::LinkedListPushFrontTime(int listSize, int numAdded, const T& value) {
+    string LinkedList<T>::LinkedListPushFrontTime(int listSize, int numAdded, bool verbose, bool includeValues) {
+
+        if (verbose){
+            cout << "Creating Linked list of length " << listSize << endl;
+        }
 
         LinkedList<T> list;
         for (int i = 0; i < listSize; i++) {
-            list.push_back(value); 
+            list.push_back(42); 
         }
+        
+        if (includeValues){
+            list.print_List();
+        }
+         
+        if (verbose){
+            cout << "Starting timer to push front " << numAdded << " nodes" << endl;
+        }    
 
         auto sTime = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < numAdded; i++) {
-            list.push_front(value); 
+            list.push_front(21); 
         }
         auto eTime = std::chrono::high_resolution_clock::now();
-        
-        // Calculate and display the time taken for the push_front operations
         std::chrono::duration<double, std::milli> fp_ms = eTime - sTime;
-        cout << "PUSH_FRONT: Adding " << numAdded << " nodes to the front of a Linked List of size " << listSize << " took " << fp_ms.count() << " milliseconds" << endl;
+
+        if (verbose){
+            cout << "Timer stopped" << endl;
+        }  
+
+        if (includeValues){
+            list.print_List();
+        }
+         
+        string output = "{";
+        output += R"("algorithmName": ")" + string("Push Front") + "\",";
+        output += R"("listSize": )" + std::to_string(listSize) + ","; 
+        output += R"("number": )" + std::to_string(numAdded) + ",";
+        output += R"("timeTaken": )" + std::to_string(fp_ms.count()) + "}";  
+
+        if (verbose){
+            cout << output << "\n" << endl;
+        }
+
+        return output;
     }
 
+    //PUSH POP FRONT
+    //amount of time to push_front and pop_front "numAdded" to a linked list of "listSize"
+    //verbose - print result to STDOUT, error to STDERR
+    //include values - prints old and new linked list ( Recommend not doing large linked list for output ) 
+    template<typename T>
+    string LinkedList<T>::LinkedListPushPopFrontTime(int listSize, int numAdded, bool verbose, bool includeValues) {
+
+        if (verbose){
+            cout << "Creating Linked list of length " << listSize << endl;
+        }
+
+        LinkedList<T> list;
+        for (int i = 0; i < listSize; i++) {
+            list.push_back(42); 
+        }
+
+        if (verbose){
+            cout << "Starting timer to push and pop front " << numAdded << " nodes" << endl;
+        }  
+
+        auto sTime = std::chrono::high_resolution_clock::now();
+        for (int i = 0; i < numAdded; i++) {
+            list.push_front(42); 
+        }
+
+        for (int i = 0; i < numAdded; i++) {
+            list.pop_front(); 
+        }
+        auto eTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> fp_ms = eTime - sTime;
+
+        if (verbose){
+            cout << "Timer stopped" << endl;
+        }  
+
+        if (includeValues){
+            list.print_List();
+        }
+         
+        string output = "{";
+        output += R"("algorithmName": ")" + string("Push Pop Front") + "\",";
+        output += R"("listSize": )" + std::to_string(listSize) + ","; 
+        output += R"("number": )" + std::to_string(numAdded) + ",";
+        output += R"("timeTaken": )" + std::to_string(fp_ms.count()) + "}";  
+
+        if (verbose){
+            cout << output << "\n" << endl;
+        }
+
+        return output;
+    }
+
+
+    //PUSH POP BACK
+    //amount of time to push_back and pop_back "numAdded" to a linked list of "listSize"
+    //verbose - print result to STDOUT, error to STDERR
+    //include values - prints old and new linked list ( Recommend not doing large linked list for output ) 
+    template<typename T>
+    string LinkedList<T>::LinkedListPushPopBackTime(int listSize, int numAdded, bool verbose, bool includeValues) {
+        if (verbose){
+            cout << "Creating Linked list of length " << listSize << endl;
+        }
+        LinkedList<T> list;
+        for (int i = 0; i < listSize; i++) {
+            list.push_back(42); 
+        }
+
+        if (verbose){
+            cout << "Starting timer to push and pop back " << numAdded << " nodes" << endl;
+        } 
+
+        auto sTime = std::chrono::high_resolution_clock::now();
+        for (int i = 0; i < numAdded; i++) {
+            list.push_back(42); 
+        }
+
+        for (int i = 0; i < numAdded; i++) {
+            list.pop_back(); 
+        }
+        auto eTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> fp_ms = eTime - sTime;
+
+        if (verbose){
+            cout << "Timer stopped" << endl;
+        } 
+
+        if (includeValues){
+            list.print_List();
+        }
+         
+        string output = "{";
+        output += R"("algorithmName": ")" + string("Push Pop Back") + "\",";
+        output += R"("listSize": )" + std::to_string(listSize) + ","; 
+        output += R"("number": )" + std::to_string(numAdded) + ",";
+        output += R"("timeTaken": )" + std::to_string(fp_ms.count()) + "}";  
+
+        if (verbose){
+            cout << output << "\n" << endl;
+        }
+
+        return output;
+    }
 }
 
 #endif
 
 using namespace AlgoGauge;
+
+//function name, listsize, numAdded, numDeleted, value
+//funct option: push_back, push_front, pop_back, pop_front, push_pop_back, push_pop_front
+//verbose - print result to STDOUT, error to STDERR
+//include values - prints old and new linked list ( Recommend not doing large linked list for output )  
 template<typename T>
-void LinkedListPerformanceTest(int listSize, int numAdded, int numDeleted, const T& value) {
-    cout << "Running Linked List performance tests...\n";
-    // Measure time to push_back 
-    LinkedList<T>::LinkedListPushBackTime(listSize, numAdded, value);
-    // Measure time to push_front 
-    LinkedList<T>::LinkedListPushFrontTime(listSize, numAdded, value);
-    // Measure time to pop_back 
-    LinkedList<T>::LinkedListPopBackTime(listSize, numDeleted);
-    // Measure time to pop_front 
-    LinkedList<T>::LinkedListPopFrontTime(listSize, numDeleted);
+string LinkedListPerformanceTest(string funct, int listSize, int num, bool verbose, bool includeValues) {
+
+    if (verbose){
+        cout << "Running Linked List test for function: " << funct << "\n" <<endl;
+    }     
+
+    string result;
+
+    if (funct == "push_back") {
+        result = LinkedList<T>::LinkedListPushBackTime(listSize, num, verbose, includeValues);
+    }
+
+    else if (funct == "push_front") {
+        result = LinkedList<T>::LinkedListPushFrontTime(listSize, num, verbose, includeValues);
+    }
+
+    else if (funct == "pop_back") {
+        result = LinkedList<T>::LinkedListPopBackTime(listSize, num, verbose, includeValues);
+    }
+
+    else if (funct == "pop_front") {
+        result = LinkedList<T>::LinkedListPopFrontTime(listSize, num, verbose, includeValues);
+    }
+
+    else if (funct == "push_pop_front") {
+        result = LinkedList<T>::LinkedListPushPopFrontTime(listSize, num, verbose, includeValues);
+    } 
+    
+    else if (funct == "push_pop_back") {
+        result = LinkedList<T>::LinkedListPushPopBackTime(listSize, num, verbose, includeValues);
+    } 
+
+    else {
+        result = "{\"ERROR\":\"Invalid function name. Please use one of the following: push_back, push_front, pop_back, pop_front.\"}";
+        if (verbose){
+            cout << result << "\n" << endl;
+        }
+    }
+    
+    //check for verbose and include values 
+    return result;
 }
 
 
+//using namespace AlgoGauge;
 int main() {
-    cout << "YEP";
-    // LinkedList<int>::LinkedListPushBackTime(100000, 50000, 42);
-    // LinkedList<int>::LinkedListPushFrontTime(100000, 50000, 42);
-    // LinkedList<int>::LinkedListPopBackTime(1000, 500);
-    // LinkedList<int>::LinkedListPopBackTime(100, 500);
-    // LinkedList<int>::LinkedListPopFrontTime(100000, 50000);
-    // LinkedList<int>::LinkedListPopFrontTime(100, 500);
 
-    cout << "Running LinkedList performance tests with \n";
-    LinkedListPerformanceTest(100000, 10000, 10000, 42);
+    //performance tests with verbose
+    LinkedListPerformanceTest<int>("push_back", 100000, 4002, true, false);
+    LinkedListPerformanceTest<int>("push_front", 100000, 4002, true, false);
+    LinkedListPerformanceTest<int>("pop_front", 1000000, 40002, true, false);
+    LinkedListPerformanceTest<int>("pop_back", 10000, 4002, true, false);
+    LinkedListPerformanceTest<int>("push_pop_front", 1000000, 4002, true, false);
+    LinkedListPerformanceTest<int>("push_pop_back", 10000, 4002, true, false);
+
+    // Invalid case
+    LinkedListPerformanceTest<int>("invalid", 1000, 0, true, false);
+
+    // Include values 
+    LinkedListPerformanceTest<int>("push_back", 100, 200, true, true);
     return 0;
 }
