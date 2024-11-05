@@ -14,8 +14,9 @@
 #include <string>
 #include <chrono>
 #include "RandomNum.hpp"
-#include "../dependencies/Perf.hpp"
 #include "../AlgoGaugeDetails.hpp"
+#include "../dependencies/PerfEvent.hpp"
+
 
 using std::cout;
 using std::cin;
@@ -81,15 +82,10 @@ namespace Sorting {
         void loadChunkValues();
         void loadReversedValues();
         void loadOrderedValues();
-        void printValues() const;
         void verifySort() const;
-        void printSortToFile(const string &filePath, const bool &append = true) const;
         void runAndCaptureSort();
-        void runAndPrintSort();
-        void runAndPrintFileSort(const string &filePath, const bool &append = true);
-        string getDummyPerfData(bool JSON = false);
+        void runAndPrintSort(const bool& printToScreen = false);
 
-        virtual void runSort() = 0; // Pure virtual function.
         // It makes the class **abstract**.  In other words,
         // nothing can instantiate an object of this class.
 
@@ -103,14 +99,16 @@ namespace Sorting {
         bool verbose;
         bool includeValues;
         string includePerf;
-#ifdef linux
-        Perf::Perf perf;
-#endif
+        string perfObjectString = "{}";
+
+        virtual void runSort() = 0; // Pure virtual function.
+        void printValues() const;
+
 
     private:
         unsigned int *valuesPriorToSort; //Stores the values prior to sorting
         std::chrono::duration<double, std::milli> executionTime;
-        void loadPerf();
+        // void loadPerf();
     };
 
     /**
@@ -138,11 +136,11 @@ namespace Sorting {
         this->valuesPriorToSort = new T[capacity];
         this->canonicalName = canonicalName;
         this->algorithmOption = AlgorithmOptions::none;
-        this->executionTime = (std::chrono::high_resolution_clock::now() - std::chrono::high_resolution_clock::now());
+        this->executionTime = (std::chrono::steady_clock::now() - std::chrono::steady_clock::now());
         this->verbose = verbose;
         this->includeValues = includeValues;
         this->includePerf = includePerf;
-        this->loadPerf(); //initialize perf setup
+        // this->loadPerf(); //initialize perf setup
     }
 
     /**
@@ -207,22 +205,22 @@ namespace Sorting {
     /**
      * Initializes perf data. Sets which hardware and software events to collect from. (Remove some of these if your system has too little performance CPU registers)
      */
+    /*
     template<typename T>
     void BaseSort<T>::loadPerf() {
         
 #ifdef linux
-	//:cout << PERF_COUNT_HW_CPU_CYCLES;
         //CPU Hardware Events
         perf.addNewPerfEvent("cpu cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
         perf.addNewPerfEvent("bus cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES);
         perf.addNewPerfEvent("cpu instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
         perf.addNewPerfEvent("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
-        perf.addNewPerfEvent("cache misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
-        perf.addNewPerfEvent("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
-        perf.addNewPerfEvent("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
-        perf.addNewPerfEvent("branch misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
+        // perf.addNewPerfEvent("cache misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+        // perf.addNewPerfEvent("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
+        // perf.addNewPerfEvent("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
+        // perf.addNewPerfEvent("branch misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
 
-        //CPU Software (OS) Events
+        // //CPU Software (OS) Events
         perf.addNewPerfEvent("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
         perf.addNewPerfEvent("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
         perf.addNewPerfEvent("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
@@ -250,55 +248,9 @@ namespace Sorting {
             (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
         );
 #endif
-    }
+    }*/
 
-    /**
-     * Generates static perf data so that Perf data can be used on non-linux environments.
-     * @param JSON Whether the dummy data should be returned in JSON format
-     * @return Dummy data of static perf data
-     */
-    template<typename T>
-    string BaseSort<T>::getDummyPerfData(bool JSON) {
-        string allEvents[17][2] = { //create the static dummy data
-            {"PERF NOTE", "\"INCLUDED DATA IS DUMMY DATA!\""},
-            {"cpu cycles", "5432316545"},
-            {"bus cycles", "1561896"},
-            {"cpu instructions", "5151651"},
-            {"cache references", "198456156"},
-            {"cache misses", "198415652"},
-            {"branch predictions", "51894156489"},
-            {"retired branch instructions", "98528445"},
-            {"branch misses", "7415437"},
-            {"total page faults", "574"},
-            {"minor page faults", "242"},
-            {"major page faults", "473"},
-            {"context switches", "4"},
-            {"L1 data cache read accesses", "369545"},
-            {"L1 instruction cache read accesses", "841616"},
-            {"L1 data cache prefetch accesses", "261485"},
-            {"L1 instruction cache prefetch accesses", "2117485"}
-        };
 
-        string returnString; //create the string that will be returned
-        int size = sizeof(allEvents)/sizeof(*allEvents); //get the size of the array
-        //loop through the dummy data and format it according to if it's JSON or not
-        if (JSON) {
-            returnString += "{";
-            for (int i = 0; i < size; i++) {
-                returnString += "\"" + allEvents[i][0];
-                returnString += "\": " + allEvents[i][1];
-                if (i + 1 != size) returnString += ", ";
-            }
-            returnString += "}";
-        } else {
-            for (int i = 0; i < size; i++) {
-                returnString += allEvents[i][0];
-                returnString += ": " + allEvents[i][1];
-                if (i + 1 != size) returnString += "; ";
-            }
-        }
-        return returnString;
-    }
 
     /**
      * This loads values that are already sorted in reverse order
@@ -335,34 +287,59 @@ namespace Sorting {
      */
     template<typename T>
     void BaseSort<T>::runAndCaptureSort() {
+
+        const bool perf = includePerf == "true" ? true: false;
+        const bool sample = includePerf == "sample"? true: false;
+
+        PerfEvent perfObject;
         if (verbose) cout << "C++ Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
-        auto startTime = std::chrono::high_resolution_clock::now(); //record the start time counter
-#ifdef linux
-        if (includePerf == "true") {
-		std::cout << "C++ Running with perf" << std::endl;
-            //reset the perf registers
-            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
-            //start recording on the perf registers
-            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
-            runSort();
-            //stop recording on the perf registers
-            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
-        } else { //don't record perf values if not specified
-            runSort();
+        
+        auto startTime = std::chrono::steady_clock::now(); //record the start time counter
+
+        if (perf && !sample){
+            if(verbose) std::cout << "Starting PERF" << std::endl;
+            perfObject.startCounters();
         }
-#else
-    runSort();
-#endif
 
+        runSort();
 
-        auto stopTime = std::chrono::high_resolution_clock::now(); //record the stop time counter
+        if (perf && !sample){
+            perfObject.stopCounters();
+            if(verbose) std::cout << "Stopping PERF it ran for: " << perfObject.getDuration()<< std::endl;
+        }
+        auto stopTime = std::chrono::steady_clock::now(); //record the stop time counter
+
         if (verbose) cout << "C++ Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+
         verifySort();
+
         if (verbose) cout << "C++ Sort: \"" << sortName << "\"" << getCanonicalName() << " Verified!" << endl;
-        executionTime = stopTime - startTime; //get the wall time or execution time
-#ifdef linux
-        perf.readBuffer(); //read the data collected
-#endif
+        executionTime = stopTime - startTime;
+
+        if (perf && !sample) this->perfObjectString = perfObject.getPerfJSONString();
+
+        if(sample){
+            if(verbose) std::cout << "Sample PERF Data Insert" << std::endl;
+            this->perfObjectString = perfObject.getPerfJSONStringDummy();
+        }
+
+// #ifdef linux
+//         if (includePerf == "true") {
+// 		    // std::cout << "C++ Running with perf" << std::endl;
+//             //reset the perf registers
+//             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
+//             //start recording on the perf registers
+//             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
+//             runSort();
+//             //stop recording on the perf registers
+//             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
+//         } else { //don't record perf values if not specified
+//             perfObject.startCounters();
+//             runSort();
+//         }
+// #else
+//     runSort();
+// #endif
     }
 
     /**
@@ -373,15 +350,13 @@ namespace Sorting {
     string BaseSort<T>::getStringResult() {
         //add perf data if perf is specified, otherwise, create the perfString as an empty string
         string perfString = "; Perf Data: ";
-        if (includePerf == "sample") {
-            perfString += getDummyPerfData();
-        }
+        perfString = perfObjectString;
+
 #ifdef linux
-        else if (includePerf == "true") {
-            perfString += perf.getBufferString();
-        }
+        // else if (includePerf == "true") {
+        //     perfString += perfObjectString;           
+        // }
 #endif
-        else perfString = "";
 
         //return the sort results as a human-readable string
         return string("C++ Sort \"")
@@ -464,16 +439,8 @@ namespace Sorting {
         output += "\"algorithmRunTime_ms\": " + std::to_string(executionTime.count());
 
         output += ", \"perfData\": "; //always return the perf data object regardless. If no perf data, perf object will just be empty
-        if (includePerf == "sample") {
-            output += getDummyPerfData(true);
-        }
-#ifdef linux
-        else if (includePerf == "true") {
-            output += perf.getBufferJSON();
-        }
-#endif
-        else output += "{}";
-
+        output += perfObjectString;
+            
         return output + "}";
     }
 
@@ -482,36 +449,18 @@ namespace Sorting {
      * @param filePath The path to the file to write the output to
      * @param append Whether or not this should overwrite the file or append to it
      */
-    template<typename T>
-    void BaseSort<T>::printSortToFile(const std::string &filePath, const bool &append) const {
-        std::ofstream outFile;
-        append ? outFile.open(filePath, std::ios::app) : outFile.open(filePath);
-        outFile << getJSONResult();
-        outFile.close();
-    }
+
 
     /**
      * This starts the sort and prints out the results
      */
     template<typename T>
-    void BaseSort<T>::runAndPrintSort() {
-        if (includeValues) cout << "Values before sort:" << endl << getValuesRange() << endl;
+    void BaseSort<T>::runAndPrintSort(const bool& printToScreen = false) {
+        if (includeValues && printToScreen) cout << "Values before sort:" << endl << getValuesRange() << endl;
         runAndCaptureSort();
-        if (includeValues) cout << "Values after sort:" << endl << getValuesRange() << endl;
-        cout << getStringResult() << endl;
+        if (includeValues && printToScreen) cout << "Values after sort:" << endl << getValuesRange() << endl;
+        if(printToScreen) cout << getStringResult() << endl;
     }
-
-    /**
-     * This starts the sort and writes the results to a file
-     * @param filePath The path to the file to write the output to
-     * @param append Whether or not this should overwrite the file or append to it
-     */
-    template<typename T>
-    void BaseSort<T>::runAndPrintFileSort(const std::string &filePath, const bool &append) {
-        runAndCaptureSort();
-        printSortToFile(filePath, append);
-    }
-
 //Algorithms
 /**
  * This is the class for handling the Bubble Sort Algorithm.
@@ -1124,9 +1073,9 @@ void Bubble<T>::runSort() {
         cout << "Running sort: " << sortObj.getName() << endl;
         sortObj.loadRandomValues();
         sortObj.printValues();
-        auto t1 = std::chrono::high_resolution_clock::now();
+        auto t1 = std::chrono::steady_clock::now();
         sortObj.runSort();
-        auto t2 = std::chrono::high_resolution_clock::now();
+        auto t2 = std::chrono::steady_clock::now();
 
         sortObj.printValues();
         sortObj.verifySort();
