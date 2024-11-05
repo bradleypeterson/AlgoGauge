@@ -383,7 +383,7 @@ Results written in JSON at: './results.json'
   - [ ] When a close education popup I want to go back to the experiment
 - [ ] Instructor video and education overhaul
 - [ ] Parallel vs Serial
-- [ ] Validate Perf, find a way to run in unix, ways to measure l1 cache. *
+- [ ] Validate Perf, ways to measure l1 cache. *
 
 ### P2
 
