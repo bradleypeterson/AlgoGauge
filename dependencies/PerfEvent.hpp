@@ -33,9 +33,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 #include <string>
 #include <vector>
+#if defined(__linux__)
 #include <asm/unistd.h>
 #include <linux/perf_event.h>
 #include <sys/ioctl.h>
+
+
 #include <unistd.h>
 
 struct PerfEvent
@@ -452,6 +455,67 @@ public:
 	}
 };
 
+#else
+#include <ostream>
+
+struct PerfEvent {
+
+	PerfEvent(pid_t pid = 0){
+
+	}
+	const std::vector<std::pair<std::string, double>> dummyData = {
+	{"task-clock", 364444262.00},
+	{"context switches", 214.00},
+	{"cycles", 595348804.49},
+	{"kcycles", 170739620.86},
+	{"instructions", 1009631347.96},
+	{"L1-misses", 5583046.54},
+	{"LLC-misses", 897165.96},
+	{"branch predictions", 182104579.70},
+	{"branch-misses", 3082415.94},
+	{"cache references", 5131660.31},
+	{"retired branch instructions", 161551834.08},
+	{"total page faults", 10020.00},
+	{"minor page faults", 10020.00},
+	{"major page faults", 0.00},
+	{"context switches", 214.00},
+	{"scale", 1.0},
+	{"IPC", 1.70},
+	{"CPUs", 0.37},
+	{"GHz", 1.63}};
+
+
+   void startCounters() {}
+   void stopCounters() {}
+   void printReport(std::ostream&, uint64_t) {}
+   template <class T> void setParam(const std::string&, const T&) {};
+	double getDuration(){
+		return 0;
+	}
+   std::string getPerfJSONString(uint64_t normalizationConstant = 1, uint8_t precision = 6)
+	{
+		return getPerfJSONStringDummy(normalizationConstant, precision);
+	}
+
+	std::string getPerfJSONStringDummy(uint64_t normalizationConstant = 1, uint8_t precision = 6)
+	{
+		std::string returnString = "{";
+		size_t i = 0;
+
+		for (const auto &event : dummyData)
+		{
+			std::ostringstream stream;
+			stream << std::fixed << std::setprecision(precision) << event.second / normalizationConstant;
+			returnString += "\"" + event.first + "\": " + stream.str();
+			if (++i != dummyData.size())
+				returnString += ", ";
+		}
+		returnString += "}";
+		return returnString;
+	}
+};
+
+#endif
 
 /// Unused
 #if defined(__linux__)
