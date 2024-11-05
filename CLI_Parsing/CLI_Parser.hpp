@@ -50,7 +50,7 @@ Options getOptions() {
 
     // Adds the first group of options that are specific to the Algorithm
     options.add_options("Algorithm Name and Length [REQUIRED]")
-        ("a,algo,algorithm", "Supported algorithms include: bubble, selection, insertion, quick, merge, heap.", cxxopts::value<vector<string>>(), "Name of the first algorithm to run.")
+        ("a,algo,algorithm", "Supported algorithms include: default, bubble, selection, insertion, quick, merge, heap.", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
         ("l,len,length,count", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), cxxopts::value<vector<int>>(), "Number of items to process")
         // name is not required. May consider moving this to Program Output group instead to avoid confusion
         ("n,name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>()->default_value(""))
@@ -82,7 +82,7 @@ Options getOptions() {
         ("o,output", "Will output the arrays in the output. It is highly recommended to use a small length (less than 100).", cxxopts::value<bool>()->implicit_value("true"))
         ("h,help", "Prints this help page.")
         ("p,perf", "Includes Perf data in the output. Actual Perf data only works on Linux.", cxxopts::value<bool>()->implicit_value("true")->default_value("false"),
-            "If you are not on Linux and want to use this anyways, you can set this to \"sample\". e.g. --perf=sample"
+            "If you are not on Linux you can include it anyway and perf data will be sample (dummy) data"
         )
         ("sample", "Includes sample perf data in the output.", cxxopts::value<bool>()->implicit_value("true")->default_value("false"))
     ;
@@ -211,7 +211,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
 #ifndef linux
     // raise error if tyring to use perf on non-linux system
     if (algogaugeDetails.Perf && !algogaugeDetails.PerfSample) {
-        throw std::invalid_argument("Option 'p' or 'perf' is not supported on this system! Perf only works on Linux distros! Please remove option 'p' or 'perf' from your args and try again. If you want to test Perf on a non-Linux system, then add --sample. Note: this only returns dummy values!");
+        std::cerr << "Warning: PERF is not supported on this system. PERF functionality is only available on Linux distributions. The program will continue to run, but any PERF data will be replaced with sample (dummy) values. To avoid this warning, remove the 'p' or 'perf' option from your arguments, or add --sample to explicitly request dummy data." << std::endl;
     }
 #endif
 

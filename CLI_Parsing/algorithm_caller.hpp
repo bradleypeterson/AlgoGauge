@@ -14,6 +14,7 @@
 #include "../algorithms/sort_7algs.cpp"
 #include "CLI_Parser.hpp"
 #include "../AlgoGaugeDetails.hpp"
+#include "../dependencies/PerfEvent.hpp"
 
 
 
@@ -39,7 +40,7 @@ std::string runCPlusPlusProgram(
 
 ) {
 	std::unique_ptr<Sorting::BaseSort<unsigned int>> SortingAlgorithm;
-	std::cout << includePerf << "perf";
+	// std::cout << includePerf << "perf";
     //Essentially this is a switch case block that determines which algorithm to create and return
 	if (algorithmName == "bubble" || algorithmName == "default") SortingAlgorithm = std::make_unique<Sorting::Bubble<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
     else if (algorithmName == "selection") SortingAlgorithm = std::make_unique<Sorting::Selection<unsigned int>>(length, canonicalName, verbose, includeValues, includePerf);
@@ -89,7 +90,8 @@ std::string runCPlusPlusProgram(
 	return jsonDetails;
 }
 
-std::string printChildProcessSTDOUT(struct subprocess_s &process){
+
+std::string printChildProcessSTDOUT(struct subprocess_s &process, const std::string& perfDetails){
 	std::string jsonString;
 	std::string stdOUT;
 	char buffer[1024];
@@ -115,6 +117,18 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process){
 
 		if(i.front() == '{' ){
 			jsonString += i + ",";
+
+			std::string target = "\"perfData\": {}";
+			std::size_t pos = jsonString.find(target);
+			if (pos != std::string::npos) {
+				// Replace "data": {} with "data": {details: ...}
+				jsonString.replace(pos, target.length(), "\"perfData\": " + perfDetails);
+				
+				
+			} else {
+				std::cerr << "Target ', \"perfData\": {}' not found in the JSON string.\n";
+			}
+
 			continue;
 		}
 
@@ -124,42 +138,60 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process){
 
 	return jsonString;
 }
+std::string get_process_name(pid_t pid) {
+    std::string comm_path = "/proc/" + std::to_string(pid) + "/comm";
+    std::ifstream comm_file(comm_path);
+    
+    if (!comm_file.is_open()) {
+        return "Process not found or access denied.";
+    }
+    
+    std::string process_name;
+    std::getline(comm_file, process_name);
+    return process_name;
+}
 
-
-std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const std::string_view programmingLanguage){
+std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const bool& perf){
  	struct subprocess_s process;
 	int exit_code;
 	std::string stdJSON = "";
 
 
     // int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
-    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async | subprocess_option_combined_stdout_stderr, environment, &process);
+    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path| subprocess_option_combined_stdout_stderr, environment, &process);
+	const auto processName = get_process_name(process.child);
 
+	if(verbose){
+		std::cout << "PID of child process: "<< processName << " " << process.child << std::endl;
+	}
+	PerfEvent e(process.child);
 	// cout << process.child;
     if (result != 0) {
         std::cerr << "Failed to start program!" << std::endl;
         return "";
     }
 
+	e.startCounters();
 	subprocess_join(&process, &exit_code);
+	e.stopCounters();
 
-	std::string stdOUT = printChildProcessSTDOUT(process);
+	if(exit_code == 0 && verbose){
+		std::cout << processName << " Program executed successfully!" << std::endl;
+	} else if(exit_code != 0){
+        std::cerr << "Program exited with code " << exit_code << std::endl;
+    }
+
+	std::string stdOUT = printChildProcessSTDOUT(process, perf ? e.getPerfJSONString(): "{}");
+
+	if(verbose && perf){
+		std::cout << "PERF data as recorded by c++ for " << processName << ": " << e.getPerfJSONString() << endl;
+	}
 
 	if (!stdOUT.empty() && stdOUT[0] == '{') {
         stdJSON = stdOUT;
     }else{
 		cout << stdOUT << std::endl;
 	}
-
-	if(exit_code == 0 && verbose){
-		std::cout << programmingLanguage << " Program executed successfully!" << std::endl;
-	} 
-	
-	if(exit_code != 0){
-        std::cerr << "Program exited with code " << exit_code << std::endl;
-    }
-
-
 
     // Clean up
 	int cleanUpResult = subprocess_destroy(&process);
@@ -171,16 +203,12 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 }
 
 
-void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
-	// int x = 7;
-    // assert (x==5);
+std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
+	std::string jsonResults;
 	std::string includePerf = algorithmsController.Perf ? "true" : "false";
 	if(algorithmsController.PerfSample){
 		includePerf = "sample";
 	}
-	
-	std::string jsonResults = "{\"algorithms\": ["; //create the json results object even if not specified
-
 	for(auto algo: algorithmsController.SelectedSortingAlgorithms){
 
 		std::transform(algo.Language.begin(), algo.Language.end(), algo.Language.begin(), ::tolower);
@@ -218,8 +246,10 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 
 		if (algo.Language == "node" || algo.Language == "nodejs"|| algo.Language == "js" || algo.Language == "javascript"){
 			//node Algogauge.mjs -vTrue -c10 -aBubble -aMerge -c10 -sOrdered -sreversed -j -oTrue -c20 -aDefault -sordered --file="../temp/javascript.txt"
+			//			const char* program_arguments[] = {"perf", "stat","node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
+
 			const char* program_arguments[] = {"node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
-			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
+			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 			continue;
 
 		}
@@ -227,7 +257,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
 			const char* program_arguments[] = {"python3", "../MultiLanguage/Python/src/AlgoGauge_bradleypeterson/__main__.py", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
 
-			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
+			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
 			continue;
 		}
@@ -238,25 +268,36 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 			program_path = "../MultiLanguage/testing/rust_binary";
 		}
 
-
 		const char* program_arguments[] = {program_path.c_str(), selectedSortingAlgorithm.c_str(), nullptr};
 		std::cout << program_path;
-		jsonResults +=  runChildProcess(program_arguments, environment, algorithmsController.Verbose, algo.Language);
+		jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
 	}
+	return jsonResults;
+}
+
+
+void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
+	// int x = 7;
+    // assert (x==5);
 	
+	std::string jsonResults = "{\"algorithms\": ["; //create the json results object even if not specified
+
+	
+	jsonResults += runSortingAlgorithms(algorithmsController);
 	jsonResults.pop_back(); //remove extraneous comma
 	jsonResults += "]}"; //finish json string
 
 	if (algorithmsController.Json) std::cout << jsonResults << endl;
 
 	if (!algorithmsController.FileWritePath.empty()) { //print output to file
-            std::ofstream outFile;
-            outFile.open(algorithmsController.FileWritePath);
-            outFile << jsonResults;
-            outFile.close();
+		std::ofstream outFile;
+		outFile.open(algorithmsController.FileWritePath);
+		outFile << jsonResults;
+		outFile.close();
+		if (algorithmsController.Verbose) cout << "Results written in JSON at: '" << algorithmsController.FileWritePath << "'" << endl;
 	}
-	if (algorithmsController.Verbose && !algorithmsController.FileWritePath.empty()) cout << "Results written in JSON at: '" << algorithmsController.FileWritePath << "'" << endl;
+
 
     cout << endl;
 }
