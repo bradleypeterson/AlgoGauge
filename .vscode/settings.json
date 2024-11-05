@@ -61,10 +61,32 @@
 		"vector": "cpp",
 		"algorithm": "cpp",
 		"span": "cpp",
-		"sorting_algorithm_caller": "cpp"
+		"sorting_algorithm_caller": "cpp",
+		"atomic": "cpp",
+		"bit": "cpp",
+		"*.tcc": "cpp",
+		"chrono": "cpp",
+		"compare": "cpp",
+		"concepts": "cpp",
+		"exception": "cpp",
+		"functional": "cpp",
+		"iterator": "cpp",
+		"memory_resource": "cpp",
+		"numeric": "cpp",
+		"random": "cpp",
+		"system_error": "cpp",
+		"type_traits": "cpp",
+		"utility": "cpp",
+		"numbers": "cpp",
+		"ranges": "cpp",
+		"cinttypes": "cpp",
+		"format": "cpp"
 	},
 	"C_Cpp.default.cppStandard": "gnu++23",
 	"C_Cpp.default.cStandard": "gnu23",
 	"C_Cpp_Runner.cppStandard": "gnu++23",
-	"C_Cpp.errorSquiggles": "disabled"
+	"C_Cpp.errorSquiggles": "disabled",
+	"cSpell.words": [
+		"bradleypeterson"
+	]
 }

@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.22.1)
-set(CMAKE_CXX_STANDARD 23)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(AlgoGauge)
-add_executable( AlgoGauge main.cpp
-        dependencies/cxxopts.hpp
+add_executable( AlgoGauge 
+        main.cpp
         algorithms/sort_7algs.cpp
         # algorithms/hash_algs.cpp
-        CLI_Parsing/CLI_Parser.hpp
-        CLI_Parsing/sorting_algorithm_caller.hpp
-        algorithms/RandomNum.hpp
-       
+
 )
+
 set(DEPENDENCIES_DIR "${CMAKE_SOURCE_DIR}/dependencies")
 
 include_directories(dependencies)

@@ -32,8 +32,6 @@ export const orderedArray = (length) => {
 
 }
 
-export const orderedArrayReversed = (length) => {
+export const orderedReversedArray = (length) => {
 	return Array.from({ length: length }, (_, i) => length - i);
 }
-
-// console.log(sortedArrayReversed(12))

@@ -18,6 +18,7 @@ enum AlgorithmOptions {
 	orderedSet
 };
 
+
 struct HashTableSettings{
 
 };
@@ -27,7 +28,7 @@ struct SortingAlgorithmSettings {
 	std::string Algorithm = "built_in";
 	std::string ArrayStrategyString = "default";
 	AlgorithmOptions ArrayStrategy = none;
-    int ArrayCount = 100;
+    int ArrayLength = 100;
 	std::string Language = "c++";
 };
 
