@@ -33,6 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 #include <string>
 #include <vector>
+
 #if defined(__linux__)
 #include <asm/unistd.h>
 #include <linux/perf_event.h>
@@ -98,12 +99,12 @@ struct PerfEvent
 		{"scale", 1.0},
 		{"IPC", 1.70},
 		{"CPUs", 0.37},
-		{"GHz", 1.63}};
+		{"GHz", 1.63}
+	};
 
 	/// @brief This is the constutor for PERF it holds all the attributes that should be tracked task-clock cycles etc.
 	/// @param pid Optionally pass in the PID of what process track default 0 or the caller function
 	PerfEvent(pid_t pid = 0){
-	#if defined(__linux__)
 		registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
 		registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
 
@@ -159,7 +160,6 @@ struct PerfEvent
 				return;
 			}
 		}
-	#endif
 	}
 	/// @brief Used to register your own events that aren't found in the constructor. Find more in linux/perf_event.h
 	/// @param name The name of the event
@@ -186,7 +186,6 @@ struct PerfEvent
 
 	/// @brief Start recording the registered counters
 	void startCounters(){
-	#if defined(__linux__)
 		for (unsigned i = 0; i < events.size(); i++)
 		{
 			auto &event = events[i];
@@ -196,7 +195,7 @@ struct PerfEvent
 				std::cerr << "Error reading counter " << names[i] << std::endl;
 		}
 		startTime = std::chrono::steady_clock::now();
-	#endif
+	
 	}
 	/// @brief Deconstrutor
 	~PerfEvent(){
@@ -207,7 +206,6 @@ struct PerfEvent
 	}
 	/// @brief Stop recording the registered counters
 	void stopCounters(){
-	#if defined(__linux__)
 		stopTime = std::chrono::steady_clock::now();
 		for (unsigned i = 0; i < events.size(); i++)
 		{
@@ -216,7 +214,6 @@ struct PerfEvent
 				std::cerr << "Error reading counter " << names[i] << std::endl;
 			ioctl(event.fd, PERF_EVENT_IOC_DISABLE, 0);
 		}
-	#endif
 	}
 
 	/// @brief Get how long the Counters where recording
@@ -362,16 +359,11 @@ public:
 	/// @param normalizationConstant Used to scale the results may be required depending on CPU
 	/// @param precision How many decimal places should be kept
 	/// @return A string
-	std::string getPrintReport(uint64_t normalizationConstant = 1, uint8_t precision = 6)
-	{
-#if defined(__linux__)
+	std::string getPrintReport(uint64_t normalizationConstant = 1, uint8_t precision = 6){
 		std::stringstream info;
 		printReportVerticalUtil(info, normalizationConstant);
 		return info.str() + "\n";
 
-#else
-		return getPerfRepotDummy(normalizationConstant, precision);
-#endif
 	}
 
 	/// @brief The dummy data report is a run that was copied. And is printed for computers that aren't linux.
@@ -411,7 +403,6 @@ public:
 	/// @return A JSON-formatted string representing the performance data.
 	std::string getPerfJSONString(uint64_t normalizationConstant = 1, uint8_t precision = 6)
 	{
-#if defined(__linux__)
 		std::string jsonString = "{";
 		for (unsigned i = 0; i < events.size(); i++)
 		{
@@ -428,9 +419,6 @@ public:
 		jsonString += stream.str() + "}";
 
 		return jsonString;
-#else
-		return getPerfJSONStringDummy(normalizationConstant, precision);
-#endif
 	}
 
 	/// @brief Generates a JSON string from dummy performance data with optional normalization and precision.
@@ -456,7 +444,6 @@ public:
 };
 
 #else
-#include <ostream>
 
 struct PerfEvent {
 
