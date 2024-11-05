@@ -14,7 +14,7 @@
 #include <chrono>
 #include <utility>
 #include "RandomNum.hpp"
-#include "../dependencies/Perf.hpp"
+// #include "../dependencies/Perf.hpp"
 
 using std::cout;
 using std::cin;
@@ -73,7 +73,7 @@ namespace AlgoGauge {
 
     // Public Data Members
   #ifdef linux
-    Perf::Perf 	perf; // This is where perf object get's created.
+
   #endif
 
   private:
@@ -323,42 +323,7 @@ namespace AlgoGauge {
   void ClosedHashTable<T, U>::loadPerf() {
   #ifdef linux
     //CPU Hardware Events
-    perf.addNewPerfEvent("cpu cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
-    perf.addNewPerfEvent("bus cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES);
-    perf.addNewPerfEvent("cpu instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
-    perf.addNewPerfEvent("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
-    perf.addNewPerfEvent("cache misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
-    perf.addNewPerfEvent("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
-    perf.addNewPerfEvent("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
-    perf.addNewPerfEvent("branch misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
-
-    //CPU Software (OS) Events
-    perf.addNewPerfEvent("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
-    perf.addNewPerfEvent("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
-    perf.addNewPerfEvent("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
-    perf.addNewPerfEvent("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
-
-    //CPU Cache Events
-    perf.addNewPerfEvent(
-        "L1 data cache read accesses",
-        PERF_TYPE_HW_CACHE,
-        (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
-    );
-    perf.addNewPerfEvent(
-        "L1 instruction cache read accesses",
-        PERF_TYPE_HW_CACHE,
-        (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
-    );
-    perf.addNewPerfEvent(
-        "L1 data cache prefetch accesses",
-        PERF_TYPE_HW_CACHE,
-        (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
-    );
-    perf.addNewPerfEvent(
-        "L1 instruction cache prefetch accesses",
-        PERF_TYPE_HW_CACHE,
-        (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
-    );
+   
   #endif
   }
 
