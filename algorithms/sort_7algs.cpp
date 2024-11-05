@@ -84,7 +84,7 @@ namespace Sorting {
         void loadOrderedValues();
         void verifySort() const;
         void runAndCaptureSort();
-        void runAndPrintSort(const bool& printToScreen = false);
+        void runAndPrintSort(const bool& printToScreen);
 
         // It makes the class **abstract**.  In other words,
         // nothing can instantiate an object of this class.
@@ -455,7 +455,7 @@ namespace Sorting {
      * This starts the sort and prints out the results
      */
     template<typename T>
-    void BaseSort<T>::runAndPrintSort(const bool& printToScreen = false) {
+    void BaseSort<T>::runAndPrintSort(const bool& printToScreen) {
         if (includeValues && printToScreen) cout << "Values before sort:" << endl << getValuesRange() << endl;
         runAndCaptureSort();
         if (includeValues && printToScreen) cout << "Values after sort:" << endl << getValuesRange() << endl;
