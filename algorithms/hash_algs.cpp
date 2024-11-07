@@ -380,10 +380,12 @@ namespace AlgoGauge {
 
     string output;
     output += "{ \"algorithmName\": \"Closed Hash Tables\", ";
-    output += "\"algorithmCapacity\": \"" + std::to_string(hashObj.getCapacity()) + ", ";
+    output += "\"algorithmCapacity\": " + std::to_string(hashObj.getCapacity()) + ", ";
     output += "\"language\": \"c++\", "; 
     output += "\"probingType\": \"" + hashObj.getProbingType() + "\", ";
     output += "\"algorithmRunTime_ms\": " + std::to_string(fp_ms.count()) + ", ";
+    output += "\"density\": " + std::to_string(hashObj.getAmountFilled()) + ", ";
+    output += "\"number\": " + std::to_string(hashObj.getCRUDTestAmount()) + ", ";
     output += "\"perfData\": "; //always return the perf data object regardless. If no perf data, perf object will just be empty
 
     if (hashObj.getPerfOption() == "sample") {

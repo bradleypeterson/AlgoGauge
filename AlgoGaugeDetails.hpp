@@ -23,7 +23,13 @@ enum PERF{
 	perfON,
 	sample
 };
-
+const std::unordered_map<std::string, AlgoGauge::AlgorithmOptions> strategyMap = {
+        {"random", AlgoGauge::AlgorithmOptions::randomSet},
+        {"repeated", AlgoGauge::AlgorithmOptions::repeatedSet},
+        {"chunks", AlgoGauge::AlgorithmOptions::chunkSet},
+        {"reversed", AlgoGauge::AlgorithmOptions::reversedSet},
+        {"ordered", AlgoGauge::AlgorithmOptions::orderedSet}
+};
 
 struct HashTableSettings{
 	std::string Type = "Closed";

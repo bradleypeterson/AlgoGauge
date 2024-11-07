@@ -10,11 +10,16 @@
 #include <algorithm>
 #include <cctype>
 
-#include "../dependencies/subprocess.h"
-#include "../algorithms/sort_7algs.cpp"
-#include "CLI_Parser.hpp"
 #include "../AlgoGaugeDetails.hpp"
+#include "CLI_Parser.hpp"
+
+
 #include "../dependencies/PerfEvent.hpp"
+#include "../dependencies/subprocess.h"
+
+#include "../algorithms/sort_7algs.cpp"
+#include "../algorithms/hash_algs.cpp"
+
 
 
 
@@ -195,7 +200,7 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 	std::string jsonResults;
 	for(auto algo: algorithmsController.SelectedSortingAlgorithms){
 
-		std::transform(algo.Language.begin(), algo.Language.end(), algo.Language.begin(), ::tolower);
+		// std::transform(algo.Language.begin(), algo.Language.end(), algo.Language.begin(), ::tolower);
 		// std::transform(algo.Name.begin(), algo.Name.end(), algo.Name.begin(), ::tolower); // make input lowercase
 
 		if(algo.Language == "c++"){
@@ -260,9 +265,37 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 	return jsonResults;
 }
 
-std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algo){
+std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
+	std::string jsonResults;
+	std::string includePerf;
+	switch (algorithmsController.Perf)
+	{
+	case perfON:
+		/* code */
+		includePerf += "true";
+		break;
+	case perfOFF:
+		includePerf += "false";
+	case sample:
+		includePerf += "sample";
 
-	return "";
+	}
+
+	for(auto algo: algorithmsController.SelectedHashTables){
+		jsonResults += runHash(AlgoGauge::ClosedHashTable<string, string> (
+			algo.Capacity,
+			algo.Probe,
+			algo.Load,
+			algo.Number,
+			algorithmsController.Verbose,
+			includePerf
+		));
+
+		jsonResults+=",";
+
+
+	}
+	return jsonResults;
 }
 
 
@@ -270,12 +303,15 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	// int x = 7;
     // assert (x==5);
 	
-	std::string jsonResults = "{\"algorithms\": ["; //create the json results object even if not specified
+	std::string jsonResults = "{\"sorting_algorithm\": ["; //create the json results object even if not specified
 
 	
 	jsonResults += runSortingAlgorithms(algorithmsController);
 	jsonResults.pop_back(); //remove extraneous comma
-	jsonResults += "]}"; //finish json string
+	jsonResults += "],\"hash_table\":[";
+	jsonResults += runHashTables(algorithmsController);
+	jsonResults.pop_back(); //remove extraneous comma
+	jsonResults += "]}";
 
 	if (algorithmsController.Json) std::cout << jsonResults << endl;
 

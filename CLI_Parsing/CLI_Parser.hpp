@@ -76,7 +76,7 @@ Options getOptions(string type) {
     ;
 
     options.add_options("Algorithm Name and Length [REQUIRED]")
-        ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
+        ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear_probe]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
         ("s, strat, type, strategy", "Sorting: [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]\nHash Table: [closed]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
         ("n, num, length, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
     ;
@@ -110,14 +110,6 @@ Options getOptions(string type) {
  * the BaseSort ABC.
  */
 AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, const Options& options, string type) {
-    static const std::unordered_map<std::string, AlgoGauge::AlgorithmOptions> strategyMap = {
-        {"random", AlgoGauge::AlgorithmOptions::randomSet},
-        {"repeated", AlgoGauge::AlgorithmOptions::repeatedSet},
-        {"chunks", AlgoGauge::AlgorithmOptions::chunkSet},
-        {"reversed", AlgoGauge::AlgorithmOptions::reversedSet},
-        {"ordered", AlgoGauge::AlgorithmOptions::orderedSet}
-    };
-
     AlgoGauge::AlgoGaugeDetails algogaugeDetails;
 
     if (result.count("help")){
@@ -192,6 +184,10 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
         std::transform(algo.begin(), algo.end(), algo.begin(),
                        [](unsigned char c){ return std::tolower(c); });
     }
+    for(auto& lang: languageDeque){
+        std::transform(lang.begin(), lang.end(), lang.begin(),
+                       [](unsigned char c){ return std::tolower(c); });
+    }
     // cout << "lowered" << endl;
 
 
@@ -213,7 +209,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
         }
 
 
-        if(algo == "linear"){
+        if(algo == "linear" || algo == "linear_probe"){
             struct AlgoGauge::HashTableSettings newHashTable;
             newHashTable.Probe = algo;
             newHashTable.Number = numberDeque.front();
