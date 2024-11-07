@@ -74,17 +74,9 @@ Options getOptions(string type) {
     // EX. "./AlgoGauge sorting_algorithms -a bubble -l 100 -j"
     else if (type == "sorting_algorithms") {
 
-    // Adds the first group of options that are specific to the Algorithm
-    options.add_options("Algorithm Name and Length [REQUIRED]")
-        ("a,algo,algorithm", "Supported algorithms include: default, bubble, selection, insertion, quick, merge, heap.", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
-        ("l,len,length,count", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), cxxopts::value<vector<int>>(), "Number of items to process")
-        // name is not required. May consider moving this to Program Output group instead to avoid confusion
-        ("n,name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>()->default_value(""))
-        ("x,lang,language", "The user selected programming language", value<vector<string>>()->default_value("c++"))
-    ;
         // Adds the first group of options that are specific to the Algorithm
         options.add_options("Algorithm Name and Length [REQUIRED]")
-            ("a,algo,algorithm", "Supported sorting algorithms include: bubble, selection, insertion, quick, merge, heap.", cxxopts::value<vector<string>>(), "Name of the first algorithm to run.")
+            ("a,algo,algorithm", "Supported algorithms include: default, bubble, selection, insertion, quick, merge, heap.", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
             ("l,len,length,count", "Provide an int value between 0 and " + std::to_string(UINT32_MAX), cxxopts::value<vector<int>>(), "Number of items to process")
             // name is not required. May consider moving this to Program Output group instead to avoid confusion
             ("n,name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>()->default_value(""))
