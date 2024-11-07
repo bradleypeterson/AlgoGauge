@@ -303,7 +303,7 @@ namespace Sorting {
 
         if (includePerf == perfON){
             perfObject.stopCounters();
-            if(verbose) std::cout << "Stopping PERF it ran for: " << perfObject.getDuration()<< std::endl;
+            if(verbose) std::cout << "Stopping PERF it ran for: " << perfObject.getDuration() << std::endl;
         }
         auto stopTime = std::chrono::steady_clock::now(); //record the stop time counter
 

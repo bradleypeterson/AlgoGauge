@@ -16,6 +16,9 @@
 #include <map>
 #include <charconv>
 #include <deque>
+#include <queue>
+#include <sstream>
+
 
 
 #include "algorithm_caller.hpp"
@@ -54,11 +57,12 @@ Options getOptions(string type) {
         ("v,verbose", "Runs the program in Verbose mode", cxxopts::value<bool>()->implicit_value("true"))
         ("o,output", "Will output the arrays in the output. It is highly recommended to use a small length (less than 100).", cxxopts::value<bool>()->implicit_value("true"))
         ("h,help", "Prints this help page.")
-#ifdef __linux
         ("p,perf", "Includes Perf data in the output.", cxxopts::value<bool>()->implicit_value("true"))
-#else
-        ("p perf", "Includes PERF data in the output. Actual PERF only works on linux all perf data returned will be sample (dummy) data", cxxopts::value<bool>()->implicit_value("true"))
-#endif
+// #ifdef __linux__
+//         ("p,perf", "Includes Perf data in the output.", cxxopts::value<bool>()->implicit_value("true"))
+// #else
+//         ("p perf", "Includes PERF data in the output. Actual PERF only works on linux all perf data returned will be sample (dummy) data", cxxopts::value<bool>()->implicit_value("true"))
+// #endif
         ("sample", "Return PERF sample (dummy) data data in the output.", cxxopts::value<bool>()->implicit_value("true"))
     ;
     // Adds the output settings group to allow the user to change where the output of the program should go
@@ -74,18 +78,20 @@ Options getOptions(string type) {
     options.add_options("Algorithm Name and Length [REQUIRED]")
         ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
         ("s, strat, type, strategy", "Sorting: [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]\nHash Table: [closed]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
-        ("n, num, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
+        ("n, num, length, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
     ;
 
-    options.add_options("Required Sorting Algotithm")
-        ("x,lang,language", "Options: C++, Py/Python3, JS/NodeJS", cxxopts::value<vector<string>>()->default_value("c++"), "What programming langauge will process the sorting algorithm");
+    options.add_options("Required Sorting Algorithm")
+        ("x,lang,language", "Options: C++, Py/Python3, JS/NodeJS", cxxopts::value<vector<string>>(), "What programming language will process the sorting algorithm")
     ;
+
     options.add_options("Required Hash Table")
-        ("c, capacity", "Provide a number (int > 0) that determines hash table size.", cxxopts::value<vector<int>>(), "How many elements can be stored in the Hash Table")
-        ("d, density", "Provide an int value between 0 (0%) and 100 (100%) to load into hash table.", cxxopts::value<vector<double>>(), "How full or the density of the starting hash table as a percentage")
+        ("c, size, capacity", "Provide a number (int > 0) that determines hash table size.", cxxopts::value<vector<int>>(), "How many elements can be stored in the Hash Table")
+        ("d, load, density", "Provide an int value between 0 (0%) and 100 (100%) to load into hash table.", cxxopts::value<vector<double>>(), "How full or the density of the starting hash table as a percentage")
     ;
+
     options.add_options("Optional Options")
-        ("y, name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>()->default_value(""))
+        ("y, name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>())
     ;
 
     return options;
@@ -104,7 +110,6 @@ Options getOptions(string type) {
  * the BaseSort ABC.
  */
 AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, const Options& options, string type) {
-    std::cout << "what";
     static const std::unordered_map<std::string, AlgoGauge::AlgorithmOptions> strategyMap = {
         {"random", AlgoGauge::AlgorithmOptions::randomSet},
         {"repeated", AlgoGauge::AlgorithmOptions::repeatedSet},
@@ -138,7 +143,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
     algogaugeDetails.Json = result["json"].as<bool>();
     algogaugeDetails.FileWritePath = result["file"].as<string>();
 
-    
+
     auto algorithmVector = result["algorithm"].as<std::vector<std::string>>();
     std::deque<std::string> algorithmDeque(algorithmVector.begin(), algorithmVector.end());
     //    std::deque<int> deq(vec.begin(), vec.end());
@@ -148,19 +153,36 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
     auto numberVector = result["number"].as<vector<int>>();
     std::deque<int> numberDeque(numberVector.begin(), numberVector.end());
 
-    auto langaugeVector = result["language"].as<vector<std::string>>();
-    std::deque<std::string> langaugeDeque(langaugeVector.begin(), langaugeVector.end());
 
-    // auto capacityVector = result["capacity"].as<vector<int>>();
-    // std::deque<int> capacityDeque(capacityVector.begin(), capacityVector.end());
 
-    auto densityVector = result["density"].as<vector<int>>();
-    std::deque<int> densityDeque(densityVector.begin(), densityVector.end());
+    auto languageVector = result["language"].as_optional<vector<string>>();      
+    std::deque<std::string> languageDeque;
+    if (languageVector.has_value()) {
+        languageDeque.assign(languageVector->begin(), languageVector->end());
+    }
+    
+    auto capacityVector = result["capacity"].as_optional<vector<int>>();
+    std::deque<int> capacityDeque;
+    if (capacityVector.has_value()) {
+        capacityDeque.assign(capacityVector->begin(), capacityVector->end());
+    }
 
-    auto namesVector = result["name"].as<vector<std::string>>();
-    std::deque<std::string> namesDeque(namesVector.begin(), namesVector.end());
+    auto densityVector = result["density"].as_optional<vector<double>>();
+    std::deque<double> densityDeque;
+    if(densityVector.has_value()){
+        densityDeque.assign(densityVector->begin(), densityVector->end());
+    }
 
-    for (auto& str : namesDeque) {
+    auto namesVector = result["name"].as_optional<vector<std::string>>();
+    std::deque<std::string> namesDeque;
+    if(namesVector.has_value()){
+        namesDeque.assign(namesVector->begin(), namesVector->end());
+    }
+
+
+    // cout << "lowered?"<< endl;
+
+    for (auto& str : strategyDeque) {
         // Convert each character in the string to lowercase
         std::transform(str.begin(), str.end(), str.begin(),
                        [](unsigned char c){ return std::tolower(c); });
@@ -170,92 +192,151 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
         std::transform(algo.begin(), algo.end(), algo.begin(),
                        [](unsigned char c){ return std::tolower(c); });
     }
+    // cout << "lowered" << endl;
 
+
+
+    
     for(const auto& algo: algorithmDeque){
-        // std::transform(algo.begin(), algo.end(), algo.begin(), ::tolower);
+
+        if(strategyDeque.empty() || numberDeque.empty()){
+            std::cerr 
+                << "The number of " 
+                << (strategyDeque.empty() ? "STRATEGIES " : "")
+                << (strategyDeque.empty() && numberDeque.empty() ? "and ": "")
+                << (numberDeque.empty() ? "NUMBERS ": "")
+                << "passed did not match the number of algorithms"
+                << std::endl
+            ;
+
+            throw std::invalid_argument("Missing required options for algorithm: STRATEGY or NUMBER per algorithm.");
+        }
+
 
         if(algo == "linear"){
             struct AlgoGauge::HashTableSettings newHashTable;
             newHashTable.Probe = algo;
             newHashTable.Number = numberDeque.front();
-            // newHashTable.Capacity = capacityDeque.front();
-            newHashTable.Load = densityDeque.front();
+
+            if(capacityDeque.empty() || densityDeque.empty()){
+                std::cerr
+                    << "The number of " 
+                    << (capacityDeque.empty()? "CAPACITY ": "")
+                    << (densityDeque.empty()? "DENSITY  ": "")
+                    << "did not match the number of hash table algorithms" 
+                    << std::endl
+                ;
+                throw std::invalid_argument("Missing required options for algorithm: CAPACITY or DENSITY per hash algorithm.");
+            }
+
+
+            if(densityDeque.front() >= 100 || densityDeque.front() < 0){
+                throw std::invalid_argument("The DENSITY or load of the hash table can not be bigger then 100\% or 0\%");
+            }else if(densityDeque.front() < 1){
+                newHashTable.Load = densityDeque.front() * 100;
+            }else if(densityDeque.front() >= 100){
+                throw std::invalid_argument("The DENSITY or load of the hash table can not be bigger then 100%");
+            }
+            else{
+                newHashTable.Load = densityDeque.front();
+            }
+
+            newHashTable.Capacity = capacityDeque.front();
             newHashTable.Type = strategyDeque.front();
+            if(!namesDeque.empty()){
+                newHashTable.Name = namesDeque.front();
+            }
 
             numberDeque.pop_front();
-            // capacityDeque.pop_front();
+            capacityDeque.pop_front();
             densityDeque.pop_front();
             strategyDeque.pop_front();
-            
+
+            if(!namesDeque.empty()){
+                namesDeque.pop_front();
+            }         
+
             algogaugeDetails.SelectedHashTables.push_back(newHashTable);
             continue;
         }
 
+
+        if(languageDeque.empty()){
+            throw std::invalid_argument("The number of programming languages passed do not match the number of sorting algorithms passed");
+        }
+
+
         struct AlgoGauge::SortingAlgorithmSettings newSortingAlgorithm;
 
-        newSortingAlgorithm.Language = langaugeDeque.front();
         newSortingAlgorithm.Algorithm = algo;
+        newSortingAlgorithm.ArrayLength = numberDeque.front();
+        newSortingAlgorithm.ArrayStrategyString = strategyDeque.front();
+        newSortingAlgorithm.Language = languageDeque.front();
 
-        auto it = strategyMap.find(algo);
-        std::cout << it->first << std::endl;
-        newSortingAlgorithm.Algorithm = it->second;
+        if(!namesDeque.empty()){
+            newSortingAlgorithm.Name = namesDeque.front();
+        }
 
-        // if (it != strategyMap.end()) {
-        //     newSortingAlgorithm.Algorithm = newSortingAlgorithm.Algorithm->second;
-        // } else {
-        //     throw std::invalid_argument("There is no array strategy: " + arrayStrategy);
-        // }
+        auto it = strategyMap.find(strategyDeque.front());
 
+        if (it != strategyMap.end()) {
+            newSortingAlgorithm.ArrayStrategy = it->second;
+        } else {
+            throw std::invalid_argument("There is no array strategy: " + strategyDeque.front());
+        }
+        
+        strategyDeque.pop_front();
+        languageDeque.pop_front();
+        numberDeque.pop_front();
+
+        if(!namesDeque.empty()){
+            namesDeque.pop_front();
+        }
+
+        algogaugeDetails.SelectedSortingAlgorithms.push_back(newSortingAlgorithm);
+        
+        continue;
     }
-    
+
+    if(algogaugeDetails.Verbose){
+        std::string verboseOutput;
+        for(const auto& sorting: algogaugeDetails.SelectedSortingAlgorithms){
+            std::ostringstream oss;
+            oss << "Sorting Algorithm"
+                << " algorithm: " << sorting.Algorithm
+                << " array_length: " << sorting.ArrayLength
+                << " strategy: " << sorting.ArrayStrategy
+                << " language: " << sorting.Language
+                << " name: " << sorting.Name
+                << "\n"
+            ;
+            verboseOutput += oss.str();
+        }
+        for(const auto& hashtable: algogaugeDetails.SelectedHashTables){
+            std::ostringstream oss;
+            oss << "Hash Tables"
+                << " probe: " << hashtable.Probe
+                << " type: " << hashtable.Type
+                << " capacity: " << hashtable.Capacity
+                << " load: " << hashtable.Load
+                << " number: " << hashtable.Number
+                << " name: " << hashtable.Name
+                << "\n";
+
+            verboseOutput += oss.str();
+
+        }
+
+        std::cout << verboseOutput;
+    }
        
-    return algogaugeDetails;
-    
-
-        // check to make sure data has the same number of required arguments
-        // if (algorithmVector.size() != countVector.size() || 
-        //     algorithmVector.size() != languageVector.size() || 
-        //     algorithmVector.size() != strategyVector.size() || 
-        //     algorithmVector.size() == 0) {
-            
-        //     throw std::invalid_argument("Number of provided algorithm(s), count(s), language(s), and strategy(s) arguments do not match!");
-        // }
-// 
-
-        // for (int i = 0; i < algorithmVector.size(); i++) {
-        //     struct AlgoGauge::SortingAlgorithmSettings newObject;
-        //     newObject.Language = languageVector[i];
-        //     newObject.Algorithm = algorithmVector[i];
-
-        //     auto arrayStrategy = strategyVector[i];
-            
-
-         
-
-        //     // newObject.ArrayLength = countVector[i];
-        //     if (i < names.size()) {
-        //         newObject.Name = names[i];     // Assign name if valid
-        //     } else {
-        //         newObject.Name = "";
-        //     }
-
-        //     algogaugeDetails.SelectedSortingAlgorithms.push_back(newObject);
-        // }
-
-
-        //convert the value that is passed to the Perf flag to lowercase. This is mainly meant for
-        //if "sample" is passed to the Perf flag so that "sample" is case-insensitive.
-        // transform(includePerf.begin(), includePerf.end(), includePerf.begin(), ::tolower);
-
 #ifndef linux
-    // raise error if tyring to use perf on non-linux system
-    if (algogaugeDetails.Perf && !algogaugeDetails.PerfSample) {
+    // raise warning if trying to use perf on non-linux system
+    if (algogaugeDetails.Perf == perfON) {
         std::cerr << "Warning: PERF is not supported on this system. PERF functionality is only available on Linux distributions. The program will continue to run, but any PERF data will be replaced with sample (dummy) values. To avoid this warning, remove the 'p' or 'perf' option from your arguments, or add --sample to explicitly request dummy data." << std::endl;
     }
-        return algogaugeDetails;
-#else
-    return algogaugeDetails;
 #endif
+    return algogaugeDetails;
 }
 
 

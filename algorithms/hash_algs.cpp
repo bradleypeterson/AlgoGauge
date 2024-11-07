@@ -56,7 +56,9 @@ namespace AlgoGauge {
       const int     hash_table_fullness, 
       const int     CRUDTestAmount, 
       const bool    verbose = false, 
-      const string  includePerf = "sample");
+      const string  includePerf = "sample"
+    );
+
     ~ClosedHashTable();
 
     // Public Funtions
@@ -71,10 +73,6 @@ namespace AlgoGauge {
     string  	getPerfOption();
     string  	getDummyPerfData(bool JSON);
 
-    // Public Data Members
-  #ifdef linux
-
-  #endif
 
   private:
     // Hash Table methods
@@ -376,9 +374,7 @@ namespace AlgoGauge {
   template <typename T, typename U>
   string runHash(ClosedHashTable<T, U> &&hashObj) {
     auto t1 = std::chrono::high_resolution_clock::now();
-  #ifdef linux
-    
-  #endif
+
     auto t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
 

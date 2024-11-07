@@ -137,18 +137,7 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process, const std::str
 
 	return jsonString;
 }
-std::string get_process_name(pid_t pid) {
-    std::string comm_path = "/proc/" + std::to_string(pid) + "/comm";
-    std::ifstream comm_file(comm_path);
-    
-    if (!comm_file.is_open()) {
-        return "Process not found or access denied.";
-    }
-    
-    std::string process_name;
-    std::getline(comm_file, process_name);
-    return process_name;
-}
+
 
 std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const bool& perf){
  	struct subprocess_s process;
@@ -158,7 +147,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
     // int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
     int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path| subprocess_option_combined_stdout_stderr, environment, &process);
-	const auto processName = get_process_name(process.child);
+	const auto processName = commandLineArguments[0];
 
 	if(verbose){
 		std::cout << "PID of child process: "<< processName << " " << process.child << std::endl;
@@ -269,6 +258,11 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 
 	}
 	return jsonResults;
+}
+
+std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algo){
+
+	return "";
 }
 
 

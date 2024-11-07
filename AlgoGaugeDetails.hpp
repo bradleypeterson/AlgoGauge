@@ -31,10 +31,11 @@ struct HashTableSettings{
 	int Number = 100;
 	std::string Probe = "linear";
 	int Load = 0;
+	std::string Name = "";
 };
 
 struct SortingAlgorithmSettings {
-	std::string Name = "None";
+	std::string Name = "";
 	std::string Algorithm = "built_in";
 	std::string ArrayStrategyString = "default";
 	AlgorithmOptions ArrayStrategy = none;
