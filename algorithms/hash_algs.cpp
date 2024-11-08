@@ -14,7 +14,7 @@
 #include <chrono>
 #include <utility>
 #include "RandomNum.hpp"
-// #include "../dependencies/Perf.hpp"
+#include "../dependencies/PerfEvent.hpp"
 
 using std::cout;
 using std::cin;
@@ -85,7 +85,6 @@ namespace AlgoGauge {
     void    	loadValues(const int amount);
     void    	destroyValues(const int amount, const bool onlyExist);
     void    	lookupValues(const int amount, const bool onlyExist);
-    void    	loadPerf();
 
     // Private data members
     int*        statusArray = nullptr;
@@ -111,7 +110,6 @@ namespace AlgoGauge {
     this->CRUDTestAmount = CRUDTestAmount;
     this->verbose = verbose;
     this->includePerf = includePerf;
-    this->loadPerf(); // initilize perf setup
     this->statusArray = new int[capacity];
     for (int i = 0; i < capacity; i++) {
       statusArray[i] = 0;
@@ -316,65 +314,14 @@ namespace AlgoGauge {
   }
 
 
-  //FIXME: Initializes perf data. Sets which hardware and software events to collect from. (Remove some of these if your system has too little performance CPU registers)
-  template<typename T, typename U>
-  void ClosedHashTable<T, U>::loadPerf() {
-  #ifdef linux
-    //CPU Hardware Events
-   
-  #endif
-  }
-
-
-  template<typename T, typename U>
-  string ClosedHashTable<T, U>::getDummyPerfData(bool JSON) {
-    string allEvents[17][2] = { //create the static dummy data
-      {"PERF NOTE", "\"INCLUDED DATA IS DUMMY DATA!\""},
-      {"cpu cycles", "5432316545"},
-      {"bus cycles", "1561896"},
-      {"cpu instructions", "5151651"},
-      {"cache references", "198456156"},
-      {"cache misses", "198415652"},
-      {"branch predictions", "51894156489"},
-      {"retired branch instructions", "98528445"},
-      {"branch misses", "7415437"},
-      {"total page faults", "574"},
-      {"minor page faults", "242"},
-      {"major page faults", "473"},
-      {"context switches", "4"},
-      {"L1 data cache read accesses", "369545"},
-      {"L1 instruction cache read accesses", "841616"},
-      {"L1 data cache prefetch accesses", "261485"},
-      {"L1 instruction cache prefetch accesses", "2117485"}
-    };
-
-    string returnString; //create the string that will be returned
-    int size = sizeof(allEvents)/sizeof(*allEvents); //get the size of the array
-    //loop through the dummy data and format it according to if it's JSON or not
-    if (JSON) {
-      returnString += "{";
-      for (int i = 0; i < size; i++) {
-        returnString += "\"" + allEvents[i][0];
-        returnString += "\": " + allEvents[i][1];
-        if (i + 1 != size) returnString += ", ";
-      }
-      returnString += "}";
-    } else {
-      for (int i = 0; i < size; i++) {
-        returnString += allEvents[i][0];
-        returnString += ": " + allEvents[i][1];
-        if (i + 1 != size) returnString += "; ";
-      }
-    }
-    return returnString;
-  }
-
-
   // Testing function to run hash tables with parameters.
   template <typename T, typename U>
   string runHash(ClosedHashTable<T, U> &&hashObj) {
+    PerfEvent perfObject;
     auto t1 = std::chrono::high_resolution_clock::now();
-
+    perfObject.startCounters();
+    hashObj.crudOperation(hashObj.getCRUDTestAmount());
+    perfObject.stopCounters();
     auto t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
 
@@ -389,20 +336,17 @@ namespace AlgoGauge {
     output += "\"perfData\": "; //always return the perf data object regardless. If no perf data, perf object will just be empty
 
     if (hashObj.getPerfOption() == "sample") {
-        output += hashObj.getDummyPerfData(true);
+        output += perfObject.getPerfJSONStringDummy();
     }
-  #ifdef linux
     else if (hashObj.getPerfOption() == "true") {
-        output += hashObj.perf.getBufferJSON();
+        output += perfObject.getPerfJSONString();
     }
-  #endif
     else {
       output += "{}";
     }
 
     return output + "}";
   }
-
 }
 
 # endif
