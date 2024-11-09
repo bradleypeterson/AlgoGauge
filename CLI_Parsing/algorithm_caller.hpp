@@ -144,14 +144,16 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process, const std::str
 }
 
 
+
+
 std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const bool& perf){
  	struct subprocess_s process;
 	int exit_code;
 	std::string stdJSON = "";
 
+	  FILE *stdin_file;
 
-    // int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
-    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path| subprocess_option_combined_stdout_stderr, environment, &process);
+    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async, environment, &process);
 	const auto processName = commandLineArguments[0];
 
 	if(verbose){
@@ -164,8 +166,30 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
         return "";
     }
 
-	e.startCounters();
-	subprocess_join(&process, &exit_code);
+	stdin_file = subprocess_stdin(&process);
+
+
+  	static char data[1048576 + 1] = {0};
+	
+	unsigned bytes_read;
+	do{
+		bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
+		if(strcmp(data, "READY?") == 0){
+			break;
+		}
+		std::cout << data << std::endl;
+	}while(bytes_read != 0);
+
+	if(verbose) std::cout << "Received Start Command: " << data << std::endl;
+
+    fprintf(stdin_file, "Start\n");
+
+	e.startCounters();	
+	int wait_process = subprocess_join(&process, &exit_code);
+	if (0 != wait_process) {
+		std::cerr << "Process failed to wait" << std::endl;
+	}	
+
 	e.stopCounters();
 
 	if(exit_code == 0 && verbose){
@@ -282,7 +306,7 @@ std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algorithmsControlle
 	}
 
 	for(auto algo: algorithmsController.SelectedHashTables){
-		jsonResults += runHash(AlgoGauge::ClosedHashTable<string, string> (
+		jsonResults += runHash(HashTables::ClosedHashTable<string, string> (
 			algo.Capacity,
 			algo.Probe,
 			algo.Load,

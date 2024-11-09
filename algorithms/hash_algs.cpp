@@ -44,7 +44,7 @@ using std::pair;
 
 */
 
-namespace AlgoGauge {
+namespace HashTables {
 
   template <typename T, typename U>
   class ClosedHashTable {

@@ -76,17 +76,20 @@ Options getOptions(string type) {
     ;
 
     options.add_options("Algorithm Name and Length [REQUIRED]")
-        ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear_probe]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
-        ("s, strat, type, strategy", "Sorting: [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]\nHash Table: [closed]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
-        ("n, num, length, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
+        ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear_probe]\n Linked List: [pop, push, push_pop]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
+        ("s, strat, type, strategy", "Sorting: [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]\nHash Table: [closed]\nLinked List:[front, back, front_back, back_front]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
+        ("n, num, length, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations\nLinked List: Number of operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
     ;
 
     options.add_options("Required Sorting Algorithm")
         ("x,lang,language", "Options: C++, Py/Python3, JS/NodeJS", cxxopts::value<vector<string>>(), "What programming language will process the sorting algorithm")
     ;
+    options.add_options("Required Linked List")
+        ("l, size", "Provide a number (int > 0) that determines linked list size.", cxxopts::value<vector<int>>(), "How many elements can be stored in the Linked List")
+     ;
 
     options.add_options("Required Hash Table")
-        ("c, size, capacity", "Provide a number (int > 0) that determines hash table size.", cxxopts::value<vector<int>>(), "How many elements can be stored in the Hash Table")
+        ("c, capacity", "Provide a number (int > 0) that determines hash table size.", cxxopts::value<vector<int>>(), "How many elements can be stored in the Hash Table")
         ("d, load, density", "Provide an int value between 0 (0%) and 100 (100%) to load into hash table.", cxxopts::value<vector<double>>(), "How full or the density of the starting hash table as a percentage")
     ;
 
