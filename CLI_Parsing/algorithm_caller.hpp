@@ -170,44 +170,77 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
 	stdin_file = subprocess_stdin(&process);
 
+	// static char data[1048576 + 1] = {0};	
+	// unsigned bytes_read;
+	// if(verbose) std::cout << "Reading output..." << std::endl;
+
+	// do {
+	// 	bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
+    
+	// 	if (bytes_read > 0) {
+	// 		data[bytes_read] = '\0';  // Null-terminate the data
+
+	// 		if (strcmp(data, "READY?") == 0 || strcmp(data, "READY?\n") == 0) {
+	// 			if(verbose) std::cout << "Detected READY? message" << std::endl;
+	// 			fputs("Start\n", stdin_file); 
+	// 			fflush(stdin_file);  // Ensure the input is sent immediately
+
+	// 			e.startCounters();
+	// 			continue;
+	// 		}
+
+	// 		if (strcmp(data, "DONE!") == 0 || strcmp(data, "DONE!\n") == 0) {
+	// 			e.stopCounters();
+
+	// 			if(verbose) std::cout << "Detected DONE! message" << std::endl;
+	// 			fputs("Done\n", stdin_file);
+	// 			fflush(stdin_file);  // Ensure the input is sent immediately
+
+	// 			break;
+	// 		}
+
+	// 		std::cout << data; //data already has std::endl
+	// 	} else {
+	// 		if(verbose) std::cout << "No more data to read, exiting loop." << std::endl;
+	// 		break;
+	// 	}
+	// } while (true);
+
 	static char data[1048576 + 1] = {0};	
+	std::string buffer;
 	unsigned bytes_read;
-	if(verbose) std::cout << "Reading output..." << std::endl;
 
 	do {
 		bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
-    
-		if (bytes_read > 0) {
-			data[bytes_read] = '\0';  // Null-terminate the data
+		data[bytes_read] = '\0';  // Ensure null-termination
 
-			if (strcmp(data, "READY?") == 0) {
-				if(verbose) std::cout << "Detected READY? message" << std::endl;
-				fputs("Start\n", stdin_file); 
-				fflush(stdin_file);  // Ensure the input is sent immediately
+		buffer += data;  // Accumulate read data in buffer
 
-				e.startCounters();
-				continue;
-			}
+		// Check if "READY?" or "DONE!" is fully in buffer
+		if (buffer.find("READY?") != std::string::npos) {
+			if(verbose) std::cout << "Detected READY? message" << std::endl;
+			fputs("Start\n", stdin_file); 
 
-			if (strcmp(data, "DONE!") == 0 || strcmp(data, "DONE!\n") == 0) {
-				e.stopCounters();
+			fflush(stdin_file);  // Ensure the input is sent immediately
+			e.startCounters();
 
-				if(verbose) std::cout << "Detected DONE! message" << std::endl;
-				fputs("Done\n", stdin_file);
-				fflush(stdin_file);  // Ensure the input is sent immediately
+			buffer.clear();  // Clear after handling
 
-				break;
-			}
+			continue;
+		}
 
-			std::cout << data; //data already has std::endl
-		} else {
-			if(verbose) std::cout << "No more data to read, exiting loop." << std::endl;
+		if (buffer.find("DONE!") != std::string::npos) {
+			e.stopCounters();
+			if(verbose) std::cout << "Detected DONE! message" << std::endl;
+			fputs("Done\n", stdin_file);
+			fflush(stdin_file);  // Ensure the input is sent immediately
+			buffer.clear();  // Clear after handling
 			break;
 		}
-	} while (true);
+		cout << buffer;
+		buffer.clear();  // Clear after handling
 
-
-	if(verbose) std::cout << "Received Start Command: " << data << std::endl;
+	} while (bytes_read != 0);
 
 	// do{
 	// 	cout << "hello8" << std::endl;
