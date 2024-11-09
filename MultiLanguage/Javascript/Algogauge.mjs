@@ -1,7 +1,7 @@
 import {Command} from "commander";
 
 import {writeFile, appendFileSync} from "node:fs";
-import {runAlgorithm, runSortingAlgorithm} from "./runAlgorithms.mjs"
+import {runSortingAlgorithm} from "./runAlgorithms.mjs"
 import readline from 'readline';
 import {SortingAlgorithm} from "./AlgogaugeDetails.mjs"
 import{verifySort,
@@ -110,8 +110,10 @@ function askQuestion(query) {
 (async () => {
 	let jsonResults = "";
 
+	// console.log("DONE!")
 
   	const startString = await askQuestion("READY?");
+	// console.log("DONE!")
 
 	if(options.verbose){
 		console.log(`Received: ${startString} starting process`);
@@ -120,17 +122,20 @@ function askQuestion(query) {
 	SelectedSortingAlgorithms.forEach(element => {
 		if (options.output && options.verbose) console.log(`NodeJS Original Array: ${JSON.stringify(element.array)}`);
 	
-		if(options.verbose) console.log(`NodeJS Starting sort: \"${element.array}\"`);
+		if(options.verbose) console.log(`NodeJS Starting sort: \"${element.algorithm}\"`);
 
 		runSortingAlgorithm(element);
+
+	});
+
+	
+	const stopString = await askQuestion("DONE!");
+
+
+	SelectedSortingAlgorithms.forEach(element =>{
 		if (options.output && options.verbose) console.log(`NodeJS Sorted Array: ${JSON.stringify(element.sortedArray)}`);
 
 		if(options.verbose) console.log(`NodeJS Verifying sort: \"${element.algorithm}\"`);
-	});
-
-	console.log("DONE!")
-
-	SelectedSortingAlgorithms.forEach(element =>{
 		const correct = verifySort(element.sortedArray)
 
 		if(!correct){
