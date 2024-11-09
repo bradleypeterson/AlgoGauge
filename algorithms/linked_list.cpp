@@ -11,7 +11,7 @@
 #include <chrono>
 #include <utility>
 #include "RandomNum.hpp"
-#include "../dependencies/Perf.hpp"
+#include "../dependencies/PerfEvent.hpp"
 
 using std::cout;
 using std::cin;
@@ -168,7 +168,7 @@ namespace AlgoGauge {
     }
 
     //Timed functions 
-
+    
     //POP BACK
     //amount of time to pop_back "numDeleted" to a linked list of "listSize"
     //verbose - print result to STDOUT, error to STDERR
