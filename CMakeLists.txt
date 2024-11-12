@@ -7,7 +7,7 @@ project(AlgoGauge)
 add_executable( AlgoGauge 
         main.cpp
         algorithms/sort_7algs.cpp
-        # algorithms/hash_algs.cpp
+        algorithms/hash_algs.cpp
 
 )
 

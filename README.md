@@ -99,6 +99,7 @@ Number of items to process. Provide an int value between 0 and 4,294,967,295 (UN
 ##### -n, --name 
 A canonical name that will be returned in output if provided. (default: "")
 
+FIXME: change to -s, --strat
 #### Algorithm Options [ONE REQUIRED] options:
 
 ##### -r, --random [=arg(=true)]
@@ -382,7 +383,7 @@ Results written in JSON at: './results.json'
   - [ ] When a close education popup I want to go back to the experiment
 - [ ] Instructor video and education overhaul
 - [ ] Parallel vs Serial
-- [ ] Validate Perf, find a way to run in unix, ways to measure l1 cache. *
+- [ ] Validate Perf, ways to measure l1 cache. *
 
 ### P2
 

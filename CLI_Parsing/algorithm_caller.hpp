@@ -10,11 +10,16 @@
 #include <algorithm>
 #include <cctype>
 
-#include "../dependencies/subprocess.h"
-#include "../algorithms/sort_7algs.cpp"
-#include "CLI_Parser.hpp"
 #include "../AlgoGaugeDetails.hpp"
+#include "CLI_Parser.hpp"
+
+
 #include "../dependencies/PerfEvent.hpp"
+#include "../dependencies/subprocess.h"
+
+#include "../algorithms/sort_7algs.cpp"
+#include "../algorithms/hash_algs.cpp"
+
 
 
 
@@ -36,8 +41,7 @@ std::string runCPlusPlusProgram(
     const string& canonicalName = "",
     const bool& verbose = false,
     const bool& includeValues = false,
-    const string& includePerf = "false"
-
+    const AlgoGauge::PERF& includePerf = perfOFF
 ) {
 	std::unique_ptr<Sorting::BaseSort<unsigned int>> SortingAlgorithm;
 	// std::cout << includePerf << "perf";
@@ -138,18 +142,7 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process, const std::str
 
 	return jsonString;
 }
-std::string get_process_name(pid_t pid) {
-    std::string comm_path = "/proc/" + std::to_string(pid) + "/comm";
-    std::ifstream comm_file(comm_path);
-    
-    if (!comm_file.is_open()) {
-        return "Process not found or access denied.";
-    }
-    
-    std::string process_name;
-    std::getline(comm_file, process_name);
-    return process_name;
-}
+
 
 std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const bool& perf){
  	struct subprocess_s process;
@@ -159,7 +152,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
     // int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
     int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path| subprocess_option_combined_stdout_stderr, environment, &process);
-	const auto processName = get_process_name(process.child);
+	const auto processName = commandLineArguments[0];
 
 	if(verbose){
 		std::cout << "PID of child process: "<< processName << " " << process.child << std::endl;
@@ -205,13 +198,9 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
 std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	std::string jsonResults;
-	std::string includePerf = algorithmsController.Perf ? "true" : "false";
-	if(algorithmsController.PerfSample){
-		includePerf = "sample";
-	}
 	for(auto algo: algorithmsController.SelectedSortingAlgorithms){
 
-		std::transform(algo.Language.begin(), algo.Language.end(), algo.Language.begin(), ::tolower);
+		// std::transform(algo.Language.begin(), algo.Language.end(), algo.Language.begin(), ::tolower);
 		// std::transform(algo.Name.begin(), algo.Name.end(), algo.Name.begin(), ::tolower); // make input lowercase
 
 		if(algo.Language == "c++"){
@@ -222,7 +211,7 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 				algo.Name, 
 				algorithmsController.Verbose, 
 				algorithmsController.Output, 
-				includePerf);
+				algorithmsController.Perf);
 			continue;
 		}
 		if(algorithmsController.Output){
@@ -276,17 +265,53 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 	return jsonResults;
 }
 
+std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
+	std::string jsonResults;
+	std::string includePerf;
+	switch (algorithmsController.Perf)
+	{
+	case perfON:
+		/* code */
+		includePerf += "true";
+		break;
+	case perfOFF:
+		includePerf += "false";
+	case sample:
+		includePerf += "sample";
+
+	}
+
+	for(auto algo: algorithmsController.SelectedHashTables){
+		jsonResults += runHash(AlgoGauge::ClosedHashTable<string, string> (
+			algo.Capacity,
+			algo.Probe,
+			algo.Load,
+			algo.Number,
+			algorithmsController.Verbose,
+			includePerf
+		));
+
+		jsonResults+=",";
+
+
+	}
+	return jsonResults;
+}
+
 
 void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	// int x = 7;
     // assert (x==5);
 	
-	std::string jsonResults = "{\"algorithms\": ["; //create the json results object even if not specified
+	std::string jsonResults = "{\"sorting_algorithm\": ["; //create the json results object even if not specified
 
 	
 	jsonResults += runSortingAlgorithms(algorithmsController);
 	jsonResults.pop_back(); //remove extraneous comma
-	jsonResults += "]}"; //finish json string
+	jsonResults += "],\"hash_table\":[";
+	jsonResults += runHashTables(algorithmsController);
+	jsonResults.pop_back(); //remove extraneous comma
+	jsonResults += "]}";
 
 	if (algorithmsController.Json) std::cout << jsonResults << endl;
 

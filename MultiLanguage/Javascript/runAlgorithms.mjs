@@ -93,5 +93,6 @@ export const runAlgorithm = (algorithm, strategy, length, name, verbose, output,
 
 	if(verbose) console.log(`NodeJS Sort: \"${runningAlgorithm}\" with Algorithm Option \"${capitalizeFirstLetter(strategy)}\" of length ${length}, completed in ${timeTaken} milliseconds`);
 
-	return `{algorithmName": "${runningAlgorithm}","algorithmOption": "${capitalizeFirstLetter(strategy)}","algorithmLength": ${length},"language": "NodeJS", "verified": ${+correct},"algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken.toFixed(6)}, "perfData": {}}`
+	//"verified": ${+correct}
+	return `{"algorithmName": "${runningAlgorithm}","algorithmOption": "${capitalizeFirstLetter(strategy)}","algorithmLength": ${length},"language": "NodeJS","algorithmCanonicalName": "${name ?? ""}","algorithmRunTime_ms": ${timeTaken.toFixed(6)}, "perfData": {}}`
 }

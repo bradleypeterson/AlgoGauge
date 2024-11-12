@@ -53,7 +53,7 @@ namespace Sorting {
             const string &canonicalName = "",
             const bool &verbose = false,
             const bool &includeValues = false,
-            const string &includePerf = "false"
+            const AlgoGauge::PERF& includePerf = perfOFF
         );
         virtual ~BaseSort();
 
@@ -98,8 +98,8 @@ namespace Sorting {
         // This is different from sortName as this can be whatever the user defines.
         bool verbose;
         bool includeValues;
-        string includePerf;
-        string perfObjectString = "{}";
+        AlgoGauge::PERF includePerf;
+        std::string perfObjectString = "{}";
 
         virtual void runSort() = 0; // Pure virtual function.
         void printValues() const;
@@ -127,7 +127,7 @@ namespace Sorting {
             const string &canonicalName,
             const bool &verbose,
             const bool &includeValues,
-            const string &includePerf
+            const AlgoGauge::PERF &includePerf
     ) {
         this->sortName = sortName;
         if (capacity > 0 && capacity < UINT32_MAX) this->capacity = capacity; //make sure capacity is more than 0 and less than an unsigned 32 bit int
@@ -288,24 +288,22 @@ namespace Sorting {
     template<typename T>
     void BaseSort<T>::runAndCaptureSort() {
 
-        const bool perf = includePerf == "true" ? true: false;
-        const bool sample = includePerf == "sample"? true: false;
 
         PerfEvent perfObject;
         if (verbose) cout << "C++ Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
         
         auto startTime = std::chrono::steady_clock::now(); //record the start time counter
 
-        if (perf && !sample){
+        if (includePerf == perfON){
             if(verbose) std::cout << "Starting PERF" << std::endl;
             perfObject.startCounters();
         }
 
         runSort();
 
-        if (perf && !sample){
+        if (includePerf == perfON){
             perfObject.stopCounters();
-            if(verbose) std::cout << "Stopping PERF it ran for: " << perfObject.getDuration()<< std::endl;
+            if(verbose) std::cout << "Stopping PERF it ran for: " << perfObject.getDuration() << std::endl;
         }
         auto stopTime = std::chrono::steady_clock::now(); //record the stop time counter
 
@@ -316,9 +314,9 @@ namespace Sorting {
         if (verbose) cout << "C++ Sort: \"" << sortName << "\"" << getCanonicalName() << " Verified!" << endl;
         executionTime = stopTime - startTime;
 
-        if (perf && !sample) this->perfObjectString = perfObject.getPerfJSONString();
+        if (includePerf == perfON) this->perfObjectString = perfObject.getPerfJSONString();
 
-        if(sample){
+        if(includePerf == sample){
             if(verbose) std::cout << "Sample PERF Data Insert" << std::endl;
             this->perfObjectString = perfObject.getPerfJSONStringDummy();
         }
@@ -473,7 +471,7 @@ namespace Sorting {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Bubble", capacity, canonicalName, verbose, includedValues, includePerf) {}
 
         void runSort();
@@ -521,7 +519,7 @@ void Bubble<T>::runSort() {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Selection", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
@@ -561,7 +559,7 @@ void Bubble<T>::runSort() {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Insertion", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
@@ -601,7 +599,7 @@ void Bubble<T>::runSort() {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Quick", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
@@ -674,7 +672,7 @@ void Bubble<T>::runSort() {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Heap", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
@@ -740,7 +738,7 @@ void Bubble<T>::runSort() {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Merge", capacity, canonicalName, verbose, includedValues, includePerf) {}
 
         void runSort();

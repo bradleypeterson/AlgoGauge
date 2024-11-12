@@ -18,13 +18,30 @@ enum AlgorithmOptions {
 	orderedSet
 };
 
+enum PERF{
+	perfOFF,
+	perfON,
+	sample
+};
+const std::unordered_map<std::string, AlgoGauge::AlgorithmOptions> strategyMap = {
+        {"random", AlgoGauge::AlgorithmOptions::randomSet},
+        {"repeated", AlgoGauge::AlgorithmOptions::repeatedSet},
+        {"chunks", AlgoGauge::AlgorithmOptions::chunkSet},
+        {"reversed", AlgoGauge::AlgorithmOptions::reversedSet},
+        {"ordered", AlgoGauge::AlgorithmOptions::orderedSet}
+};
 
 struct HashTableSettings{
-
+	std::string Type = "Closed";
+	int Capacity = 10;
+	int Number = 100;
+	std::string Probe = "linear";
+	int Load = 0;
+	std::string Name = "";
 };
 
 struct SortingAlgorithmSettings {
-	std::string Name = "None";
+	std::string Name = "";
 	std::string Algorithm = "built_in";
 	std::string ArrayStrategyString = "default";
 	AlgorithmOptions ArrayStrategy = none;
@@ -36,9 +53,7 @@ struct SortingAlgorithmSettings {
 struct AlgoGaugeDetails{
 	bool Verbose = false;
 	bool Output = false;
-	bool Perf = false;
-	bool PerfFileWrite = false;
-	bool PerfSample = false;
+	PERF Perf = perfOFF;
     bool Json = false;
     std::string FileWritePath = "";
 	bool Unique = false;

@@ -45,6 +45,7 @@ AlgoGaugeCLI:
 │
 ├───algorithms  # Contains files related to running any algorithms
 │   ├───RandomNum.hpp  # File containing logic to generate random numbers
+│   ├───hash_algs.cpp  # Contains all the hash table logic 
 │   └───sort_7algs.cpp  # Contains all the Sorting Algorithms logic
 │
 ├───CLI_Parsing  # Contains files related to parsing out command line arguments
@@ -80,7 +81,6 @@ greatly helps if I compare two algorithms with random start sets, come back at a
 run an additional algorithm with a random start set. No matter the time difference between the 
 first comparison run and the second, the random start set will be the same every time. 
 
-#
 #### /sort_7algs.cpp
 This is the main file that houses all the sorting algorithms and processing logic.
 This file is setup to be object oriented where every algorithm should inherit from the base class 
@@ -91,9 +91,12 @@ to compile on non-linux machines (in order to make things easier for development
 commands added throughout in order to make sure that the perf logic is only compiled on Linux 
 environments. 
 
+#### /hash_algs.cpp
+TODO: add text.
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#
 ### CLI_Parsing/
 #### /CLI_Parsing.hpp
 This is the main file for managing the program. It parses out the command line arguments primarily,
@@ -116,7 +119,6 @@ The official documentation for this TPL is listed here: https://github.com/jarro
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#
 #### /Perf.hpp
 This is the library that interfaces with the Perf API on Linux. It should go without saying that this 
 was the hardest piece to interface with. My only advice is to put aside a couple of hours to research 
@@ -151,7 +153,6 @@ When this limit is exceeded, no error is generated. Instead, all the perf metric
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#
 ### Deploying to an Ubuntu Server
 These steps are similar to the **Getting Started -> Installation** section in the other README. However,
 these contain the steps I used to build this as a program on Ubuntu so that it could be called from 
@@ -207,7 +208,6 @@ Which sudo is required in order for the -p/--perf flag to work!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#
 
 <h1 id="react-deploy" name="react-deploy">
 Deploying React to an Ubuntu Server
