@@ -25,7 +25,7 @@ using std::endl;
 using std::string;
 using std::pair;
 
-//node
+//Node
 struct Node {
     int data =42;
     Node* link;
@@ -44,12 +44,12 @@ struct LinkedList {
     //create linked list of given size
     LinkedList(int size, int number) : head(nullptr), tail(nullptr), count(0) {
         for (int i = 0; i < size; i++) {
-            push_back(size);
+            push_back(number);
         }
         this->number = number;
     }
 
-    //print list 
+    //print list function 
     string print_List(){
         Node* current = head;
         while (current != nullptr) {
@@ -60,6 +60,7 @@ struct LinkedList {
     }
 
     //push_back 
+    //push node to back of linked list
     void push_back(int data) {
         Node* temp = new Node(data);
 
@@ -77,6 +78,7 @@ struct LinkedList {
     }
 
     //push_front
+    //pushed node to front of list
     void push_front(int data) {
         Node* temp = new Node(data);
         if (!head) {      
@@ -92,6 +94,7 @@ struct LinkedList {
     }
 
     //pop_back
+    //removes last node in linked list 
     void pop_back() {
         // Error scenario: List is empty
         if (!head) {
@@ -120,6 +123,7 @@ struct LinkedList {
     }
 
     //pop_front
+    //removes first node in linked list 
     void pop_front() {
         //List is empty
         if (!head) {
@@ -186,7 +190,11 @@ std::string LinkedListPerformanceTest(int size, int number, string function, str
     LinkedList list(size, number);
     
     if(verbose){
-        cout << "List has been created, Beginging timer and Perf" << endl;
+        cout << "List has been created.\nBegining timer and Perf" << endl;
+    }
+    
+    if(includeValues){
+        list.print_List();
     }
 
     //start time
@@ -195,7 +203,7 @@ std::string LinkedListPerformanceTest(int size, int number, string function, str
     //start perf
     perfObject.startCounters();
 
-    //function stuff
+    //function check
 
     if(function == "pop_back"){
         LinkedListPopBackTime(list);
@@ -225,7 +233,7 @@ std::string LinkedListPerformanceTest(int size, int number, string function, str
     //end perf
     perfObject.stopCounters();
 
-    //return json string 
+ 
     if (verbose){
         cout << "Timer and Perf stopped." << endl;
     } 
@@ -233,7 +241,8 @@ std::string LinkedListPerformanceTest(int size, int number, string function, str
     if (includeValues){
         list.print_List();
     }
-         
+
+    //create return     
     output = "{";
     output += R"("algorithmName": ")" + function + "\",";
     output += R"("listSize": )" + std::to_string(size) + ","; 
@@ -262,11 +271,13 @@ int main() {
 
     //performance tests with verbose
     LinkedListPerformanceTest(100000, 4002, "push_back", "true", true, false);
+    LinkedListPerformanceTest(100000, 4002, "pushpop_back", "true", true, false);
 
     // Invalid case
     LinkedListPerformanceTest(100000, 4002, "invalid", "true", true, false);
 
     // Include values 
-    LinkedListPerformanceTest(100, 200, "push_back", "true", true, true);
+    //LinkedListPerformanceTest(100, 200, "push_back", "true", true, true);
+
     return 0;
 }
