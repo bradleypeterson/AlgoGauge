@@ -159,6 +159,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 	if(verbose){
 		std::cout << "PID of child process: "<< processName << " " << process.child << std::endl;
 	}
+
 	PerfEvent e(process.child);
 	// cout << process.child;
     if (result != 0) {
@@ -280,10 +281,15 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
     // Clean up
 	int cleanUpResult = subprocess_destroy(&process);
+	
 	if (cleanUpResult != 0) {
 		std::cerr << "Process failed to get destroyed and still might control memory" << std::endl;
 	}
 
+	// delete stdin_file;
+	// stdin_file = NULL;
+
+	
     return stdJSON;
 }
 

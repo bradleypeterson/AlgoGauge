@@ -523,13 +523,13 @@ because we would only set the `etc` folder to **NOT** have any permissions on th
 except whenever we have to build the React app. This is because we would have to redo the `chmod -R +rx` on the root 
 group folder which would also add read and execute permissions to the `etc` folder which is not what we wanted. Meaning 
 that every time we would have to manually specify each of the files in our `chmod` command so as to not touch the `etc` 
-folder as well. 
+folder as well.
 
 <br>
 
-The best solution to this problem is to create two folders for each group. One group folder that would be the same as 
-above in `/var/www/html/` and then another one somewhere other than `/var/www/html/`. This would eliminate the need for 
-the `etc` folder as it would move the `etc` folder somewhere else in the file system. 
+The best solution to this problem is to create two folders for each group. One group folder that would be the same as
+above in `/var/www/html/` and then another one somewhere other than `/var/www/html/`. This would eliminate the need for
+the `etc` folder as it would move the `etc` folder somewhere else in the file system.
 
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -614,7 +614,7 @@ WantedBy=multi-user.target
 After you created and saved your `.service` file, you need to tell `systemd` to enable it. You can do this with the 
 following command:
 ```bash
-sudo systemctl enable [name of .service file you created WITHOUT .service]
+sudo "_systemctl_" enable [name of .service file you created WITHOUT .service]
 ```
 
 E.g. if the service file you created is called `example-backend.service`, you would run:
