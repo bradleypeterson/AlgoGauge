@@ -97,7 +97,6 @@ struct PerfEvent
 		{"total page faults", 10020.00},
 		{"minor page faults", 10020.00},
 		{"major page faults", 0.00},
-		{"context switches", 214.00},
 		{"scale", 1.0},
 		{"IPC", 1.70},
 		{"CPUs", 0.37},

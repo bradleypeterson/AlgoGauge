@@ -112,24 +112,30 @@ function askQuestion(query) {
 
 	// console.log("DONE!")
 
-  	const startString = await askQuestion("READY?");
 	// console.log("DONE!")
 
-	if(options.verbose){
-		console.log(`Received: ${startString} starting process`);
-	}
 
-	SelectedSortingAlgorithms.forEach(element => {
+	for (const element of SelectedSortingAlgorithms) {
 		if (options.output && options.verbose) console.log(`NodeJS Original Array: ${JSON.stringify(element.array)}`);
 	
 		if(options.verbose) console.log(`NodeJS Starting sort: \"${element.algorithm}\"`);
+		
+		const startString = await askQuestion("READY?");
+
+		if(options.verbose){
+			console.log(`Received: ${startString} starting process`);
+		}
 
 		runSortingAlgorithm(element);
 
-	});
+		const stopString = await askQuestion("DONE!");
+
+		if(options.verbose){
+			console.log(`Received: ${stopString} starting process`);
+		}
+	}
 
 	
-	const stopString = await askQuestion("DONE!");
 
 
 	SelectedSortingAlgorithms.forEach(element =>{
