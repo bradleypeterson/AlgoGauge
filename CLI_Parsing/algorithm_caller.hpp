@@ -286,8 +286,8 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 		std::cerr << "Process failed to get destroyed and still might control memory" << std::endl;
 	}
 
-	delete stdin_file;
-	stdin_file = NULL;
+	// delete stdin_file;
+	// stdin_file = NULL;
 
 	
     return stdJSON;
