@@ -72,7 +72,17 @@ AlgoGaugeCLI:
 ### /arrays.cpp
 TODO: add text.
 ### /hash_algs.cpp
-TODO: add text.
+This file is where all the hash table logic is stored. The only hash table that has been created is closed (array based) hash table. 
+
+##### Design:
+  - The design method was to create an class for ClosedHashTable that has all the crud operations like creating, looking-up, changing, and deleting. 
+  - Then I created the testing methods that are apart of the class, which are specifically for testing the hash table algorithms. 
+  - The getters retrive the privite data members that are passed into the constructor. These data members have to do with the creation of the hash table and the parameters for testing, along with the parameters for how the JSON string is returned and verbose couts.
+  - To run/test a hash table object you create an object and pass it into the `runHash()` function. The `runHash()` function returns a string which is in a JSON format. Example bellow:
+  ```cpp
+  cout << runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "true")) << endl;
+  ```
+
 ### /linkedList.cpp
 TODO: add text.
 ### /RandomNum.hpp
