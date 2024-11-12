@@ -3,6 +3,10 @@ from time import perf_counter
 import sys
 import sorting_methods as sm
 import array_creation as ac
+import sys
+import fileinput
+
+
 
 def get_unsorted_array(strategy: str, length: int, max_value: int) -> array:
     strategy_map = {
@@ -52,13 +56,21 @@ def run_algorithm(algorithm: str, strategy: str, length: int, verbose: bool, out
         
     if output and verbose:
         print(f"Python3 Original Array: \"{unsorted_array.tolist()}\"")
-        
-    start = perf_counter()
     
+    print("READY?")  
+    sys.stdout.flush() 
+    ready = input()   
+    print(ready);
+    start = perf_counter()
+
     sorted_array = selected_algorithm()
     
     time_taken = perf_counter() - start
     
+    print("DONE!")
+    done = input()   
+    sys.stdout.flush()
+
     if output and verbose:
         print(f"Python3 Sorted Array: \"{sorted_array.tolist()}\"")
     
@@ -79,7 +91,7 @@ def run_algorithm(algorithm: str, strategy: str, length: int, verbose: bool, out
           f'"algorithmOption": "{strategy.capitalize()}",'
           f'"algorithmLength": {length},'
           f'"language": "Python",'
-          f'"verified": {int(correct)},'
+        #   f'"verified": {int(correct)},'
           f'"algorithmCanonicalName": "{name if name else ""}",'
           f'"algorithmRunTime_ms": {time_taken:6f},'
           f'"perfData": {{}}}}')

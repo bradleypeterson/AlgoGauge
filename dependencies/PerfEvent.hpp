@@ -33,6 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cmath>
+
 
 #if defined(__linux__)
 #include <asm/unistd.h>
@@ -408,12 +410,13 @@ public:
 		{
 			std::stringstream stream;
 			stream << std::setprecision(precision) << events[i].readCounter() / static_cast<double>(normalizationConstant);
-			jsonString += "\"" + names[i] + "\":" + stream.str() + ",";
+			// std::cout << stream.str();
+			jsonString += "\"" + names[i] + "\":" + (stream.str() != "-nan"? stream.str(): "null") + ",";
 		}
 		std::ostringstream stream;
 		stream << "\"scale\":" << std::setprecision(precision) << normalizationConstant << ",";
 		stream << "\"GHz\":" << std::fixed << std::setprecision(precision) << getGHz() << ",";
-		stream << "\"IPC\":" << std::fixed << std::setprecision(precision) << getIPC() << ",";
+		stream << "\"IPC\":" << std::fixed << std::setprecision(precision) << (std::isnan(getIPC()) ? -1: getIPC()) << ",";
 		stream << "\"CPUs\":" << std::fixed << std::setprecision(precision) << getCPUs();
 
 		jsonString += stream.str() + "}";

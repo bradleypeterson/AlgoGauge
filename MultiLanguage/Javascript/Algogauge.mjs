@@ -1,17 +1,21 @@
 import {Command} from "commander";
 
-
-import {exit} from "node:process";
-
 import {writeFile, appendFileSync} from "node:fs";
-import {runAlgorithm} from "./runAlgorithms.mjs"
+import {runSortingAlgorithm} from "./runAlgorithms.mjs"
+import readline from 'readline';
+import {SortingAlgorithm} from "./AlgogaugeDetails.mjs"
+import{verifySort,
+} from "./sorting.mjs";
 
-const UINT32_MAX = (1 << 31) >>> 0 | (1 << 31) - 1;
-
-let Max_Number = UINT32_MAX
+let Max_Number;
 
 const program = new Command();
 
+const SelectedSortingAlgorithms = []
+
+
+
+// options.verbose, options.output
 const collect = (value, previous) => {
 	return previous.concat([value.toLowerCase()]);
 }
@@ -81,23 +85,82 @@ options.algorithm.length != options.strategy.length ||
 options.algorithm.length == 0) {     
         throw console.error("Number of provided algorithm(s), length(s), language(s), and strategy(s) arguments do not match!");
 		process.exit(1)
-    }
+}
 
-let jsonResults = "";
+
 for(let i = 0; i < options.algorithm.length; i++){
-	jsonResults += (runAlgorithm(options.algorithm[i],options.strategy[i], options.length[i], options.name[i], options.verbose, options.output, Max_Number) + ",")
-}
-jsonResults = jsonResults.substring(0, jsonResults.length-1) //removes the last ,
-if(options.file != "" && options.json){
-	writeToFileLocation(jsonResults, options.file)
+	SelectedSortingAlgorithms.push(new SortingAlgorithm(options.algorithm[i], options.strategy[i], options.length[i], options.name[i], Max_Number));
 }
 
-if(options.json){
-	console.log(jsonResults);
+
+
+function askQuestion(query) {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+
+    return new Promise(resolve => rl.question(query, ans => {
+        rl.close();
+        resolve(ans);
+    }))
 }
 
+
+(async () => {
+	let jsonResults = "";
+
+	// console.log("DONE!")
+
+  	const startString = await askQuestion("READY?");
+	// console.log("DONE!")
+
+	if(options.verbose){
+		console.log(`Received: ${startString} starting process`);
+	}
+
+	SelectedSortingAlgorithms.forEach(element => {
+		if (options.output && options.verbose) console.log(`NodeJS Original Array: ${JSON.stringify(element.array)}`);
+	
+		if(options.verbose) console.log(`NodeJS Starting sort: \"${element.algorithm}\"`);
+
+		runSortingAlgorithm(element);
+
+	});
 
 	
+	const stopString = await askQuestion("DONE!");
+
+
+	SelectedSortingAlgorithms.forEach(element =>{
+		if (options.output && options.verbose) console.log(`NodeJS Sorted Array: ${JSON.stringify(element.sortedArray)}`);
+
+		if(options.verbose) console.log(`NodeJS Verifying sort: \"${element.algorithm}\"`);
+		const correct = verifySort(element.sortedArray)
+
+		if(!correct){
+			console.error(`${element.algorithm} there was an error when sorting`)
+		}else{
+			if(options.verbose) console.log(`NodeJS Sort: \"${element.algorithm}\" Verified!`);
+		}
+		if(options.verbose) console.log(`NodeJS Sort: \"${element.algorithm}\" with Algorithm Option \"${element.strategy}\" of length ${element.length}, completed in ${element.timeTaken} milliseconds`);	
+		jsonResults += `{"algorithmName": "${element.algorithm}","algorithmOption": "${element.strategy}","algorithmLength": ${element.length},"language": "NodeJS","algorithmCanonicalName": "${element.name}","algorithmRunTime_ms": ${element.timeTaken.toFixed(6)}, "perfData": {}}` + ',';
+	})
 
 	
-exit(0)
+	jsonResults = jsonResults.substring(0, jsonResults.length-1) //removes the last ,
+	if(options.file != "" && options.json){
+		writeToFileLocation(jsonResults, options.file)
+	}
+
+	if(options.json){
+		console.log(jsonResults);
+	}
+})();
+
+
+
+
+
+
+

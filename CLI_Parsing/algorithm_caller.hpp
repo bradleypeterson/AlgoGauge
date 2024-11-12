@@ -98,14 +98,14 @@ std::string runCPlusPlusProgram(
 std::string printChildProcessSTDOUT(struct subprocess_s &process, const std::string& perfDetails){
 	std::string jsonString;
 	std::string stdOUT;
-	char buffer[1024];
-	 while (true) {
-        unsigned bytes_read = subprocess_read_stdout(&process, buffer, sizeof(buffer));
-        if (bytes_read == 0) {
-            break;  // Exit loop when no more bytes are read
-        }
+
+	static char buffer[1048576 + 1] = {0};	
+	unsigned bytes_read;
+	do{
+       	bytes_read = subprocess_read_stdout(&process, buffer, sizeof(buffer));
 		stdOUT.append(buffer, bytes_read);
-    }
+    }while(bytes_read != 0);
+
 	std::vector<std::string> result;
     std::stringstream ss (stdOUT);
     std::string item;
@@ -144,14 +144,16 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process, const std::str
 }
 
 
+
+
 std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const bool& perf){
  	struct subprocess_s process;
 	int exit_code;
 	std::string stdJSON = "";
 
+	FILE *stdin_file;
 
-    // int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_combined_stdout_stderr, environment, &process);
-    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path| subprocess_option_combined_stdout_stderr, environment, &process);
+    int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async | subprocess_option_combined_stdout_stderr, environment, &process);
 	const auto processName = commandLineArguments[0];
 
 	if(verbose){
@@ -164,9 +166,99 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
         return "";
     }
 
-	e.startCounters();
-	subprocess_join(&process, &exit_code);
-	e.stopCounters();
+
+
+	stdin_file = subprocess_stdin(&process);
+
+	// static char data[1048576 + 1] = {0};	
+	// unsigned bytes_read;
+	// if(verbose) std::cout << "Reading output..." << std::endl;
+
+	// do {
+	// 	bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
+    
+	// 	if (bytes_read > 0) {
+	// 		data[bytes_read] = '\0';  // Null-terminate the data
+
+	// 		if (strcmp(data, "READY?") == 0 || strcmp(data, "READY?\n") == 0) {
+	// 			if(verbose) std::cout << "Detected READY? message" << std::endl;
+	// 			fputs("Start\n", stdin_file); 
+	// 			fflush(stdin_file);  // Ensure the input is sent immediately
+
+	// 			e.startCounters();
+	// 			continue;
+	// 		}
+
+	// 		if (strcmp(data, "DONE!") == 0 || strcmp(data, "DONE!\n") == 0) {
+	// 			e.stopCounters();
+
+	// 			if(verbose) std::cout << "Detected DONE! message" << std::endl;
+	// 			fputs("Done\n", stdin_file);
+	// 			fflush(stdin_file);  // Ensure the input is sent immediately
+
+	// 			break;
+	// 		}
+
+	// 		std::cout << data; //data already has std::endl
+	// 	} else {
+	// 		if(verbose) std::cout << "No more data to read, exiting loop." << std::endl;
+	// 		break;
+	// 	}
+	// } while (true);
+
+	static char data[1048576 + 1] = {0};	
+	std::string buffer;
+	unsigned bytes_read;
+
+	do {
+		bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
+		data[bytes_read] = '\0';  // Ensure null-termination
+
+		buffer += data;  // Accumulate read data in buffer
+
+		// Check if "READY?" or "DONE!" is fully in buffer
+		if (buffer.find("READY?") != std::string::npos) {
+			if(verbose) std::cout << "Detected READY? message" << std::endl;
+			fputs("Start\n", stdin_file); 
+
+			fflush(stdin_file);  // Ensure the input is sent immediately
+			e.startCounters();
+
+			buffer.clear();  // Clear after handling
+
+			continue;
+		}
+
+		if (buffer.find("DONE!") != std::string::npos) {
+			e.stopCounters();
+			if(verbose) std::cout << "Detected DONE! message" << std::endl;
+			fputs("Done\n", stdin_file);
+			fflush(stdin_file);  // Ensure the input is sent immediately
+			buffer.clear();  // Clear after handling
+			break;
+		}
+		cout << buffer;
+		buffer.clear();  // Clear after handling
+
+	} while (bytes_read != 0);
+
+	// do{
+	// 	cout << "hello8" << std::endl;
+	// 	bytes_read2 = subprocess_read_stdout(&process, something, sizeof(something) - 1);
+	// 	if(strcmp(data, "DONE!\n") == 0){
+	// 		cout << "hello3" << std::endl;
+	// 		break;
+	// 	}
+	// 	std::cout << data << std::endl;
+	// 	cout << "hello" << std::endl;
+	// }while(bytes_read2 != 0);
+
+	int wait_process = subprocess_join(&process, &exit_code);
+	if (0 != wait_process) {
+		std::cerr << "Process failed to wait" << std::endl;
+	}	
+
+
 
 	if(exit_code == 0 && verbose){
 		std::cout << processName << " Program executed successfully!" << std::endl;
@@ -282,7 +374,7 @@ std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algorithmsControlle
 	}
 
 	for(auto algo: algorithmsController.SelectedHashTables){
-		jsonResults += runHash(AlgoGauge::ClosedHashTable<string, string> (
+		jsonResults += runHash(HashTables::ClosedHashTable<string, string> (
 			algo.Capacity,
 			algo.Probe,
 			algo.Load,
@@ -303,15 +395,22 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	// int x = 7;
     // assert (x==5);
 	
-	std::string jsonResults = "{\"sorting_algorithm\": ["; //create the json results object even if not specified
+	std::string jsonResults = "{"; //create the json results object even if not specified
 
+	if(!algorithmsController.SelectedSortingAlgorithms.empty()){
+		jsonResults+= "\"sorting_algorithm\": ["
+		jsonResults += runSortingAlgorithms(algorithmsController);
+		jsonResults.pop_back(); //remove extraneous comma
+		jsonResults += "]";
+	}
+	if(!algorithmsController.SelectedHashTables.empty()){
+		jsonResults += "\"hash_table\":[";
+		jsonResults += runHashTables(algorithmsController);
+		jsonResults.pop_back(); //remove extraneous comma
+		jsonResults += "]";
+	}
+	jsonResults+="}";
 	
-	jsonResults += runSortingAlgorithms(algorithmsController);
-	jsonResults.pop_back(); //remove extraneous comma
-	jsonResults += "],\"hash_table\":[";
-	jsonResults += runHashTables(algorithmsController);
-	jsonResults.pop_back(); //remove extraneous comma
-	jsonResults += "]}";
 
 	if (algorithmsController.Json) std::cout << jsonResults << endl;
 
