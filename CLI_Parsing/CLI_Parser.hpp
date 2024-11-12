@@ -213,6 +213,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
     // cout << "lowered" << endl;
 
 
+        cout << "hello2" << std::endl;
 
     
     for(const auto& algo: algorithmDeque){
@@ -296,8 +297,8 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
             throw std::invalid_argument("Missing optional requirements for algorithm: ITERATOR and END per algorithm.");
         } 
 
-
-        for(int i = 0; i <= additionalDeque.front(); i+=iteratorDeque.front()){
+        cout << "hello3" << std::endl;
+        for(int i = 0; i <= (!additionalDeque.empty() ? additionalDeque.front(): 0); i+=(!iteratorDeque.empty()? iteratorDeque.front(): 1)){
             struct AlgoGauge::SortingAlgorithmSettings newSortingAlgorithm;
             newSortingAlgorithm.Algorithm = algo;
             newSortingAlgorithm.ArrayLength = numberDeque.front() + i;
@@ -319,20 +320,24 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
            
             algogaugeDetails.SelectedSortingAlgorithms.push_back(newSortingAlgorithm);
             
+            cout << "hello5" << std::endl;
 
         }
         strategyDeque.pop_front();
         languageDeque.pop_front();
         numberDeque.pop_front();
-        iteratorDeque.pop_front();
-        additionalDeque.pop_front();
+        if(!iteratorDeque.empty()){
+            iteratorDeque.pop_front();
+        }
+        if(!additionalDeque.empty()){
+            additionalDeque.pop_front();
+        }
+        
 
         if(!namesDeque.empty()){
             namesDeque.pop_front();
         }
-        continue;
-
-      
+        continue;   
     }
 
     if(algogaugeDetails.Verbose){
