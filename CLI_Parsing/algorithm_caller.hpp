@@ -398,7 +398,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	std::string jsonResults = "{"; //create the json results object even if not specified
 
 	if(!algorithmsController.SelectedSortingAlgorithms.empty()){
-		jsonResults+= "\"sorting_algorithm\": ["
+		jsonResults+= "\"sorting_algorithm\": [";
 		jsonResults += runSortingAlgorithms(algorithmsController);
 		jsonResults.pop_back(); //remove extraneous comma
 		jsonResults += "]";
