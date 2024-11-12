@@ -151,8 +151,8 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 	int exit_code;
 	std::string stdJSON = "";
 
-	FILE *stdin_file;
-
+	// std::shared_ptr<FILE> stdin_file;
+	FILE* stdin_file;
     int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async | subprocess_option_combined_stdout_stderr, environment, &process);
 	const auto processName = commandLineArguments[0];
 
@@ -166,82 +166,46 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
         std::cerr << "Failed to start program!" << std::endl;
         return "";
     }
+	if(perf){
+		stdin_file = subprocess_stdin(&process);
 
+		static char data[1048576 + 1] = {0};	
+		std::string buffer;
+		unsigned bytes_read;
 
+		do {
+			bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
+			data[bytes_read] = '\0';  // Ensure null-termination
 
-	stdin_file = subprocess_stdin(&process);
+			buffer += data;  // Accumulate read data in buffer
 
-	// static char data[1048576 + 1] = {0};	
-	// unsigned bytes_read;
-	// if(verbose) std::cout << "Reading output..." << std::endl;
+			// Check if "READY?" or "DONE!" is fully in buffer
+			if (buffer.find("READY?") != std::string::npos) {
+				if(verbose) std::cout << "Detected READY? message" << std::endl;
+				fputs("Start\n", stdin_file); 
 
-	// do {
-	// 	bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
-    
-	// 	if (bytes_read > 0) {
-	// 		data[bytes_read] = '\0';  // Null-terminate the data
+				fflush(stdin_file);  // Ensure the input is sent immediately
+				e.startCounters();
 
-	// 		if (strcmp(data, "READY?") == 0 || strcmp(data, "READY?\n") == 0) {
-	// 			if(verbose) std::cout << "Detected READY? message" << std::endl;
-	// 			fputs("Start\n", stdin_file); 
-	// 			fflush(stdin_file);  // Ensure the input is sent immediately
+				buffer.clear();  // Clear after handling
 
-	// 			e.startCounters();
-	// 			continue;
-	// 		}
+				continue;
+			}
 
-	// 		if (strcmp(data, "DONE!") == 0 || strcmp(data, "DONE!\n") == 0) {
-	// 			e.stopCounters();
-
-	// 			if(verbose) std::cout << "Detected DONE! message" << std::endl;
-	// 			fputs("Done\n", stdin_file);
-	// 			fflush(stdin_file);  // Ensure the input is sent immediately
-
-	// 			break;
-	// 		}
-
-	// 		std::cout << data; //data already has std::endl
-	// 	} else {
-	// 		if(verbose) std::cout << "No more data to read, exiting loop." << std::endl;
-	// 		break;
-	// 	}
-	// } while (true);
-
-	static char data[1048576 + 1] = {0};	
-	std::string buffer;
-	unsigned bytes_read;
-
-	do {
-		bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
-		data[bytes_read] = '\0';  // Ensure null-termination
-
-		buffer += data;  // Accumulate read data in buffer
-
-		// Check if "READY?" or "DONE!" is fully in buffer
-		if (buffer.find("READY?") != std::string::npos) {
-			if(verbose) std::cout << "Detected READY? message" << std::endl;
-			fputs("Start\n", stdin_file); 
-
-			fflush(stdin_file);  // Ensure the input is sent immediately
-			e.startCounters();
-
+			if (buffer.find("DONE!") != std::string::npos) {
+				e.stopCounters();
+				if(verbose) std::cout << "Detected DONE! message" << std::endl;
+				fputs("Done\n", stdin_file);
+				fflush(stdin_file);  // Ensure the input is sent immediately
+				buffer.clear();  // Clear after handling
+				break;
+			}
+			cout << buffer;
 			buffer.clear();  // Clear after handling
 
-			continue;
-		}
-
-		if (buffer.find("DONE!") != std::string::npos) {
-			e.stopCounters();
-			if(verbose) std::cout << "Detected DONE! message" << std::endl;
-			fputs("Done\n", stdin_file);
-			fflush(stdin_file);  // Ensure the input is sent immediately
-			buffer.clear();  // Clear after handling
-			break;
-		}
-		cout << buffer;
-		buffer.clear();  // Clear after handling
-
-	} while (bytes_read != 0);
+		} while (bytes_read != 0);
+	}
+	
 
 	// do{
 	// 	cout << "hello8" << std::endl;
@@ -320,12 +284,15 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 		const std::string selectedSortingAlgorithm = "--algorithm=" + algo.Algorithm;
 
 		const std::string selectedArrayStrategy = "--strategy=" + algo.ArrayStrategyString;
-		const std::string selectedArrayLength = "--length=" + std::to_string(algo.ArrayLength);
+		const std::string selectedArrayLength = "--number=" + std::to_string(algo.ArrayLength);
 		
 		const std::string includeJSON = algorithmsController.Json ? "--json": "--ignore";
 
 		const std::string output = algorithmsController.Output ? "--output" : "--ignore";
 		const std::string verbose = algorithmsController.Verbose ? "--verbose": "--ignore";
+		
+
+		const std::string perf = algorithmsController.Perf == perfON || algorithmsController.Perf == sample  ? "--perf": "--ignore";
 		// const std::string output = "--output=false";
 
 
@@ -335,14 +302,14 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 			//node Algogauge.mjs -vTrue -c10 -aBubble -aMerge -c10 -sOrdered -sreversed -j -oTrue -c20 -aDefault -sordered --file="../temp/javascript.txt"
 			//			const char* program_arguments[] = {"perf", "stat","node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
 
-			const char* program_arguments[] = {"node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
+			const char* program_arguments[] = {"./AlgogaugeJS", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
 			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 			continue;
 
 		}
 
 		if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
-			const char* program_arguments[] = {"python3", "../MultiLanguage/Python/src/AlgoGauge_bradleypeterson/__main__.py", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
+			const char* program_arguments[] = {"python", "-m", "AlgogaugePY", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
 
 			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
@@ -360,6 +327,8 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 		jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
 	}
+	// std::cout << "hello"<< jsonResults << std::endl;
+
 	return jsonResults;
 }
 
@@ -404,7 +373,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	std::string jsonResults = "{"; //create the json results object even if not specified
 
 	if(!algorithmsController.SelectedSortingAlgorithms.empty()){
-		jsonResults+= "\"sorting_algorithm\": [";
+		jsonResults+= "\"sorting_algorithms\": [";
 		jsonResults += runSortingAlgorithms(algorithmsController);
 		jsonResults.pop_back(); //remove extraneous comma
 		jsonResults += "]";

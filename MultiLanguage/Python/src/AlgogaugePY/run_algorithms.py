@@ -1,8 +1,8 @@
 from array import array
 from time import perf_counter
 import sys
-import sorting_methods as sm
-import array_creation as ac
+from .sorting_methods import built_in_sort, merge_sort, bubble_sort, selection_sort, insertion_sort, quick_sort, heap_sort, verify_sort
+from .array_creation import full_random_array, random_chunk_array, repeating_array, ordered_array, ordered_reversed_array
 import sys
 import fileinput
 
@@ -10,11 +10,11 @@ import fileinput
 
 def get_unsorted_array(strategy: str, length: int, max_value: int) -> array:
     strategy_map = {
-        "random": lambda: ac.full_random_array(length=length, max_value=max_value),
-        "chunk": lambda: ac.random_chunk_array(length=length, max_value=max_value),
-        "repeating": lambda: ac.repeating_array(length=length, max_value=max_value),
-        "ordered": lambda: ac.ordered_array(length=length),
-        "reversed": lambda: ac.ordered_reversed_array(length=length)
+        "random": lambda: full_random_array(length=length, max_value=max_value),
+        "chunk": lambda: random_chunk_array(length=length, max_value=max_value),
+        "repeating": lambda: repeating_array(length=length, max_value=max_value),
+        "ordered": lambda: ordered_array(length=length),
+        "reversed": lambda: ordered_reversed_array(length=length)
     }
     unsorted_array = strategy_map.get(strategy)
     
@@ -27,7 +27,7 @@ def get_unsorted_array(strategy: str, length: int, max_value: int) -> array:
     return -1
 
 
-def run_algorithm(algorithm: str, strategy: str, length: int, verbose: bool, output: bool, max_value: int = sys.maxsize, name = "") -> str:
+def run_algorithm(algorithm: str, strategy: str, length: int, verbose: bool, output: bool, perf:bool, max_value: int = sys.maxsize, name = "") -> str:
     algorithm = algorithm.lower()
     strategy = strategy.lower()
     
@@ -35,13 +35,13 @@ def run_algorithm(algorithm: str, strategy: str, length: int, verbose: bool, out
     
     sorted_array = None
     algorithm_map = {
-        "default": lambda: sm.built_in_sort(arr=unsorted_array),
-        "merge": lambda: sm.merge_sort(arr=unsorted_array),
-        "bubble": lambda: sm.bubble_sort(arr=unsorted_array),
-        "selection": lambda: sm.selection_sort(arr=unsorted_array),
-        "insertion": lambda: sm.insertion_sort(arr=unsorted_array),
-        "quick": lambda: sm.quick_sort(arr=unsorted_array),
-        "heap": lambda: sm.heap_sort(arr=unsorted_array),
+        "default": lambda: built_in_sort(arr=unsorted_array),
+        "merge": lambda: merge_sort(arr=unsorted_array),
+        "bubble": lambda: bubble_sort(arr=unsorted_array),
+        "selection": lambda: selection_sort(arr=unsorted_array),
+        "insertion": lambda: insertion_sort(arr=unsorted_array),
+        "quick": lambda: quick_sort(arr=unsorted_array),
+        "heap": lambda: heap_sort(arr=unsorted_array),
     }
     
     selected_algorithm = algorithm_map.get(algorithm)
@@ -57,26 +57,35 @@ def run_algorithm(algorithm: str, strategy: str, length: int, verbose: bool, out
     if output and verbose:
         print(f"Python3 Original Array: \"{unsorted_array.tolist()}\"")
     
-    print("READY?")  
-    sys.stdout.flush() 
-    ready = input()   
-    print(ready);
+    if(perf):
+        print("READY?")  
+        sys.stdout.flush()  
+        ready = input() 
+        if(verbose): print(f"Received: {ready} starting process")
+    
+    
     start = perf_counter()
 
     sorted_array = selected_algorithm()
     
     time_taken = perf_counter() - start
     
-    print("DONE!")
-    done = input()   
-    sys.stdout.flush()
+   
+    
+    if(perf):
+        print("DONE!")
+        sys.stdout.flush()
+        done = input()   
+        if(verbose): print(f"Received: {done} stopping process")
+
+    
 
     if output and verbose:
         print(f"Python3 Sorted Array: \"{sorted_array.tolist()}\"")
     
     if verbose: print(f"Python3 Verifying sort: \"{algorithm.capitalize()}\"")
     
-    correct = sm.verify_sort(arr=sorted_array)
+    correct = verify_sort(arr=sorted_array)
             
     if not correct:
         print(f"{algorithm.capitalize()} there was an error when sorting", file=sys.stderr)
