@@ -395,15 +395,22 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	// int x = 7;
     // assert (x==5);
 	
-	std::string jsonResults = "{\"sorting_algorithm\": ["; //create the json results object even if not specified
+	std::string jsonResults = "{"; //create the json results object even if not specified
 
+	if(!algorithmsController.SelectedSortingAlgorithms.empty()){
+		jsonResults+= "\"sorting_algorithm\": ["
+		jsonResults += runSortingAlgorithms(algorithmsController);
+		jsonResults.pop_back(); //remove extraneous comma
+		jsonResults += "]";
+	}
+	if(!algorithmsController.SelectedHashTables.empty()){
+		jsonResults += "\"hash_table\":[";
+		jsonResults += runHashTables(algorithmsController);
+		jsonResults.pop_back(); //remove extraneous comma
+		jsonResults += "]";
+	}
+	jsonResults+="}";
 	
-	jsonResults += runSortingAlgorithms(algorithmsController);
-	jsonResults.pop_back(); //remove extraneous comma
-	jsonResults += "],\"hash_table\":[";
-	jsonResults += runHashTables(algorithmsController);
-	jsonResults.pop_back(); //remove extraneous comma
-	jsonResults += "]}";
 
 	if (algorithmsController.Json) std::cout << jsonResults << endl;
 

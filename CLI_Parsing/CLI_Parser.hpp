@@ -6,6 +6,8 @@
  * @copyright Weber State University
  */
 
+//./AlgoGauge -j -v --algo bubble --number=100  --strat=random --lang=c++  --end=200  --step_count = 500
+
 #ifndef ALGOGAUGE_CLI_PARSER_HPP
 #define ALGOGAUGE_CLI_PARSER_HPP
 
@@ -78,11 +80,16 @@ Options getOptions(string type) {
     options.add_options("Algorithm Name and Length [REQUIRED]")
         ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear_probe]\n Linked List: [pop, push, push_pop]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
         ("s, strat, type, strategy", "Sorting: [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]\nHash Table: [closed]\nLinked List:[front, back, front_back, back_front]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
-        ("n, num, length, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations\nLinked List: Number of operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
+        ("n, num, length, start, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations\nLinked List: Number of operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
     ;
 
     options.add_options("Required Sorting Algorithm")
         ("x,lang,language", "Options: C++, Py/Python3, JS/NodeJS", cxxopts::value<vector<string>>(), "What programming language will process the sorting algorithm")
+    ;
+
+    options.add_options("Optional Sorting Algorithm")
+        ("i, step,step_count, iterator", "How much the number per iteration", cxxopts::value<vector<int>>()->default_value("1"))
+        ("e, end, additional", "The ending number for step operations",  cxxopts::value<vector<int>>()->default_value("0")) 
     ;
     options.add_options("Required Linked List")
         ("l, size", "Provide a number (int > 0) that determines linked list size.", cxxopts::value<vector<int>>(), "How many elements can be stored in the Linked List")
@@ -155,6 +162,18 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
     if (languageVector.has_value()) {
         languageDeque.assign(languageVector->begin(), languageVector->end());
     }
+
+    auto iteratorVector = result["iterator"].as_optional<vector<int>>();
+    std::deque<int> iteratorDeque;
+    if(iteratorVector.has_value()){
+        iteratorDeque.assign(iteratorVector->begin(), iteratorVector->end());
+    }
+
+    auto additionalVector = result["additional"].as_optional<vector<int>>();
+    std::deque<int> additionalDeque;
+    if(additionalVector.has_value()){
+        additionalDeque.assign(additionalVector->begin(), additionalVector->end());
+    }
     
     auto capacityVector = result["capacity"].as_optional<vector<int>>();
     std::deque<int> capacityDeque;
@@ -198,7 +217,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
     
     for(const auto& algo: algorithmDeque){
 
-        if(strategyDeque.empty() || numberDeque.empty()){
+         if(strategyDeque.empty() || numberDeque.empty()){
             std::cerr 
                 << "The number of " 
                 << (strategyDeque.empty() ? "STRATEGIES " : "")
@@ -211,6 +230,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
             throw std::invalid_argument("Missing required options for algorithm: STRATEGY or NUMBER per algorithm.");
         }
 
+     
 
         if(algo == "linear" || algo == "linear_probe"){
             struct AlgoGauge::HashTableSettings newHashTable;
@@ -264,37 +284,55 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
             throw std::invalid_argument("The number of programming languages passed do not match the number of sorting algorithms passed");
         }
 
+      
+        if(!iteratorDeque.empty() && additionalDeque.empty() || iteratorDeque.empty() && !additionalDeque.empty()){
+            std::cerr
+                << "The number of "
+                << (iteratorDeque.empty() ? "ITERATOR ": "")
+                << (additionalDeque.empty() ? "END ": "")
+                << "passed did not math the number of iterators"
+                << std::endl;
 
-        struct AlgoGauge::SortingAlgorithmSettings newSortingAlgorithm;
+            throw std::invalid_argument("Missing optional requirements for algorithm: ITERATOR and END per algorithm.");
+        } 
 
-        newSortingAlgorithm.Algorithm = algo;
-        newSortingAlgorithm.ArrayLength = numberDeque.front();
-        newSortingAlgorithm.ArrayStrategyString = strategyDeque.front();
-        newSortingAlgorithm.Language = languageDeque.front();
 
-        if(!namesDeque.empty()){
-            newSortingAlgorithm.Name = namesDeque.front();
+        for(int i = 0; i <= additionalDeque.front(); i+=iteratorDeque.front()){
+            struct AlgoGauge::SortingAlgorithmSettings newSortingAlgorithm;
+            newSortingAlgorithm.Algorithm = algo;
+            newSortingAlgorithm.ArrayLength = numberDeque.front() + i;
+            newSortingAlgorithm.ArrayStrategyString = strategyDeque.front();
+            newSortingAlgorithm.Language = languageDeque.front();
+
+            if(!namesDeque.empty()){
+                newSortingAlgorithm.Name = namesDeque.front();
+            }
+
+            auto it = strategyMap.find(strategyDeque.front());
+
+            if (it != strategyMap.end()) {
+                newSortingAlgorithm.ArrayStrategy = it->second;
+            } else {
+                throw std::invalid_argument("There is no array strategy: " + strategyDeque.front());
+            }
+            
+           
+            algogaugeDetails.SelectedSortingAlgorithms.push_back(newSortingAlgorithm);
+            
+
         }
-
-        auto it = strategyMap.find(strategyDeque.front());
-
-        if (it != strategyMap.end()) {
-            newSortingAlgorithm.ArrayStrategy = it->second;
-        } else {
-            throw std::invalid_argument("There is no array strategy: " + strategyDeque.front());
-        }
-        
         strategyDeque.pop_front();
         languageDeque.pop_front();
         numberDeque.pop_front();
+        iteratorDeque.pop_front();
+        additionalDeque.pop_front();
 
         if(!namesDeque.empty()){
             namesDeque.pop_front();
         }
-
-        algogaugeDetails.SelectedSortingAlgorithms.push_back(newSortingAlgorithm);
-        
         continue;
+
+      
     }
 
     if(algogaugeDetails.Verbose){

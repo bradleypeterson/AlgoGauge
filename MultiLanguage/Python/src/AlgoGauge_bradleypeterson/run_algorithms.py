@@ -56,6 +56,7 @@ def run_algorithm(algorithm: str, strategy: str, length: int, verbose: bool, out
         
     if output and verbose:
         print(f"Python3 Original Array: \"{unsorted_array.tolist()}\"")
+    
     print("READY?")  
     sys.stdout.flush() 
     ready = input()   
