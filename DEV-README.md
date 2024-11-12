@@ -71,6 +71,7 @@ AlgoGaugeCLI:
 ---
 ### /arrays.cpp
 TODO: add text.
+
 ### /hash_algs.cpp
 This file is where all the hash table logic is stored. The only hash table that has been created is closed (array based) hash table. 
 
@@ -83,8 +84,14 @@ This file is where all the hash table logic is stored. The only hash table that 
   cout << runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "true")) << endl;
   ```
 
+##### Things to Add:
+- [ ] Add Open hash tables
+- [ ] Add Quadratic probing 
+- [ ] Add more testing functions  
+
 ### /linkedList.cpp
 TODO: add text.
+
 ### /RandomNum.hpp
 This file centralizes the random number generator. It primarily uses the Mersenne Twister Engine.
 The MTE is not considered to be a *truly* random generator. This is used so as to generate the exact

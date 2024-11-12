@@ -53,21 +53,21 @@ This project is built on cmake. Please make sure to have cmake installed before 
 cd [source code root directory]
 mkdir cmake-build-debug
 cd cmake-build-debug
-cmake ..
+cmake --build ..
 ```
 
 _next steps vary slightly depending on your OS_
 #### Windows OS:
+To run on Windows OS (Calls help option `-h`)
 
 ```shell
-cmake --build .
 .\AlgoGauge.exe -h
 ```
 
-#### Unix OS:
+#### Unix/Mac OS:
+To run on Unix/Mac OS (Calls help option `-h`)
 
 ```shell
-cmake --build .
 ./AlgoGauge -h
 ```
 
@@ -81,41 +81,90 @@ cmake --build .
 Please use ```./AlgoGauge -h``` to see the help message along with options.
 
 ### Usage Help
+---
 
 #### Basic Usage
 
-```shell
-AlgoGauge --algo (some algorithm) --len [some int > 0][OPTIONALS: -r | -e | -c | -s | -o] [-f "some file", -v, -j, -i]
+```txt
+AlgoGauge -a (algorithm name) -s (algorthim strategy) -n (number of items to process) [-v, -j, -h]
 ```
+<br>
 
-#### Algorithm Name and Length [REQUIRED] options:
+#### Algorithm Name, Strategy, and Number [REQUIRED] options:
 
 ##### -a, --algorithm 
-Name of the first algorithm to run. Supported algorithms include: _bubble, selection, insertion, quick, merge, heap._
+Name of the first algorithm to run. 
+- Sorting: 
+  - `default`
+  - `bubble`
+  - `selection`
+  - `insertion`
+  - `quick`
+  - `merge`
+  - `heap`
+- Hash Table: 
+  - `linear_probe`
+- Linked List:
+  - `pop`
+  - `push`
+  - `push_pop`
 
-##### -l, --length 
-Number of items to process. Provide an int value between 0 and 4,294,967,295 (UNSIGNED INT)
+##### -s, --strategy
+Determines the strategy of loading values for sorting algorithms, the type of hash table, or the method of action for linked lists.
+- Sorting: 
+  - `ran/random`
+  - `rep/repeated` 
+  - `chunks`
+  - `rev/sorted-reverse`
+  - `sorted`
+- Hash Table: 
+  - `closed`
+- Linked List:
+  - `front`
+  - `back`
+  - `front_back`
+  - `back_front`
 
-##### -n, --name 
-A canonical name that will be returned in output if provided. (default: "")
+##### -n, --number
+The number of items the algorithm will process. Provide an int value between `0` and `4294967295`
+- Sorting: Size of Array to Sort
+- Hash Table: Number of testing operations
+- Linked List: Number of operations
+<br>
 
-FIXME: change to -s, --strat
-#### Algorithm Options [ONE REQUIRED] options:
+#### Sorting Algorithm Specific [Required] options:
 
-##### -r, --random [=arg(=true)]
-Generated data will be a random set (default: false)
+##### -x, --language 
+What programming language will process the sorting algorithm
+- Options: 
+  - `C++`
+  - `Py/Python3`
+  - `JS/NodeJS`
+<br>
 
-##### -e, --repeated [=arg(=true)]
-Generated data set will have repeated values (default: false)
+#### Sorting Algorithm [Optional] options:
 
-##### -c, --chunks [=arg(=true)]
-Generated data set will have various subsets that will contain both random and in order values (default: false)
+##### -i, --iterator 
+How much the number per iteration (default: 1)
 
-##### -s, --reversed [=arg(=true)]
-Generated data set will be in reverse order e.g. (9-0) (default: false)
+##### -e, --additional 
+The ending number for step operations (default: 0)
+<br>
 
-##### -o, --ordered [=arg(=true)]
-Generated data set will be ordered e.g.(0-9) (default: false)
+#### Linked List Specific [Required] options:
+
+##### -l, --size 
+How many elements can be stored in the Linked List.Provide a number (int > 0) that determines linked list size.
+<br>
+
+#### Hash Table Specific [Required] options:
+
+##### -c, --capacity 
+How many elements can be stored in the Hash Table. Provide a number (int > 0) that determines hash table size.
+
+##### -d, --density
+How full or the density of the starting hash table as a percentage. Provide an int value between 0 (0%) and 100 (100%) to load into hash table.
+<br>
 
 #### Program Output [OPTIONAL] options:
 
@@ -126,31 +175,24 @@ structure will always be JSON. The file path and name to output the file to (def
 ##### -j, --json
 Prints the output as a json formatted object.
 
+#####   -y, --name 
+A canonical name that will be returned in output if provided.
+<br>
+
 #### Program Settings [OPTIONAL] options:
 
 ##### -v, --verbose
 Runs the program in Verbose mode
 
-##### -i, --include-values
-Will include values in the output. It is highly recommended to use a small length (less than 100).
+##### -0, --output
+Will output the arrays in the output. It is highly recommended to use a small length (less than 100).
 
 ##### -p, --perf
 Includes Perf data in the output. Actual Perf data only works on Linux.
-If you are not on Linux and want to use this anyways, you can set this to "sample". e.g. --perf=sample
-
+If you are not on Linux and want to use this anyways, you can set this to "sample". e.g. `--sample`
 ##### -h, --help
 Prints this help page.
-
-### Current Available Algorithms
-
-This is a list of Algorithms you can pass as values to the Algo flag:
-
-- bubble
-- selection
-- insertion
-- quick
-- merge
-- heap
+<br>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -161,17 +203,11 @@ This is a list of Algorithms you can pass as values to the Algo flag:
 ### Running a single Algorithm using *Quick* sort with *100,000* *Random* values
 
 ```shell
-./AlgoGauge --algo quick --len 100000 -r
+./AlgoGauge -a quick -s random -n 100000 -x c++ -j
 ```
 #### Results:
 
-```Sort 'Quick' with Algorithm Option 'Random' of length 100000, completed in x.xxxxxx milliseconds```
-
-#### Explanation:
-We choose the 'Quick' sorting Algorithm by first including the flag ```--algo``` and then the string 'quick' afterwords.
-We then indicate the number of values by including the flag ```--len``` and then the value '100000'. Finally, we
-indicate that the values should be random by including the flag ```-r```. Variants for the Algorithm include ```-a```, 
-```--algo``` or ```--algorithm```. Variants for the Length flag include ```-l```, ```--len``` or ```--length```.
+```{"sorting_algorithm": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"language": "C++","algorithmCanonicalName": "","algorithmRunTime_ms": 18.326541, "perfData": {}}]}```
 
 ### Passing multiple Algorithms at the same time
 
