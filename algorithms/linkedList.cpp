@@ -7,6 +7,9 @@
 #define ALGOGAUGE_LINKED_LIST_CPP
 
 #include <iostream>
+#include <algorithm>
+#include <cctype>
+#include <string>
 #include <memory>
 #include <fstream>
 #include <ostream>
@@ -57,7 +60,7 @@ struct LinkedList {
     }
 
     //push_back 
-    void LinkedList::push_back(int data) {
+    void push_back(int data) {
         Node* temp = new Node(data);
 
         if (!head) { 
@@ -74,7 +77,7 @@ struct LinkedList {
     }
 
     //push_front
-    void LinkedList::push_front(int data) {
+    void push_front(int data) {
         Node* temp = new Node(data);
         if (!head) {      
             // The list is empty
@@ -89,7 +92,7 @@ struct LinkedList {
     }
 
     //pop_back
-    void LinkedList::pop_back() {
+    void pop_back() {
         // Error scenario: List is empty
         if (!head) {
             std::cerr << "The list is empty!" << std::endl;
@@ -117,7 +120,7 @@ struct LinkedList {
     }
 
     //pop_front
-    void LinkedList::pop_front() {
+    void pop_front() {
         //List is empty
         if (!head) {
             std::cout << "The list is empty!" << std::endl;
@@ -165,8 +168,13 @@ void LinkedListPushFrontTime(LinkedList &list){
     }
 }
 
-std::string LinkedListUltimateCoolfunction(int size, int number, string function, bool verbose, bool includeValues){
+//takes linked list size, number of nodes added/deleted, function name, perf, verbose, includeValues
+//function names: push_front/back , pop_front/back, pushpop_front/back
+std::string LinkedListPerformanceTest(int size, int number, string function, string perf, bool verbose, bool includeValues){
     string output = "";
+    PerfEvent perfObject;
+    string perfObjectString = "{}";
+
     if(size < number){
 
         if(verbose) {
@@ -178,33 +186,34 @@ std::string LinkedListUltimateCoolfunction(int size, int number, string function
     LinkedList list(size, number);
     
     if(verbose){
-        cout << "List has been created, Beginging timer and Perf";
+        cout << "List has been created, Beginging timer and Perf" << endl;
     }
 
     //start time
     auto sTime = std::chrono::high_resolution_clock::now();
 
     //start perf
-    //look at sort7  
+    perfObject.startCounters();
 
-    //if function == "push___x"
+    //function stuff
+
     if(function == "pop_back"){
         LinkedListPopBackTime(list);
     }
     else if(function == "pop_front"){
         LinkedListPopFrontTime(list);
     }
+    else if(function == "push_front"){
+        LinkedListPushFrontTime(list);
+    }
     else if(function == "push_back"){
         LinkedListPushBackTime(list);
     }
-    else if(function == "push_back"){
-        LinkedListPushFrontTime(list);
-    }
-    else if(function == "push_pop_front"){
+    else if(function == "pushpop_front"){
         LinkedListPushFrontTime(list);
         LinkedListPopFrontTime(list);
     }
-    else if(function == "push_pop_back"){
+    else if(function == "pushpop_back"){
         LinkedListPushBackTime(list);
         LinkedListPopBackTime(list);
     }
@@ -212,24 +221,34 @@ std::string LinkedListUltimateCoolfunction(int size, int number, string function
     //end time
     auto eTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> fp_ms = eTime - sTime;
+
     //end perf
+    perfObject.stopCounters();
 
     //return json string 
     if (verbose){
-            cout << "Timer and Perf stopped." << endl;
+        cout << "Timer and Perf stopped." << endl;
     } 
 
     if (includeValues){
         list.print_List();
     }
          
-    string output = "{";
-    output += R"("algorithmName": ")" + string("Push Pop Back") + "\",";
-    output += R"("listSize": )" + std::to_string(size) + "\","; 
-    output += R"("number": )" + std::to_string(number) + "\",";
-    output += R"("timeTaken": )" + std::to_string(fp_ms.count()) + "}";  
+    output = "{";
+    output += R"("algorithmName": ")" + function + "\",";
+    output += R"("listSize": )" + std::to_string(size) + ","; 
+    output += R"("number": )" + std::to_string(number) + ",";
+    output += R"("algorithmRunTime_ms": )" + std::to_string(fp_ms.count());  
 
-    //add to perft  
+    std::transform(perf.begin(), perf.end(), perf.begin(), ::tolower);
+
+    if(perf == "true"){
+        perfObjectString = perfObject.getPerfJSONString();
+    }  
+    
+    output += ", \"perfData\": ";  
+    output += perfObjectString + "}";
+
     if (verbose){
         cout << output << "\n" << endl;
     }
@@ -238,3 +257,16 @@ std::string LinkedListUltimateCoolfunction(int size, int number, string function
 
 }
 #endif
+
+int main() {
+
+    //performance tests with verbose
+    LinkedListPerformanceTest(100000, 4002, "push_back", "true", true, false);
+
+    // Invalid case
+    LinkedListPerformanceTest(100000, 4002, "invalid", "true", true, false);
+
+    // Include values 
+    LinkedListPerformanceTest(100, 200, "push_back", "true", true, true);
+    return 0;
+}
