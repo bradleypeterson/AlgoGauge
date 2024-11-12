@@ -212,7 +212,7 @@ Prints this help page.
 ### Passing multiple Algorithms at the same time
 
 ```shell
-./AlgoGauge --algo quick --len 100000 -r --algo bubble --len 100000 -r --algo quick --len 25000 -o
+./AlgoGauge -a quick -s random -n 100000 -x c++ -j -a quick -s random -n 100000 -x c++ -j
 ```
 
 #### Results:
@@ -223,12 +223,8 @@ Sort 'Bubble' with Algorithm Option 'Random' of length 100000, completed in x.xx
 Sort 'Quick' with Algorithm Option 'Ordered' of length 25000, completed in x.xxxxxx milliseconds
 ```
 
-#### Explanation:
-We can pass in **n** number of algorithms to the program by specifying the different flags multiple times. You can also
-specify the flags grouped together. All that matters is the order in which they occur (see next example). When you pass 
-in multiple algorithms to run, they do ***NOT*** run in parallel. They run sequentially in order to produce the most 
-accurate results possible.
 
+FIXME: fix the rest of the documentation.
 ### Passing multiple Algorithms at the same time, flags grouped together
 
 ```shell
@@ -280,7 +276,7 @@ the previous examples. Note: the JSON flag ***only*** pertains to STDOUT.
 #### Results:
 
 ```
-{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 100000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx}]}
+{"sorting_algorithm": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"language": "C++","algorithmCanonicalName": "","algorithmRunTime_ms": 17.225417, "perfData": {}},{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"language": "C++","algorithmCanonicalName": "","algorithmRunTime_ms": 15.954500, "perfData": {}}]}
 ```
 
 ### Perf Values ```-p``` or ```--perf```
