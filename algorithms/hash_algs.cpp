@@ -72,6 +72,8 @@ namespace HashTables {
     int     	getCRUDTestAmount();
     string  	getPerfOption();
     string  	getDummyPerfData(bool JSON);
+    bool      getVerbose();
+    string    getName();
 
 
   private:
@@ -90,6 +92,7 @@ namespace HashTables {
     int*        statusArray = nullptr;
     pair<T, U>* kvArray = nullptr;	
 
+    string      name = "closed_hash_table";
     bool        verbose;
     string      includePerf;
     int         capacity = 10; // array size
@@ -110,6 +113,9 @@ namespace HashTables {
     this->CRUDTestAmount = CRUDTestAmount;
     this->verbose = verbose;
     this->includePerf = includePerf;
+
+    if (verbose) cout << "Creating hash table..." << endl;
+
     this->statusArray = new int[capacity];
     for (int i = 0; i < capacity; i++) {
       statusArray[i] = 0;
@@ -207,6 +213,8 @@ namespace HashTables {
   // filling up hash table
   template <typename T, typename U>
   void ClosedHashTable<T, U>::fillHashTable(){
+    if (verbose) cout << "Loading hash table to " + std::to_string(this->hash_table_fullness) + "%..." << endl;
+
     if (this->hash_table_fullness == 0) { // stay empty
       return;
     }
@@ -220,9 +228,6 @@ namespace HashTables {
   // load values method
   template <typename T, typename U>
   void ClosedHashTable<T, U>::loadValues(const int amount){
-    // if (amount > this->capacity) {
-    //   throw std::logic_error(std::to_string(amount) + " will go over " + std::to_string(this->capacity) + " capacity.");
-    // }
     for (int i = this->amountFilled; i < (this->amountFilled + amount); i++) {
       this->create(std::to_string(i), "value " + std::to_string(i));
     }
@@ -234,9 +239,6 @@ namespace HashTables {
   // table.
   template <typename T, typename U>
   void ClosedHashTable<T, U>::destroyValues(const int amount, const bool onlyExist) {
-    // if (amount > this->capacity) {
-    //   throw std::logic_error(std::to_string(amount) + " will go over " + std::to_string(this->capacity) + " capacity.");
-    // }
     for (int i = (this->amountFilled - amount); i < this->amountFilled; i++) {
       this->destroy(std::to_string(i));
     }
@@ -248,9 +250,6 @@ namespace HashTables {
   // look up existing values.
   template <typename T, typename U>
   void ClosedHashTable<T, U>::lookupValues(const int amount, const bool onlyExist) {
-    // if (amount > this->capacity) {
-    //   throw std::logic_error(std::to_string(amount) + " will go over " + std::to_string(this->capacity) + " capacity.");
-    // }
     for (int i = 0; i < this->amountFilled; i++) {
       this->retrieve(std::to_string(i));
     }
@@ -262,6 +261,8 @@ namespace HashTables {
   // runs the CRUD operation for an amount of testOperationAmount (loadValues(testOperationAmount))
   template <typename T, typename U>
   void ClosedHashTable<T, U>::crudOperation(const int testOperationAmount) {
+    if (verbose) cout << "Running " + std::to_string(testOperationAmount) + " load, look-up, and delete operations on hash table..." << endl;
+
     this->loadValues(testOperationAmount);
     this->lookupValues(testOperationAmount, false);
     this->destroyValues(testOperationAmount, false);
@@ -300,6 +301,11 @@ namespace HashTables {
     return this->capacity;
   }
 
+  // getter for verbose privite data member.
+  template <typename T, typename U>
+  bool ClosedHashTable<T, U>::getVerbose() {
+    return this->verbose;
+  }
 
   // getter for probing_type privite data member.
   template <typename T, typename U>
@@ -307,10 +313,16 @@ namespace HashTables {
     return this->probing_type;
   }
 
-
+  // getter for crud test amount number.
   template <typename T, typename U>
   int ClosedHashTable<T , U>::getCRUDTestAmount(){
     return this->CRUDTestAmount;
+  }
+
+  // getter for hash table name.
+  template <typename T, typename U>
+  string ClosedHashTable<T, U>::getName() {
+    return this->name;
   }
 
 
@@ -318,15 +330,18 @@ namespace HashTables {
   template <typename T, typename U>
   string runHash(ClosedHashTable<T, U> &&hashObj) {
     PerfEvent perfObject;
+    if (hashObj.getVerbose()) cout << "starting timer..." << endl;
     auto t1 = std::chrono::high_resolution_clock::now();
     perfObject.startCounters();
     hashObj.crudOperation(hashObj.getCRUDTestAmount());
     perfObject.stopCounters();
     auto t2 = std::chrono::high_resolution_clock::now();
+    if (hashObj.getVerbose()) cout << "stopping timer..." << endl;
     std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+    if (hashObj.getVerbose()) cout << "Algorithm ran for " + std::to_string(fp_ms.count()) + "ms." << endl;
 
     string output;
-    output += "{ \"algorithmName\": \"Closed Hash Tables\", ";
+    output += "{\"algorithmName\": \"" + hashObj.getName() +"\", ";
     output += "\"algorithmCapacity\": " + std::to_string(hashObj.getCapacity()) + ", ";
     output += "\"language\": \"c++\", "; 
     output += "\"probingType\": \"" + hashObj.getProbingType() + "\", ";
