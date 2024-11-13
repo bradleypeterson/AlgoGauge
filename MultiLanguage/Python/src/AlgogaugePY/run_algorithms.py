@@ -70,7 +70,7 @@ def run_algorithm(algorithm: str, strategy: str, length: int, verbose: bool, out
     
     time_taken = perf_counter() - start
     
-   
+    time_taken = time_taken * 1000
     
     if(perf):
         print("DONE!")
