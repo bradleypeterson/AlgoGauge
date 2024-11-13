@@ -79,7 +79,7 @@ Options getOptions(string type) {
 
     options.add_options("Algorithm Name and Length [REQUIRED]")
         ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear_probe]\n Linked List: [pop, push, push_pop]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
-        ("s, strat, type, strategy", "Sorting: [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]\nHash Table: [closed]\nLinked List:[front, back, front_back, back_front]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
+        ("s, strat, type, strategy", "Sorting: [random, repeated, chunks, sorted, sorted_reversed]\nHash Table: [closed]\nLinked List:[front, back, front_back, back_front]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
         ("n, num, length, start, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations\nLinked List: Number of operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
     ;
 

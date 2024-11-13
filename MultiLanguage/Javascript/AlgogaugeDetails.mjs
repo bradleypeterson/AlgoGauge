@@ -69,15 +69,15 @@ export class SortingAlgorithm {
       case "repeating":
         this.array = repeatingValueArray(length, max);
         break;
-      case "ordered":
+      case "sorted":
         this.array = orderedArray(length);
         break;
-      case "reversed":
+      case "sorted_reversed":
         this.array = orderedReversedArray(length);
         break;
       default:
         console.error(
-          `error: option '-s, --strategy <string>' argument '${strategy}' is invalid. Allowed choices are random, chunk, repeating, ordered, reversed.`,
+          `error: option '-s, --strategy <string>' argument '${strategy}' is invalid. Allowed choices are random, chunk, repeating, sorted, sorted_reverse.`,
         );
         exit(1);
     }

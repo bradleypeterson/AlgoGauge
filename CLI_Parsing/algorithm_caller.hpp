@@ -73,7 +73,7 @@ std::string runCPlusPlusProgram(
 		case AlgoGauge::AlgorithmOptions::reversedSet:
 			SortingAlgorithm->loadReversedValues();
 			break;
-		case AlgoGauge::AlgorithmOptions::orderedSet:
+		case AlgoGauge::AlgorithmOptions::sortedSet:
 			SortingAlgorithm->loadOrderedValues();
 			break;
 		case AlgoGauge::AlgorithmOptions::randomSet:
@@ -298,32 +298,20 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 
 		const char *environment[] = {NULL};
 
+		std::string binaryPath = "";
+
+	
 		if (algo.Language == "node" || algo.Language == "nodejs"|| algo.Language == "js" || algo.Language == "javascript"){
-			//node Algogauge.mjs -vTrue -c10 -aBubble -aMerge -c10 -sOrdered -sreversed -j -oTrue -c20 -aDefault -sordered --file="../temp/javascript.txt"
-			//			const char* program_arguments[] = {"perf", "stat","node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
-
-			const char* program_arguments[] = {"./AlgogaugeJS", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
-			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
-			continue;
-
+			binaryPath = "./AlgogaugeJS"; // needs dot as not in path
+		}else if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
+			binaryPath = "AlgogaugePY"; //no dot as it's in the path
+		}else{
+			throw std::invalid_argument("Programming language is not supported");
 		}
 
-		if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
-			const char* program_arguments[] = {"AlgogaugePY", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
+		
 
-			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
-
-			continue;
-		}
-
-		std::string program_path;
-
-		if(algo.Language == "rust"){
-			program_path = "../MultiLanguage/testing/rust_binary";
-		}
-
-		const char* program_arguments[] = {program_path.c_str(), selectedSortingAlgorithm.c_str(), nullptr};
-		std::cout << program_path;
+		const char* program_arguments[] = {binaryPath.c_str(), selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
 		jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
 	}

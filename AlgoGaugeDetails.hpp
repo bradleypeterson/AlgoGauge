@@ -16,7 +16,7 @@ enum AlgorithmOptions {
 	repeatedSet,
 	chunkSet,
 	reversedSet,
-	orderedSet
+	sortedSet
 };
 
 enum PERF{
@@ -28,8 +28,8 @@ const std::unordered_map<std::string, AlgoGauge::AlgorithmOptions> strategyMap =
         {"random", AlgoGauge::AlgorithmOptions::randomSet},
         {"repeated", AlgoGauge::AlgorithmOptions::repeatedSet},
         {"chunks", AlgoGauge::AlgorithmOptions::chunkSet},
-        {"reversed", AlgoGauge::AlgorithmOptions::reversedSet},
-        {"ordered", AlgoGauge::AlgorithmOptions::orderedSet}
+        {"sorted_reversed", AlgoGauge::AlgorithmOptions::reversedSet},
+        {"sorted", AlgoGauge::AlgorithmOptions::sortedSet}
 };
 
 struct HashTableSettings{

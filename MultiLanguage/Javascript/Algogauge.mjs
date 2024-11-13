@@ -133,33 +133,29 @@ for (let i = 0; i < options.algorithm.length; i++) {
     if (options.verbose) {
       console.log(`NodeJS Starting sort: \"${element.algorithm}\"`);
     }
-	const buf = new Uint8Array(100);
+	  const buf = new Uint8Array(100);
 
-	if(options.perf){
-		console.log("READY?")
-		const numberOfBytesRead = await Deno.stdin.readSync(buf); // 11 bytes
-		const text = new TextDecoder().decode(buf);  // "hello world"
+    if(options.perf){
+      console.log("READY?")
+      const numberOfBytesRead = await Deno.stdin.readSync(buf); // 11 bytes
+      const text = new TextDecoder().decode(buf);  // "hello world"
 
-		if (options.verbose) {
-			console.log(`Received: ${text} starting process`);
-		}
-		// Deno.stdin.close();
+      if (options.verbose) {
+        console.log(`Received: ${text} starting process`);
+      }
+      // Deno.stdin.close();
 
-	}
+    }
     runSortingAlgorithm(element);
-	if(options.perf){
-		console.log("DONE!")
-
-		const bu1f = new Uint8Array(100);
-		const numberOfBytesRead1 = await Deno.stdin.readSync(buf); // 11 bytes
-		const text1 = new TextDecoder().decode(buf);  // "hello world"
-		if (options.verbose) {
-			console.log(`Received: ${text1} stopping process`);
-		}
-	}
-	Deno.stdin.close();
-
-   
+    if(options.perf){
+      console.log("DONE!")
+      const numberOfBytesRead1 = await Deno.stdin.readSync(buf); // 11 bytes
+      const text1 = new TextDecoder().decode(buf);  // "hello world"
+      if (options.verbose) {
+        console.log(`Received: ${text1} stopping process`);
+      }
+    }
+	  Deno.stdin.close();
   }
 
   SelectedSortingAlgorithms.forEach((element) => {
@@ -201,3 +197,4 @@ for (let i = 0; i < options.algorithm.length; i++) {
     console.log(jsonResults);
   }
 })();
+
