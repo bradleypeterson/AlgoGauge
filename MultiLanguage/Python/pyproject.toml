@@ -11,3 +11,6 @@ dependencies = [
     'argparse',
 ]
 requires-python = ">=3.7"
+
+[project.gui-scripts]
+AlgogaugePY = "AlgogaugePY:main"
