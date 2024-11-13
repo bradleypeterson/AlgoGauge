@@ -113,9 +113,9 @@ for (let i = 0; i < options.algorithm.length; i++) {
     if (options.verbose) {
       console.log(`NodeJS Starting sort: \"${element.algorithm}\"`);
     }
-	  const buf = new Uint8Array(100);
 
     if(options.perf){
+	const buf = new Uint8Array(100);
       console.log("READY?")
       const _ = Deno.stdin.readSync(buf); // 11 bytes
       const text = new TextDecoder().decode(buf);  // "hello world"
@@ -128,12 +128,13 @@ for (let i = 0; i < options.algorithm.length; i++) {
     }
     runSortingAlgorithm(element);
     if(options.perf){
-      console.log("DONE!")
-      const _ = Deno.stdin.readSync(buf); // 11 bytes
-      const text1 = new TextDecoder().decode(buf);  // "hello world"
-      if (options.verbose) {
-        console.log(`Received: ${text1} stopping process`);
-      }
+		const buf = new Uint8Array(100);
+		console.log("DONE!")
+		const _ = Deno.stdin.readSync(buf); // 11 bytes
+		const text1 = new TextDecoder().decode(buf);  // "hello world"
+		if (options.verbose) {
+			console.log(`Received: ${text1} stopping process`);
+		}
     }
 	  Deno.stdin.close();
   }
