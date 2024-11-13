@@ -135,7 +135,6 @@ for (let i = 0; i < options.algorithm.length; i++) {
 		const encoder = new TextEncoder();
 		const data = encoder.encode("DONE!");
 		const bytesWritten = Deno.stdout.writeSync(data); // 11
-		//console.log("DONE!")
 		const buf = new Uint8Array(100);
 		console.log("DONE!")
 		const _ = Deno.stdin.readSync(buf); // 11 bytes
