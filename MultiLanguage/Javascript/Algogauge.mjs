@@ -115,19 +115,27 @@ for (let i = 0; i < options.algorithm.length; i++) {
     }
 
     if(options.perf){
-	const buf = new Uint8Array(100);
-      console.log("READY?")
-      const _ = Deno.stdin.readSync(buf); // 11 bytes
-      const text = new TextDecoder().decode(buf);  // "hello world"
+		const buf = new Uint8Array(100);
+		const encoder = new TextEncoder();
+		const data = encoder.encode("READY?");
+		const bytesWritten = Deno.stdout.writeSync(data); // 11
 
-      if (options.verbose) {
-        console.log(`Received: ${text} starting process`);
-      }
-      // Deno.stdin.close();
+    	//   console.log("READY?")
+		const _ = Deno.stdin.readSync(buf); // 11 bytes
+		const text = new TextDecoder().decode(buf);  // "hello world"
+
+		if (options.verbose) {
+			console.log(`Received: ${text} starting process`);
+		}
+      	// Deno.stdin.close();
 
     }
     runSortingAlgorithm(element);
     if(options.perf){
+		const encoder = new TextEncoder();
+		const data = encoder.encode("DONE!");
+		const bytesWritten = Deno.stdout.writeSync(data); // 11
+		//console.log("DONE!")
 		const buf = new Uint8Array(100);
 		console.log("DONE!")
 		const _ = Deno.stdin.readSync(buf); // 11 bytes
