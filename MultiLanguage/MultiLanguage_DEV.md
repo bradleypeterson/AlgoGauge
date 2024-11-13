@@ -60,7 +60,6 @@ Implementing PERF in your mini Algogauge is quite easy if you are choosing to ha
 
 #### DONE
 
-
 #### Javascript
 
 While we first attempted to use nodeJS we ran into a problem. When CMAKE complies the none c files get lost and it made it difficult to work with. Luckily [Deno](https://deno.com/) solves this. Deno allows us to compile javascript to a binary function AlgogaugeJS. This is great because now we can move AlgogaugeJS to the $PATH and make it usable in production. While at the time Deno isn't the only on that supports this we found the Buns binaries are significantly slower (buns creation of the binary is quite a bit faster however). Additionally if we ever move to typescript using Deno will make that transition quick. Deno uses a safety and security first approach which for now hasn't required use to use any special options for compiling but more options can be found here [Compile Docs](https://docs.deno.com/runtime/reference/cli/compiler/#compile-options). Deno does not fully support process however often they have drop in replacement that can be found in their documentation.

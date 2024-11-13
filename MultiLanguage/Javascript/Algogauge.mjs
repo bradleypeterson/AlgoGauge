@@ -27,12 +27,6 @@ const writeToFileLocation = (line, file) => {
   });
 };
 
-const clearFile = async () => {
-  writeFile("../temp/javascript.txt", "", (err) => {
-    if (err) throw err;
-    console.log('The "data to append" was appended to file!');
-  });
-};
 
 program
   .name("AlgoGauge NodeJS")
@@ -118,7 +112,7 @@ for (let i = 0; i < options.algorithm.length; i++) {
 
 
 
-(async () => {
+(() => {
   let jsonResults = "";
 
   // console.log("DONE!")
@@ -137,7 +131,7 @@ for (let i = 0; i < options.algorithm.length; i++) {
 
     if(options.perf){
       console.log("READY?")
-      const numberOfBytesRead = await Deno.stdin.readSync(buf); // 11 bytes
+      const _ = Deno.stdin.readSync(buf); // 11 bytes
       const text = new TextDecoder().decode(buf);  // "hello world"
 
       if (options.verbose) {
@@ -149,7 +143,7 @@ for (let i = 0; i < options.algorithm.length; i++) {
     runSortingAlgorithm(element);
     if(options.perf){
       console.log("DONE!")
-      const numberOfBytesRead1 = await Deno.stdin.readSync(buf); // 11 bytes
+      const _ = Deno.stdin.readSync(buf); // 11 bytes
       const text1 = new TextDecoder().decode(buf);  // "hello world"
       if (options.verbose) {
         console.log(`Received: ${text1} stopping process`);
@@ -177,7 +171,7 @@ for (let i = 0; i < options.algorithm.length; i++) {
         console.log(`NodeJS Sort: \"${element.algorithm}\" Verified!`);
       }
     }
-    if (options.verbose) {
+	if (options.verbose) {
       console.log(
         `NodeJS Sort: \"${element.algorithm}\" with Algorithm Option \"${element.strategy}\" of number ${element.length}, completed in ${element.timeTaken} milliseconds`,
       );
