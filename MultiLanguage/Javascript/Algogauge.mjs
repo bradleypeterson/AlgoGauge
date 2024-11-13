@@ -1,6 +1,5 @@
 import { Command } from "npm:commander";
 
-import { appendFileSync, writeFile } from "node:fs";
 import { runSortingAlgorithm } from "./runAlgorithms.mjs";
 import { SortingAlgorithm } from "./AlgogaugeDetails.mjs";
 import { verifySort } from "./sorting.mjs";
@@ -16,16 +15,6 @@ const collect = (value, previous) => {
   return previous.concat([value.toLowerCase()]);
 };
 
-const writeToFileLocation = (line, file) => {
-  if (file == "") {
-    return;
-  }
-
-  appendFileSync(file, line, (err) => {
-    if (err) throw err;
-    console.log('The "data to append" was appended to file!');
-  });
-};
 
 
 program
@@ -58,11 +47,11 @@ program
   .description(
     "Runs a given sort algorithm expecting array strategy and length to be given",
   )
-  .option(
-    "-f, --file <string>",
-    "The save location for json, json needs to be true",
-    "",
-  )
+//   .option(
+//     "-f, --file <string>",
+//     "The save location for json, json needs to be true",
+//     "",
+//   )
   .option("-a --algorithm <algo>", "Select sort algorithm", collect, [])
   .option(
     "-n, --number [int]",
