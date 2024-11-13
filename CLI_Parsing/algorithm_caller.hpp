@@ -309,7 +309,7 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 		}
 
 		if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
-			const char* program_arguments[] = {"python", "-m", "AlgogaugePY", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
+			const char* program_arguments[] = {"AlgogaugePY", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
 
 			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
