@@ -73,9 +73,6 @@ program
 program.parse();
 const options = program.opts();
 
-if (options.file != "") {
-  clearFile();
-}
 
 if (
   options.algorithm.length != options.number.length ||
@@ -172,9 +169,7 @@ for (let i = 0; i < options.algorithm.length; i++) {
   });
 
   jsonResults = jsonResults.substring(0, jsonResults.length - 1); //removes the last ,
-  if (options.file != "" && options.json) {
-    writeToFileLocation(jsonResults, options.file);
-  }
+
 
   if (options.json) {
     console.log(jsonResults);
