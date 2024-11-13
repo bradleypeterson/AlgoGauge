@@ -2,8 +2,7 @@
   "version": "4",
   "specifiers": {
     "npm:array@~0.4.3": "0.4.3",
-    "npm:commander@^12.1.0": "12.1.0",
-    "npm:fs@^0.0.1-security": "0.0.1-security"
+    "npm:commander@^12.1.0": "12.1.0"
   },
   "npm": {
     "array@0.4.3": {
@@ -19,9 +18,6 @@
     "emitter-component@1.1.2": {
       "integrity": "sha512-QdXO3nXOzZB4pAjM0n6ZE+R9/+kPpECA/XSELIcc54NeYVnBqIk+4DFiBgK+8QbV3mdvTG6nedl7dTYgO+5wDw=="
     },
-    "fs@0.0.1-security": {
-      "integrity": "sha512-3XY9e1pP0CVEUCdj5BmfIZxRBTSDycnbqhIOGec9QYtmVH2fbLpj86CFWkrNOkt/Fvty4KZG5lTglL9j/gJ87w=="
-    },
     "props-component@1.0.3": {
       "integrity": "sha512-oQ8Z4MuSblWUO3NUM+mPncu/8Eeo+/UVhhCp0itY1HbOuJ9413U5rLoFbMc0f9qfHfRuSn/5ltKJkYShQRS0oA=="
     },
@@ -33,12 +29,9 @@
     }
   },
   "workspace": {
-    "packageJson": {
-      "dependencies": [
-        "npm:array@~0.4.3",
-        "npm:commander@^12.1.0",
-        "npm:fs@^0.0.1-security"
-      ]
-    }
+    "dependencies": [
+      "npm:array@~0.4.3",
+      "npm:commander@^12.1.0"
+    ]
   }
 }
