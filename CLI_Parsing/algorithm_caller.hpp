@@ -147,6 +147,7 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process, const std::str
 
 
 std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const AlgoGauge::PERF perfAlgo){
+	if(verbose) std::cout << "________________ STARTED ________________" << std::endl;
 	const bool perf = (perfAlgo == perfON || perfAlgo == sample ? true: false);
  	struct subprocess_s process;
 	int exit_code;
@@ -176,11 +177,12 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 
 		do {
 			bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
-			if (bytes_read > 0) {
+
+			if(bytes_read > 0){
 				data[bytes_read] = '\0';  // Ensure null-termination
 
 				buffer += data;  // Accumulate read data in buffer
-
+				// cout << buffer << std::endl;
 				// Check if "READY?" or "DONE!" is fully in buffer
 				if (buffer.find("READY?") != std::string::npos) {
 					if(verbose) std::cout << "Detected READY? message" << std::endl;
@@ -190,8 +192,9 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 					e.startCounters();
 
 					buffer.clear();  // Clear after handling
+				} 
 
-				} else if (buffer.find("DONE!") != std::string::npos) {
+				if (buffer.find("DONE!") != std::string::npos) {
 					
 					e.stopCounters();
 					if(verbose) std::cout << "Detected DONE! message" << std::endl;
@@ -199,11 +202,11 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 					fflush(stdin_file);  // Ensure the input is sent immediately
 					buffer.clear();  // Clear after handling
 					break;
-				} else{
-					cout << buffer << std::endl;
-					// buffer.clear();  // Clear after handling
-				}
+				} 
+				cout << buffer;
+				buffer.clear();  // Clear after handling
 			}
+			
 		} while (bytes_read != 0);
 	}
 	
@@ -254,6 +257,8 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 	// delete stdin_file;
 	// stdin_file = NULL;
 
+
+	if(verbose) std::cout << "________________ COMPLETED ________________" << std::endl;
 	
     return stdJSON;
 }

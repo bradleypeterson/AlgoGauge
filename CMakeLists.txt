@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.22.1)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(AlgoGauge)
-add_executable( AlgoGauge 
+project(Algogauge)
+add_executable( Algogauge 
         main.cpp
         algorithms/sort_7algs.cpp
         algorithms/hash_algs.cpp

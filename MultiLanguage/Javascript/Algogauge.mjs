@@ -98,9 +98,11 @@ for (let i = 0; i < options.algorithm.length; i++) {
 
 
 
-(() => {
+(async() => {
   let jsonResults = "";
-
+  const encoder = new TextEncoder();
+  const doneData = encoder.encode("DONE!");
+  const readyData = encoder.encode("READY?");
   // console.log("DONE!")
 
   // console.log("DONE!")
@@ -116,34 +118,24 @@ for (let i = 0; i < options.algorithm.length; i++) {
 
     if(options.perf){
 		const buf = new Uint8Array(100);
-		const encoder = new TextEncoder();
-		const data = encoder.encode("READY?");
-		const bytesWritten = Deno.stdout.writeSync(data); // 11
+		const bytesWritten = await Deno.stdout.write(readyData); // 11
 
-    	//   console.log("READY?")
-		const _ = Deno.stdin.readSync(buf); // 11 bytes
+		const bytesRead = await Deno.stdin.read(buf); // 11 bytes
 		const text = new TextDecoder().decode(buf);  // "hello world"
-
-		if (options.verbose) {
-			console.log(`Received: ${text} starting process`);
-		}
-      	// Deno.stdin.close();
+	  	// Deno.stdin.close();
 
     }
     runSortingAlgorithm(element);
     if(options.perf){
-		const encoder = new TextEncoder();
-		const data = encoder.encode("DONE!");
-		const bytesWritten = Deno.stdout.writeSync(data); // 11
-		const buf = new Uint8Array(100);
-		console.log("DONE!")
-		const _ = Deno.stdin.readSync(buf); // 11 bytes
-		const text1 = new TextDecoder().decode(buf);  // "hello world"
-		if (options.verbose) {
-			console.log(`Received: ${text1} stopping process`);
-		}
+      const buf2 = new Uint8Array(100);
+      const bytesWritten = await Deno.stdout.write(doneData); // 11
+      const bytesRead = await Deno.stdin.read(buf2); // 11 bytes
+      const text1 = new TextDecoder().decode(buf2);  // "hello world"
+      if (options.verbose) {
+        console.log(`Received: ${text1} stopping process`);
+      }
     }
-	  Deno.stdin.close();
+	  // Deno.stdin.close();
   }
 
   SelectedSortingAlgorithms.forEach((element) => {
