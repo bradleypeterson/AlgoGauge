@@ -24,8 +24,256 @@ using std::cin;
 using std::endl;
 using std::string;
 using std::pair;
+using std::vector;
+
+struct Array {
+
+    int size;
+    int capacity;
+    int* data;
+
+    Array(int initialCapacity = 10) : size(initialCapacity), capacity(initialCapacity) {
+        data = new int[capacity];
+
+        for (int i = 0; i < size; i++) {
+            data[i] = 42;
+        }
+    }
+
+    ~Array() {
+        delete[] data;
+    }
+
+    void push_back(int num) {
+        if (size >= capacity) {
+            int newCapacity = capacity * 2;
+            int* newData = new int[newCapacity];
+
+            //copy old array to new one
+            for (int i = 0; i < size; i++) {
+                newData[i] = data[i];
+            }
+
+            //delete old 
+            delete[] data;
+
+            //point to new
+            data = newData;
+            capacity = newCapacity;
+        }
+
+        data[size] = num;
+        size++;
+    }
+
+    void push_front(int num) {
+        if (size >= capacity) {
+            // Double the capacity and allocate a new array
+            int newCapacity = capacity * 2;
+            int* newData = new int[newCapacity];
+
+            // Insert the new element at the front
+            newData[0] = num;
+
+            // Copy existing elements to the new array, shifted by 1
+            for (int i = 0; i < size; i++) {
+                newData[i + 1] = data[i];
+            }
+
+            // Clean up the old array
+            delete[] data;
+
+            // Update 
+            data = newData;
+            capacity = newCapacity;
+        } 
+        else {
+            // Shift elements for new element
+            for (int i = size; i > 0; i--) {
+                data[i] = data[i - 1];
+            }
+
+            // Insert the new element
+            data[0] = num;
+        }
+
+        // Increment the size
+        size++;
+    }
+
+    void pop_front() {
+        if (size > 0) {
+            for (int i = 0; i < size - 1; i++) {
+                data[i] = data[i + 1];
+            }
+            size--;
+        } 
+        else {
+            std::cerr << "Array is empty!" << endl;
+        }
+    }
+
+
+    void pop_back() {
+        if (size > 0) {
+            size--;
+            
+        } 
+        else {
+            std::cerr << "Array is empty!" << endl;
+        }
+    }
+
+    void print() const {
+        for (int i = 0; i < size; i++) {
+            cout << data[i] << " ";
+        }
+        cout << endl;
+    }
+};
+
+
+// Performance functions
+void ArrayPushBackTime(Array& array, int number) {
+    for (int i = 0; i < number; i++) {
+        array.push_back(42);
+    }
+}
+
+void ArrayPopBackTime(Array& array, int number) {
+    for (int i = 0; i < number; i++) {
+        if (array.size > 0) {
+            array.pop_back();
+        } else {
+            break; 
+        }
+    }
+}
+
+
+void ArrayPopFrontTime(Array& array, int number) {
+    for (int i = 0; i < number; i++) {
+        if (array.size > 0) {
+            array.pop_front();
+        } else {
+            break; 
+        }
+    }
+}
+
+void ArrayPushFrontTime(Array& array, int number) {
+    for (int i = 0; i < number; i++) {
+        array.push_front(42);
+    }
+}
+
+// Performance test function
+string ArrayPerformanceTest(int capacity, int number, string function, string perf, bool verbose, bool includeValues) {
+    string output = "";
+    PerfEvent perfObject;
+    string perfObjectString = "{}";
+
+    // Create array with given capacity
+    Array array(capacity);
+
+    if (verbose) {
+        cout << "Array has been created, Beginning timer and Perf" << endl;
+    }
+
+    auto sTime = std::chrono::high_resolution_clock::now();
+    perfObject.startCounters();
+
+    if (function == "pop_back") {
+        ArrayPopBackTime(array, number);
+    } 
+    else if (function == "pop_front") {
+        ArrayPopFrontTime(array, number);
+    } 
+    else if (function == "push_front") {
+        ArrayPushFrontTime(array, number);
+    } 
+    else if (function == "push_back") {
+        ArrayPushBackTime(array, number);
+    } 
+    else if (function == "pushpop_front") {
+        ArrayPushFrontTime(array, number);
+        ArrayPopFrontTime(array, number);
+    } 
+    else if (function == "pushpop_back") {
+        ArrayPushBackTime(array, number);
+        ArrayPopBackTime(array, number);
+    } 
+    else {
+        std::cerr << "Invalid function name given" << endl;
+    }
+
+    auto eTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> fp_ms = eTime - sTime;
+    perfObject.stopCounters();
+
+    if (includeValues) {
+        array.print(); 
+    }
+
+    output = "{";
+    output += R"("algorithmName": ")" + function + "\",";
+    output += R"("arrayCapacity": )" + std::to_string(capacity) + ",";
+    output += R"("number": )" + std::to_string(number) + ",";
+    output += R"("algorithmRunTime_ms": )" + std::to_string(fp_ms.count());
+
+    std::transform(perf.begin(), perf.end(), perf.begin(), ::tolower);
+
+    if (perf == "true") {
+        perfObjectString = perfObject.getPerfJSONString();
+    }
+
+    output += ", \"perfData\": ";
+    output += perfObjectString + "}";
+
+    if (verbose) {
+        cout << output << "\n" << endl;
+    }
+
+    return output;
+}
+
+int main() {
+
+    Array a(2);
+    a.push_back(21); 
+    a.print(); // 42 42 21
+    a.push_back(42);
+    a.print(); //42 42 21 42
+    a.push_front(10);
+    a.print(); //10 42 42 21 42
+    a.pop_back();
+    a.print(); //10 42 42 21 
+    a.pop_front();
+    a.print(); // 42 42 21
 
 
 
+    //ArrayPerformanceTest(100000, 4002, "push_back", "true", true, false);
+    //ArrayPerformanceTest(100000, 4002, "push_front", "true", true, false);
+
+    //ArrayPerformanceTest(2, 5, "push_back", "true", true, true);
+    //ArrayPerformanceTest(2, 5, "push_front", "true", true, true);
+
+    //ArrayPerformanceTest(100000, 4002, "pop_back", "true", true, false);
+    //ArrayPerformanceTest(100000, 90002, "pop_front", "true", true, false);
+
+    //ArrayPerformanceTest(5, 3, "pop_back", "true", true, true);
+    //ArrayPerformanceTest(5, 3, "pop_front", "true", true, true);
+
+    //ArrayPerformanceTest(100000, 4002, "pushpop_front", "true", true, false);
+    //ArrayPerformanceTest(100000, 4002, "pushpop_back", "true", true, false);
+
+
+    //ArrayPerformanceTest(100000, 4002, "invalid", "true", true, false);
+
+
+    //ArrayPerformanceTest(100, 200, "push_back", "true", true, true);
+    return 0;
+}
 
 #endif
