@@ -506,6 +506,7 @@ struct PerfEvent {
 
 #endif
 
+
 /// Unused
 #if defined(__linux__)
 

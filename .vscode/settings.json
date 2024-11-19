@@ -88,5 +88,6 @@
 	"C_Cpp.errorSquiggles": "disabled",
 	"cSpell.words": [
 		"bradleypeterson"
-	]
+	],
+	"deno.enable": true
 }

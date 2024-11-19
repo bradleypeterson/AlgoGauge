@@ -57,6 +57,7 @@ struct LinkedList {
             current = current->link;
         }
         cout << "\n" << endl;
+        return "";
     }
 
     //push_back 
@@ -254,6 +255,10 @@ std::string LinkedListPerformanceTest(int size, int number, string function, str
     if(perf == "true"){
         perfObjectString = perfObject.getPerfJSONString();
     }  
+
+    if (perf =="sample"){
+        perfObjectString = perfObject.getPerfJSONStringDummy();
+    }
     
     output += ", \"perfData\": ";  
     output += perfObjectString + "}";
@@ -267,17 +272,17 @@ std::string LinkedListPerformanceTest(int size, int number, string function, str
 }
 #endif
 
-int main() {
+//int main() {
 
     //performance tests with verbose
-    LinkedListPerformanceTest(100000, 4002, "push_back", "true", true, false);
-    LinkedListPerformanceTest(100000, 4002, "pushpop_back", "true", true, false);
+    //LinkedListPerformanceTest(100000, 4002, "push_back", "true", true, false);
+    //LinkedListPerformanceTest(100000, 4002, "pushpop_back", "true", true, false);
 
     // Invalid case
-    LinkedListPerformanceTest(100000, 4002, "invalid", "true", true, false);
+    //LinkedListPerformanceTest(100000, 4002, "invalid", "true", true, false);
 
     // Include values 
     //LinkedListPerformanceTest(100, 200, "push_back", "true", true, true);
 
-    return 0;
-}
+//    return 0;
+//}

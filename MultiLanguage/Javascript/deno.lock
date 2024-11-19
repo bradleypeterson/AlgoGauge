@@ -1,0 +1,17 @@
+{
+  "version": "4",
+  "specifiers": {
+    "npm:commander@*": "12.1.0"
+  },
+  "npm": {
+    "commander@12.1.0": {
+      "integrity": "sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:array@~0.4.3",
+      "npm:commander@^12.1.0"
+    ]
+  }
+}

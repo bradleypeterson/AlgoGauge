@@ -78,9 +78,9 @@ Options getOptions(string type) {
     ;
 
     options.add_options("Algorithm Name and Length [REQUIRED]")
-        ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear_probe]\n Linked List: [pop, push, push_pop]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
-        ("s, strat, type, strategy", "Sorting: [ran/random, rep/repeated, chunks, rev/sorted-reverse, sorted]\nHash Table: [closed]\nLinked List:[front, back, front_back, back_front]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
-        ("n, num, length, start, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations\nLinked List: Number of operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
+        ("a,algo,probe,algorithm", "Sorting: [default, bubble, selection, insertion, quick, merge, heap]\nHash Table: [linear_probe]\nCRUD Operation: [push_front, push_back, pop_front, pop_back, pushpop_back, pushpop_front]", cxxopts::value<vector<string>>(), "Name of the algorithm to run.")
+        ("s, strat, type, strategy", "Sorting: [random, repeated, chunks, sorted, sorted_reversed]\nHash Table: [closed]\nCRUD Operation:[array, linked_list]", cxxopts::value<vector<std::string>>(), "Determines what type or strategy used in generating")
+        ("n, num, length, start, number", "Provide an int value between 0 and " + std::to_string(UINT32_MAX) + "\nSorting: Size of Array to Sort\nHash Table: Number of testing operations\nCRUD Operation: Number of operations", cxxopts::value<vector<int>>(), "Number of items the algorithm will process")
     ;
 
     options.add_options("Required Sorting Algorithm")
@@ -91,12 +91,13 @@ Options getOptions(string type) {
         ("i, step,step_count, iterator", "How much the number per iteration", cxxopts::value<vector<int>>()->default_value("1"))
         ("e, end, additional", "The ending number for step operations",  cxxopts::value<vector<int>>()->default_value("0")) 
     ;
-    options.add_options("Required Linked List")
-        ("l, size", "Provide a number (int > 0) that determines linked list size.", cxxopts::value<vector<int>>(), "How many elements can be stored in the Linked List")
-     ;
+    options.add_options("Required CRUD Operation and Hash Table")
+        ("c, capacity", "Provide a number (int > 0) that determines hash table, array, or linked list size .", cxxopts::value<vector<int>>(), "How many elements can be stored given strategy")
+    ;
+
+
 
     options.add_options("Required Hash Table")
-        ("c, capacity", "Provide a number (int > 0) that determines hash table size.", cxxopts::value<vector<int>>(), "How many elements can be stored in the Hash Table")
         ("d, load, density", "Provide an int value between 0 (0%) and 100 (100%) to load into hash table.", cxxopts::value<vector<double>>(), "How full or the density of the starting hash table as a percentage")
     ;
 
@@ -275,6 +276,47 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
             algogaugeDetails.SelectedHashTables.push_back(newHashTable);
             continue;
         }
+       
+        if(AlgoGauge::crudOperations.find(algo) != AlgoGauge::crudOperations.end()){
+            if(capacityDeque.empty()){
+                std::cerr
+                    << "The number of " 
+                    << (capacityDeque.empty()? "CAPACITY ": "")
+                    << "did not match the number of CRUD operations" 
+                    << std::endl
+                ;
+                throw std::invalid_argument("Missing required options for algorithm: CAPACITY per CRUD operation.");
+            }
+
+            if(!(strategyDeque.front() == "array" || strategyDeque.front() == "linked_list")){
+                throw std::invalid_argument("Strategy isn't a type of array or linked_list: " + strategyDeque.front());
+            }
+
+            struct AlgoGauge::CRUDOperationSettings newCRUDOperation;
+            newCRUDOperation.Number = numberDeque.front();
+            newCRUDOperation.Operation = algo;
+            newCRUDOperation.Type = strategyDeque.front();
+            newCRUDOperation.Size = capacityDeque.front();
+
+
+            if(!namesDeque.empty()){
+                newCRUDOperation.Name = namesDeque.front();
+            }
+
+            strategyDeque.pop_front();
+            capacityDeque.pop_front();
+
+            numberDeque.pop_front();
+
+            if(!namesDeque.empty()){
+                namesDeque.pop_front();
+            }
+
+            algogaugeDetails.SelectedCRUDOperations.push_back(newCRUDOperation);
+            continue;
+        }
+
+
 
 
         if(languageDeque.empty()){
@@ -312,10 +354,8 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
                 throw std::invalid_argument("There is no array strategy: " + strategyDeque.front());
             }
             
-           
             algogaugeDetails.SelectedSortingAlgorithms.push_back(newSortingAlgorithm);
             
-
         }
         strategyDeque.pop_front();
         languageDeque.pop_front();
@@ -357,6 +397,19 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
                 << " load: " << hashtable.Load
                 << " number: " << hashtable.Number
                 << " name: " << hashtable.Name
+                << "\n";
+
+            verboseOutput += oss.str();
+
+        }
+        for(const auto& crudOP: algogaugeDetails.SelectedCRUDOperations){
+            std::ostringstream oss;
+            oss << "CRUD Operation"
+                << " type: " << crudOP.Type
+                << " operation: " << crudOP.Operation
+                << " size: " << crudOP.Size
+                << " number: " << crudOP.Number
+                << " name: " << crudOP.Name
                 << "\n";
 
             verboseOutput += oss.str();
