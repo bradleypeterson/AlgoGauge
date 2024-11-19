@@ -39,6 +39,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #if defined(__linux__)
 #include <asm/unistd.h>
 #include <linux/perf_event.h>
+#include <linux/hw_breakpoint.h>
 #include <sys/ioctl.h>
 
 
@@ -110,22 +111,52 @@ struct PerfEvent
 		registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
 
 		registerCounter("cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+		registerCounter("cycles2", PERF_TYPE_HARDWARE, PERF_COUNT_HW_REF_CPU_CYCLES);
+
 		registerCounter("kcycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, KERNEL);
 
 		registerCounter("instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
 
-		registerCounter("L1-misses", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_MISS << 16));
-		registerCounter("LLC-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
-		registerCounter("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
-		registerCounter("branch-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
+		registerCounter("L1 Data Cache", PERF_TYPE_HW_CACHE, 
+			(PERF_COUNT_HW_CACHE_L1D) | 
+			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
+			(PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+		);
+		registerCounter("L1 Data Cache Misses", PERF_TYPE_HW_CACHE, 
+			(PERF_COUNT_HW_CACHE_L1D) | 
+			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
+			(PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
+		);
+		registerCounter("L1 Instruction Cache", PERF_TYPE_HW_CACHE, 
+			(PERF_COUNT_HW_CACHE_L1I) | 
+			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
+			(PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+		);
+		registerCounter("L1 Instruction Misses", PERF_TYPE_HW_CACHE, 
+			(PERF_COUNT_HW_CACHE_L1D) | 
+			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
+			(PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
+		);
+
+		registerCounter("branch predictions", PERF_TYPE_HW_CACHE, 			
+			(PERF_COUNT_HW_CACHE_BPU) |
+            (PERF_COUNT_HW_CACHE_OP_READ << 8) |
+            (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+		);
+		registerCounter("branch prediction misses", PERF_TYPE_HW_CACHE, 			
+			(PERF_COUNT_HW_CACHE_BPU) |
+            (PERF_COUNT_HW_CACHE_OP_READ << 8) |
+            (PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
+		);
 
 		registerCounter("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
-		registerCounter("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
+		registerCounter("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+		registerCounter("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
 
 		registerCounter("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
 		registerCounter("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
 		registerCounter("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
-		registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
+		registerCounter("CPU Migrations", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS);
 
 		// additional counters can be found in linux/perf_event.h
 

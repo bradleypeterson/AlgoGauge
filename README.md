@@ -47,6 +47,8 @@ The following prerequisites are required.
 - [Deno](https://deno.com/) for compiling Javascript
 - [PipX](https://pipx.pypa.io/) for making Python CLI tools easy
 
+
+
 ### Installation
 
 ```shell
@@ -68,7 +70,6 @@ To run on Windows OS (Calls help option `-h`)
 ```shell
 .\AlgoGauge.exe -h
 .\AlgoGaugeJS.exe -h
-
 ```
 
 #### Linux and Mac OS
@@ -79,6 +80,10 @@ To run on Unix/Mac OS (Calls help option `-h`)
 ./AlgoGauge -h
 ./AlgoGaugeJS -h
 ```
+
+> [!IMPORTANT]
+> LINUX Users
+> In order for perf to work correctly you either need to run Algogauge with sudo or update perf_event_paranoid [PERF.md#Security](./docs/PERF.md#security)
 
 #### Installation Production
 
@@ -227,6 +232,9 @@ Will output the arrays in the output. It is highly recommended to use a small le
 
 Includes Perf data in the output. Actual Perf data only works on Linux.
 If you are not on Linux and want to use this anyways, you can set this to "sample". e.g. `--sample`
+
+> [!IMPORTANT]
+> Perf may not work without sudo however this can be easily be fixed by following does not need sudo look at [PERF.md](./docs/PERF.md) to fix this
 
 ##### -h, --help
 

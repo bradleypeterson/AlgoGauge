@@ -16,11 +16,11 @@
   <p align="left">
     This is the README for developers who are looking to improve this project. If you are only looking
     to use this program, please read the <a href="./README.md">README.md</a> file instead. This readme
-    also contains information on deploying not just this program, but also the React app to an 
+    also contains information on deploying not just this program, but also the React app to an
     Ubuntu server.
     <br><br>
     Use this file to SUPPLEMENT the <a href="./README.md">README.md</a>. 
-    <br>    
+    <br>
     <em>It makes little sense to improve something you do not know how to use.</em>
   </p>
 </div>
@@ -216,34 +216,10 @@ in the future.
 <br>
 This builds the binary and then moves it into the binaries folder which is where almost all shells 
 look in when you execute a command. This means that you can now execute `AlgoGauge [flags/args]` like 
-a normal linux command. 
+a normal linux command.
 
-## Getting AlgoGauge to run as sudo as a user without sudo access
-In order to do this, there is an extra step that needs to be run after completing the above steps.
-You have to edit the sudoers file. I found this site to be useful while completing these actions.
-https://ostechnix.com/run-particular-commands-without-sudo-password-linux/
-To edit the sudoers file, do ***not*** edit it directly! Instead, run the following command:
-```bash
-sudo visudo
-```
-Then, add the following lines at the end of the file:
-```bash
-# Allow perf to be ran without password:
-%sudo ALL=NOPASSWD:/usr/bin/AlgoGauge
-root ALL=NOPASSWD:/usr/bin/AlgoGauge
-%root ALL=NOPASSWD:/usr/bin/AlgoGauge
-```
-What these three lines mean is to allow all users to run the AlgoGauge program as sudo without 
-also having to have sudo access as well as not having to input any password when running it as sudo.
-(these changes will only work on new shell sessions. Meaning you'll need to close your active shell session and re-login
-in order to get it to work)
-These lines allow any user to now run the following command:
-```bash
-sudo AlgoGauge [flags/args]
-```
-Which sudo is required in order for the -p/--perf flag to work!
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+> [!WARNING]
+> Algogauge perf does not need sudo look at PERF.md to fix this
 
 
 # Deploying React to an Ubuntu Server
