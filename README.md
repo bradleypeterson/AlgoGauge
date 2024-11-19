@@ -184,7 +184,7 @@ A canonical name that will be returned in output if provided.
 ##### -v, --verbose
 Runs the program in Verbose mode
 
-##### -0, --output
+##### -o, --output
 Will output the arrays in the output. It is highly recommended to use a small length (less than 100).
 
 ##### -p, --perf
@@ -412,49 +412,6 @@ Results written in JSON at: './test'
 
 Note: The Verbose flag also works with or without the File flag and also works on the JSON flag as well.
 
-<!-- ROADMAP -->
-## Roadmap
-
-### P1
-
-- [x] Add array, linked list options CRUD operation resize array
-- [x] Add Hashing comparisons
-- [ ] Site cleanup go over site and fix bugs and pages BIG theta notation on all
-  - [x] clean card heavy layout (Experiment, History)
-  - [x] footer padding
-  - [x] global button / links for experiment operations
-  - [x] change mode dropdown
-  - [x] remove repeat text  
-  - [ ] Implement experiment popup timer
-  - [x] Grid layout for multiple cards (Four cards per row max)
-  - [ ] Toggle Dark Mode and Light Mode support
-  - [x] Better history layout 
-  - [ ] GEt rid of user input size (brad wants this for some reason)
-  - [ ] When a close education popup I want to go back to the experiment
-- [ ] Instructor video and education overhaul
-- [ ] Validate Perf, ways to measure l1 cache. *
-
-### P2
-
-- [ ] GPU algorithms, CUDA
-- [ ] Variations of current sort algorithms (quick sort, merge sort 1...k, selection)
-- [x] JAVA vs C++ vs RUST vs Python ???
-- [ ] CPU vectorization algorithms
-- [ ] Clear experiment queue
-- [ ] Trees AVL vs B trees
-
-### P3
-
-- [ ] Unit/Perf testing for cpu bound, memory bound, and latency bound.
-- [ ] Add Tim sort Algorithm and other sort
-- [ ] Optimization mode, O0, O1, O2, O3
-- [ ] graph storage mechs
-- [ ] Over under prediction betting, make the site fun
-- [ ] repeated and chunk slider
-- [X] Finish documenting code
-- [X] Add Perf options
-- [X] Fix memory SEGFAULT errors
-- [ ] Parallel processing of algorithms vs Serial.
 
 See the [open issues](https://github.com/jzdegrey/AlgoGauge/issues) for a full list of proposed features (and known issues).
 
