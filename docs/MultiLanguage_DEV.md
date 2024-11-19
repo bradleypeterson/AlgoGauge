@@ -2,7 +2,7 @@
 
 ## Desc
 
-This explains the steps need to create another language and how to go about it. You command line interface (CLI) tool for now should only expect one element to be passed at a time however it should still support multiple. All languages should act as mini version of Algogauge supporting most if not all attributes. To call the separate CLI tools [subprocess.h](https://github.com/sheredom/subprocess.h) was used to see more information at that look at the subprocess.md. The reason for having c++ call all languages allowed us to do two major things one was having the CLI support choosing whatever language you wanted and running multiple at the same time. While this could easily be done on the frontend having it in one place helped. The other reason was PERF perf library in languages such as javascript and python are non existent to in to see more on PERF look at the PERF.md. When making the mini Algogauge CLI you don't need to directly work with PERF as c++ will do all of that. However, for languages such as rust and swift with c/c++ interoperability you should compare how it preforms when perf is run from c++ and when it is backed into the CLI.
+This explains the steps need to create another language and how to go about it. You command line interface (CLI) tool for now should only expect one element to be passed at a time however it should still support multiple. All languages should act as mini version of Algogauge supporting most if not all attributes. To call the separate CLI tools [subprocess.h](https://github.com/sheredom/subprocess.h) was used to see more information at that look at the [subprocess.md](Subprocess.md#subprocess). The reason for having c++ call all languages allowed us to do two major things one was having the CLI support choosing whatever language you wanted and running multiple at the same time. While this could easily be done on the frontend having it in one place helped. The other reason was PERF perf library in languages such as javascript and python are non existent to in to see more on PERF look at the PERF.md. When making the mini Algogauge CLI you don't need to directly work with PERF as c++ will do all of that. However, for languages such as rust and swift with c/c++ interoperability you should compare how it preforms when perf is run from c++ and when it is backed into the CLI.
 
 ## Creating the MINI Algogauge
 
@@ -56,9 +56,9 @@ For array creation the following creation strategies need to be created [random,
 
 ### PERF
 
-Implementing PERF in your mini Algogauge is quite easy if you are choosing to have C++ call and run perf on it.
+Implementing PERF in your mini Algogauge is quite easy if you are choosing to have C++ call and run perf on it. The basic idea is if PERF is true print READY? and expect an input. Once input is passed back start the code you want to run PERF on. Once you are done print DONE! and expect an input. Once you get an input continue. For now you can only ever call READY? and DONE! once. Ideally that would be fixed in the future however, it isn't really a problem as c++ only calls one method at a time.
 
-#### DONE
+!Warning do not print anything between READY? and DONE!
 
 #### Javascript
 

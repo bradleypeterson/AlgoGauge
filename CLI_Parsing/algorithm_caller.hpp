@@ -307,7 +307,7 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 		std::string binaryPath = "";
 
 	
-		if (algo.Language == "node" || algo.Language == "nodejs"|| algo.Language == "js" || algo.Language == "javascript"){
+		if (algo.Language == "node" || algo.Language == "nodejs"|| algo.Language == "js" || algo.Language == "javascript" || algo.Language == "deno"){
 			binaryPath = "./AlgogaugeJS"; // needs dot as not in path
 		}else if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
 			binaryPath = "AlgogaugePY"; //no dot as it's in the path
