@@ -57,6 +57,7 @@ struct LinkedList {
             current = current->link;
         }
         cout << "\n" << endl;
+        return "";
     }
 
     //push_back 

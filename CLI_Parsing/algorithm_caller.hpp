@@ -20,6 +20,9 @@
 #include "../algorithms/sort_7algs.cpp"
 #include "../algorithms/hash_algs.cpp"
 
+#include "../algorithms/linkedList.cpp"
+#include "../algorithms/arrays.cpp"
+
 
 
 
@@ -377,25 +380,25 @@ std::string runCRUDOperation(const AlgoGauge::AlgoGaugeDetails& algorithmsContro
 	}
 
 	for(auto algo: algorithmsController.SelectedCRUDOperations){
-		// if(algo.Type == "array"){
-		// 	jsonResults += LinkedListPerformanceTest(
-		// 		algo.Size,
-		// 		algo.Number,
-		// 		algo.Operation
-		// 		includePerf,
-		// 		algorithmsController.Verbose,
-		// 		algorithmsController.Output
-		// 	);
-		// }else if(algo.Type == "linked_list"){
-		// 	jsonResults += ArrayPerformanceTest(
-		// 		algo.Size,
-		// 		algo.Number,
-		// 		algo.Operation
-		// 		includePerf,
-		// 		algorithmsController.Verbose,
-		// 		algorithmsController.Output
-		// 	);
-		// }
+		if(algo.Type == "array"){
+			jsonResults += LinkedListPerformanceTest(
+				algo.Size,
+				algo.Number,
+				algo.Operation,
+				includePerf,
+				algorithmsController.Verbose,
+				algorithmsController.Output
+			);
+		}else if(algo.Type == "linked_list"){
+			jsonResults += ArrayPerformanceTest(
+				algo.Size,
+				algo.Number,
+				algo.Operation,
+				includePerf,
+				algorithmsController.Verbose,
+				algorithmsController.Output
+			);
+		}
 
 		jsonResults+=",";
 	}
