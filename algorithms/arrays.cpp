@@ -44,6 +44,8 @@ struct Array {
         delete[] data;
     }
 
+    //push new element to back of array 
+    //array capacity doubles if size > capacity 
     void push_back(int num) {
         if (size >= capacity) {
             int newCapacity = capacity * 2;
@@ -66,9 +68,11 @@ struct Array {
         size++;
     }
 
+    //push new element to front of array 
+    //array will double in size if size > capacity 
     void push_front(int num) {
         if (size >= capacity) {
-            // Double the capacity and allocate a new array
+            // Double the capacity and create new array
             int newCapacity = capacity * 2;
             int* newData = new int[newCapacity];
 
@@ -101,6 +105,7 @@ struct Array {
         size++;
     }
 
+    //remove front element in array 
     void pop_front() {
         if (size > 0) {
             for (int i = 0; i < size - 1; i++) {
@@ -113,7 +118,7 @@ struct Array {
         }
     }
 
-
+    //remove last element in array. 
     void pop_back() {
         if (size > 0) {
             size--;
@@ -124,6 +129,7 @@ struct Array {
         }
     }
 
+    //print array function
     void print() const {
         for (int i = 0; i < size; i++) {
             cout << data[i] << " ";
@@ -167,7 +173,9 @@ void ArrayPushFrontTime(Array& array, int number) {
     }
 }
 
-// Performance test function
+//Main Performance test function
+//capacity, elements, function name, perf, verbose, include values 
+//fuctions push_front/back,  pop_front/back,  pushpop_front/back
 string ArrayPerformanceTest(int capacity, int number, string function, string perf, bool verbose, bool includeValues) {
     string output = "";
     PerfEvent perfObject;
@@ -227,6 +235,10 @@ string ArrayPerformanceTest(int capacity, int number, string function, string pe
         perfObjectString = perfObject.getPerfJSONString();
     }
 
+    if (perf =="sample"){
+        perfObjectString = perfObject.getPerfJSONStringDummy();
+    }
+
     output += ", \"perfData\": ";
     output += perfObjectString + "}";
 
@@ -237,21 +249,37 @@ string ArrayPerformanceTest(int capacity, int number, string function, string pe
     return output;
 }
 
-int main() {
+//int main() {
 
-    Array a(2);
-    a.push_back(21); 
-    a.print(); // 42 42 21
-    a.push_back(42);
-    a.print(); //42 42 21 42
-    a.push_front(10);
-    a.print(); //10 42 42 21 42
-    a.pop_back();
-    a.print(); //10 42 42 21 
-    a.pop_front();
-    a.print(); // 42 42 21
-
-
+//     Array a(2);
+//     int aSize = a.size;
+//     cout << "Size should be 2 here: " << aSize << endl;
+//     a.push_back(21); 
+//     a.print(); // 42 42 21
+//     aSize = a.size;
+//     cout << "Size should be 3 here: " << aSize << endl;
+//     a.push_back(42);
+//     a.print(); //42 42 21 42
+//     aSize = a.size;
+//     cout << "Size should be 4 here: " << aSize << endl;
+//     a.push_front(10);
+//     a.print(); //10 42 42 21 42
+//     aSize = a.size;
+//     cout << "Size should be 5 here: " << aSize << endl;
+//     a.pop_back();
+//     a.print(); //10 42 42 21
+//     aSize = a.size; 
+//     cout << "Size should be 4 here: " << aSize << endl;
+//     a.pop_front();
+//     a.print(); // 42 42 21
+//     aSize = a.size;
+//     cout << "Size should be 3 here: " << aSize << endl;
+//     for (int i = 4; i < 20; i ++) {
+//         a.push_back(42);
+//         aSize = a.size;
+//         cout << "Size should be " << i <<" here: " << aSize << endl;
+//     }
+    
 
     //ArrayPerformanceTest(100000, 4002, "push_back", "true", true, false);
     //ArrayPerformanceTest(100000, 4002, "push_front", "true", true, false);
@@ -268,12 +296,16 @@ int main() {
     //ArrayPerformanceTest(100000, 4002, "pushpop_front", "true", true, false);
     //ArrayPerformanceTest(100000, 4002, "pushpop_back", "true", true, false);
 
+    //ArrayPerformanceTest(2, 5, "pushpop_front", "true", true, true);
+    //ArrayPerformanceTest(10, 5, "pushpop_back", "true", true, true);
+
 
     //ArrayPerformanceTest(100000, 4002, "invalid", "true", true, false);
 
 
     //ArrayPerformanceTest(100, 200, "push_back", "true", true, true);
-    return 0;
-}
+
+    //return 0;
+ //}
 
 #endif
