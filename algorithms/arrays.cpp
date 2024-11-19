@@ -249,8 +249,7 @@ string ArrayPerformanceTest(int capacity, int number, string function, string pe
     return output;
 }
 
-//int main() {
-
+// int main() {
 //     Array a(2);
 //     int aSize = a.size;
 //     cout << "Size should be 2 here: " << aSize << endl;
@@ -280,7 +279,6 @@ string ArrayPerformanceTest(int capacity, int number, string function, string pe
 //         cout << "Size should be " << i <<" here: " << aSize << endl;
 //     }
     
-
     //ArrayPerformanceTest(100000, 4002, "push_back", "true", true, false);
     //ArrayPerformanceTest(100000, 4002, "push_front", "true", true, false);
 
@@ -299,13 +297,9 @@ string ArrayPerformanceTest(int capacity, int number, string function, string pe
     //ArrayPerformanceTest(2, 5, "pushpop_front", "true", true, true);
     //ArrayPerformanceTest(10, 5, "pushpop_back", "true", true, true);
 
-
     //ArrayPerformanceTest(100000, 4002, "invalid", "true", true, false);
 
-
-    //ArrayPerformanceTest(100, 200, "push_back", "true", true, true);
-
-    //return 0;
- //}
+//     return 0;
+// }
 
 #endif
