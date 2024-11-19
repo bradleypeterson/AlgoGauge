@@ -1,6 +1,9 @@
 # Contributions to this project
-- Cooper Maitoza
-  - worked on hash tables
-- Coleton Watt
-- Brody Gardner
+## Semester Fall 2024
+  - Cooper Maitoza
+    - worked on hash tables
+  - Coleton Watt
+  - Brody Gardner
+
+## semester IDK
 - Zach DeGrey
