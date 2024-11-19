@@ -224,45 +224,36 @@ Sort 'Quick' with Algorithm Option 'Ordered' of length 25000, completed in x.xxx
 ```
 
 
-FIXME: fix the rest of the documentation.
-### Passing multiple Algorithms at the same time, flags grouped together
+### More examples of passing multiple Algorithms at the same time.
 
 ```shell
-./AlgoGauge --algo quick --algo bubble --algo quick --len 100000 --len 100000 --len 25000 -rro
+./AlgoGauge -a quick -s random -n 1000 -x c++ -j -a merge -s random -n 1000 -x c++ -j
 ```
 
 #### Results:
 
 ```
-Sort 'Quick' with Algorithm Option 'Random' of length 100000, completed in x.xxxxxx milliseconds
-Sort 'Bubble' with Algorithm Option 'Random' of length 100000, completed in x.xxxxxx milliseconds
-Sort 'Quick' with Algorithm Option 'Ordered' of length 25000, completed in x.xxxxxx milliseconds
+{"sorting_algorithm": 
+  [
+    {"algorithmName": "Quick"
+    ,"algorithmOption": "Random"
+    ,"algorithmLength": 1000
+    ,"language": "C++"
+    ,"algorithmCanonicalName": ""
+    ,"algorithmRunTime_ms": 0.129291
+    , "perfData": {}}
+  ,
+    {"algorithmName": "Merge"
+    ,"algorithmOption": "Random"
+    ,"algorithmLength": 1000
+    ,"language": "C++"
+    ,"algorithmCanonicalName": ""
+    ,"algorithmRunTime_ms": 0.321083
+    , "perfData": {}}
+  ]
+}
 ```
 
-#### Explanation:
-
-This outputs the same as the previous example. You can place the flags anywhere you want, the only thing that matters
-is that you specify the correct number of flags and the order they are placed in. E.g. if we want to run Random Quick
- with length of 1000 and Random Bubble with length of 2500, specifying the flags as: 
-```--algo quick --algo bubble -rr --len 2500 --len 1000``` would be incorrect and tell the program to run quick 
-with 2500 random values instead of 1000 and bubble to run 1000 instead of 2500.
-
-### Naming an Algorithm ```-n``` or ```--name```
-
-You can pass in any name to an Algorithm that will be mapped to it and included in the results. This is useful when 
-you have many algorithms you pass in to run and want to an easy way to keep track of each passed algorithm.
-
-```shell
-./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name second -r --algo quick --len 25000 --name third -o
-```
-
-#### Results:
-
-```
-Sort 'Quick' <first> with Algorithm Option 'Random' of length 100000, completed in x.xxxxxx milliseconds
-Sort 'Bubble' <second> with Algorithm Option 'Random' of length 100000, completed in x.xxxxxx milliseconds
-Sort 'Quick' <third> with Algorithm Option 'Ordered' of length 25000, completed in x.xxxxxx milliseconds
-```
 
 ### JSON Results ```-j``` or ```--json```
 
@@ -270,13 +261,23 @@ You can specify whether the results should be printed out in JSON format instead
 the previous examples. Note: the JSON flag ***only*** pertains to STDOUT. 
 
 ```shell
-./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -rj
+./AlgoGauge -a quick -s random -n 1000 -x c++ -json
 ```
 
 #### Results:
 
 ```
-{"sorting_algorithm": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"language": "C++","algorithmCanonicalName": "","algorithmRunTime_ms": 17.225417, "perfData": {}},{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"language": "C++","algorithmCanonicalName": "","algorithmRunTime_ms": 15.954500, "perfData": {}}]}
+{"sorting_algorithm": 
+  [
+    {"algorithmName": "Quick"
+    ,"algorithmOption": "Random"
+    ,"algorithmLength": 1000
+    ,"language": "C++"
+    ,"algorithmCanonicalName": ""
+    ,"algorithmRunTime_ms": 0.151958
+    , "perfData": {}}
+  ]
+}
 ```
 
 ### Perf Values ```-p``` or ```--perf```
@@ -284,27 +285,87 @@ the previous examples. Note: the JSON flag ***only*** pertains to STDOUT.
 To include Perf values, you ***MUST*** be on Linux machine and provide the Perf argument.
 
 ```shell
-./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -rjp
+./AlgoGauge -a quick -s random -n 1000 -x c++ -json -p
 ```
 
 #### Results:
 ```
-{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Ordered","algorithmLength": 1000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx, "perfData": {"cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 1000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx, "perfData": {"cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}}]}
+{"sorting_algorithm": 
+  [
+    {"algorithmName": "Quick"
+    ,"algorithmOption": "Random"
+    ,"algorithmLength": 1000
+    ,"language": "C++"
+    ,"algorithmCanonicalName": ""
+    ,"algorithmRunTime_ms": 0.130833
+    ,"perfData": 
+      {"task-clock": 364444262.000000
+      , "context switches": 214.000000
+      , "cycles": 595348804.490000
+      , "kcycles": 170739620.860000
+      , "instructions": 1009631347.960000
+      , "L1-misses": 5583046.540000
+      , "LLC-misses": 897165.960000
+      , "branch predictions": 182104579.700000
+      , "branch-misses": 3082415.940000
+      , "cache references": 5131660.310000
+      , "retired branch instructions": 161551834.080000
+      , "total page faults": 10020.000000
+      , "minor page faults": 10020.000000
+      , "major page faults": 0.000000
+      , "context switches": 214.000000
+      , "scale": 1.000000
+      , "IPC": 1.700000
+      , "CPUs": 0.370000
+      , "GHz": 1.630000}
+    }
+  ]
+}
 ```
 
 ### Perf Values for *Non-Linux* Machines ```--perf=sample```
 
 If you are not on a Linux machine, but will be deploying this to a Linux machine eventually and will be needing Perf data, 
-but you need to test and debug on a non-Linux machine, you can include the ```--perf=sample``` argument which mimics the Perf output by providing 
+but you need to test and debug on a non-Linux machine, you can include the ```--sample``` argument which mimics the Perf output by providing 
 dummy Perf data. This flag works with every other flag.
 
 ```shell
-./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -rj --perf=sample
+./AlgoGauge -a quick -s random -n 1000 -x c++ -json --sample
 ```
 
 #### Results:
 ```
-{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Ordered","algorithmLength": 1000,"algorithmCanonicalName": "first","algorithmRunTime_ms": x.xxxxxx, "perfData": {"PERF NOTE": "INCLUDED DATA IS DUMMY DATA!", "cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 1000,"algorithmCanonicalName": "final","algorithmRunTime_ms": x.xxxxxx, "perfData": {"PERF NOTE": "INCLUDED DATA IS DUMMY DATA!", "cpu cycles": xxxx, "bus cycles": xxxx, "cpu instructions": xxxx, "cache references": xxxx, "cache misses": xxxx, "branch predictions": xxxx, "retired branch instructions": xxxx, "branch misses": xxxx, "total page faults": xxxx, "minor page faults": xxxx, "major page faults": xxxx, "context switches": xxxx, "L1 data cache read accesses": xxxx, "L1 instruction cache read accesses": xxxx, "L1 data cache prefetch accesses": xxxx, "L1 instruction cache prefetch accesses": xxxx}}]}
+{"sorting_algorithm": 
+  [
+    {"algorithmName": "Quick"
+    ,"algorithmOption": "Random"
+    ,"algorithmLength": 1000
+    ,"language": "C++"
+    ,"algorithmCanonicalName": ""
+    ,"algorithmRunTime_ms": 0.130833
+    ,"perfData": 
+      {"task-clock": 364444262.000000
+      , "context switches": 214.000000
+      , "cycles": 595348804.490000
+      , "kcycles": 170739620.860000
+      , "instructions": 1009631347.960000
+      , "L1-misses": 5583046.540000
+      , "LLC-misses": 897165.960000
+      , "branch predictions": 182104579.700000
+      , "branch-misses": 3082415.940000
+      , "cache references": 5131660.310000
+      , "retired branch instructions": 161551834.080000
+      , "total page faults": 10020.000000
+      , "minor page faults": 10020.000000
+      , "major page faults": 0.000000
+      , "context switches": 214.000000
+      , "scale": 1.000000
+      , "IPC": 1.700000
+      , "CPUs": 0.370000
+      , "GHz": 1.630000}
+    }
+  ]
+}
 ```
 
 Notice that in the JSON response, a "PERF NOTE" is included to remind that the output does not contain actual Perf data, but instead only dummy data.
@@ -317,7 +378,7 @@ isn't required and you can have the file ext be whatever you want or nonexistent
 the file as a JSON formatted text file. When you include this flag, nothing will be written to STDOUT.
 
 ```shell
-./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -r --file ./results.json
+./AlgoGauge -a quick -s random -n 1000 -x c++ -json -p -f ./test
 ```
 
 #### Results:
@@ -331,99 +392,55 @@ you should include the Verbose flag. However, the Verbose flag will provide you 
 examples have shown.
 
 ```shell
-./AlgoGauge --algo quick --len 100000 --name first -r --algo bubble --len 100000 --name final -r --file ./results.json -v
+./AlgoGauge -a quick -s random -n 1000 -x c++ -json -p -f ./test -v
 ```
 
 #### Results:
 
 ```
-Starting sort: "Quick"<first> ...
-Verifying sort: "Quick"<first> ...
-Sort: "Quick"<first> Verified!
-Sort 'Quick' <first> with Algorithm Option 'Random' of length 10000, completed in x.xxxxxx milliseconds
-Starting sort: "Bubble"<final> ...
-Verifying sort: "Bubble"<final> ...
-Sort: "Bubble"<final> Verified!
-Sort 'Bubble' <final> with Algorithm Option 'Random' of length 10000, completed in x.xxxxxx milliseconds
-Results written in JSON at: './results.json'
+Sorting Algorithm algorithm: quick array_length: 1000 strategy: 1 language: c++ name: 
+Warning: PERF is not supported on this system. PERF functionality is only available on Linux distributions. The program will continue to run, but any PERF data will be replaced with sample (dummy) values. To avoid this warning, remove the 'p' or 'perf' option from your arguments, or add --sample to explicitly request dummy data.
+C++ Starting sort: "Quick"...
+Starting PERF
+Stopping PERF it ran for: 0
+C++ Verifying sort: "Quick"...
+C++ Sort: "Quick" Verified!
+C++ Sort "Quick"with Algorithm Option "Random" of length 1000, completed in 0.163458 milliseconds{"task-clock": 364444262.000000, "context switches": 214.000000, "cycles": 595348804.490000, "kcycles": 170739620.860000, "instructions": 1009631347.960000, "L1-misses": 5583046.540000, "LLC-misses": 897165.960000, "branch predictions": 182104579.700000, "branch-misses": 3082415.940000, "cache references": 5131660.310000, "retired branch instructions": 161551834.080000, "total page faults": 10020.000000, "minor page faults": 10020.000000, "major page faults": 0.000000, "context switches": 214.000000, "scale": 1.000000, "IPC": 1.700000, "CPUs": 0.370000, "GHz": 1.630000}
+{"sorting_algorithm": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 1000,"language": "C++","algorithmCanonicalName": "","algorithmRunTime_ms": 0.163458, "perfData": {"task-clock": 364444262.000000, "context switches": 214.000000, "cycles": 595348804.490000, "kcycles": 170739620.860000, "instructions": 1009631347.960000, "L1-misses": 5583046.540000, "LLC-misses": 897165.960000, "branch predictions": 182104579.700000, "branch-misses": 3082415.940000, "cache references": 5131660.310000, "retired branch instructions": 161551834.080000, "total page faults": 10020.000000, "minor page faults": 10020.000000, "major page faults": 0.000000, "context switches": 214.000000, "scale": 1.000000, "IPC": 1.700000, "CPUs": 0.370000, "GHz": 1.630000}}]}
+Results written in JSON at: './test'
 ```
 
 Note: The Verbose flag also works with or without the File flag and also works on the JSON flag as well.
-
-### Include values ```-i``` or ```--include-values```
-
-If you want to see the values before and after running the algorithm, pass in the Include-Values flag. It will only 
-include the first and last values if the list of values is too long to output.
-
-***IMPORTANT: IF PASSING IN THE JSON OR FILE FLAG, THE INCLUDE-VALUES FLAG WILL INCLUDE ALL VALUES. IT IS EXTREMELY 
-NOT RECOMMENDED TO PASS IN THIS FLAG IF PASSING IN A LENGTH MORE THAN 100!*** 
-
-```shell
-./AlgoGauge --algo quick --len 50 -ri
-```
-
-#### Results
-
-```Values before sort:
-2412496532, 3119216746, 1495923606, 3931352601, 26313293, 2552602825, 3745457912, 2213446826, 4119067789, 4188234190, 728322180, 2841381042, 1361173914, 2270545070, 3012213090, 3386551741, 1096517083, 318260028, 2467059067, 1416695198, 1451902384, 2507160589, 1023210396, 133024446, 738742523 ... , 3988278624, 4149187129, 84836057, 2807460976, 3347377057, 2052069331, 1443301765, 283741067, 1471137817, 59622745, 1781636238, 3614324154, 3896880493, 1215130632, 2798086528, 3952394013, 2450837735, 3642544339, 33621616, 2406532855, 1232451556, 3820123330, 3133462892, 4610458, 3016786978
-Values after sort:
-4610458, 26313293, 33621616, 59622745, 84836057, 133024446, 283741067, 318260028, 728322180, 738742523, 1023210396, 1096517083, 1215130632, 1232451556, 1361173914, 1416695198, 1443301765, 1451902384, 1471137817, 1495923606, 1781636238, 2052069331, 2213446826, 2270545070, 2406532855 ... , 2412496532, 2450837735, 2467059067, 2507160589, 2552602825, 2798086528, 2807460976, 2841381042, 3012213090, 3016786978, 3119216746, 3133462892, 3347377057, 3386551741, 3614324154, 3642544339, 3745457912, 3820123330, 3896880493, 3931352601, 3952394013, 3988278624, 4119067789, 4149187129, 4188234190
-Sort 'Quick' with Algorithm Option 'Random' of length 50, completed in x.xxxxxx milliseconds
-```
-
-### Print everything!!! ```-j -v -f -i```
-You can provide all program option flags at once (excluding the help flag). Perf flag is not included here as it is only 
-available on Linux machines. However, you can add it here too if needed.
-
-```shell
-./AlgoGauge --algo quick --len 50 --name first -r --algo bubble --len 50 --name final -r --file ./results.json -vji
-```
-
-#### Results:
-
-```
-Starting sort: "Quick"<first> ...
-Verifying sort: "Quick"<first> ...
-Sort: "Quick"<first> Verified!
-Sort 'Quick' <first> with Algorithm Option 'Random' of length 50, completed in x.xxxxxx milliseconds
-Starting sort: "Bubble"<final> ...
-Verifying sort: "Bubble"<final> ...
-Sort: "Bubble"<final> Verified!
-Sort 'Bubble' <final> with Algorithm Option 'Random' of length 50, completed in x.xxxxxx milliseconds
-{"algorithms": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 50,"algorithmCanonicalName": "first","valuesBeforeSort": [2412496532,3119216746,1495923606,3931352601,26313293,2552602825,3745457912,2213446826,4119067789,4188234190,728322180,2841381042,1361173914,2270545070,3012213090,3386551741,1096517083,318260028,2467059067,1416695198,1451902384,2507160589,1023210396,133024446,738742523,3988278624,4149187129,84836057,2807460976,3347377057,2052069331,1443301765,283741067,1471137817,59622745,1781636238,3614324154,3896880493,1215130632,2798086528,3952394013,2450837735,3642544339,33621616,2406532855,1232451556,3820123330,3133462892,4610458,3016786978],"valuesAfterSort": [4610458,26313293,33621616,59622745,84836057,133024446,283741067,318260028,728322180,738742523,1023210396,1096517083,1215130632,1232451556,1361173914,1416695198,1443301765,1451902384,1471137817,1495923606,1781636238,2052069331,2213446826,2270545070,2406532855,2412496532,2450837735,2467059067,2507160589,2552602825,2798086528,2807460976,2841381042,3012213090,3016786978,3119216746,3133462892,3347377057,3386551741,3614324154,3642544339,3745457912,3820123330,3896880493,3931352601,3952394013,3988278624,4119067789,4149187129,4188234190],"algorithmRunTime_ms": x.xxxxxx},{"algorithmName": "Bubble","algorithmOption": "Random","algorithmLength": 50,"algorithmCanonicalName": "final","valuesBeforeSort": [2412496532,3119216746,1495923606,3931352601,26313293,2552602825,3745457912,2213446826,4119067789,4188234190,728322180,2841381042,1361173914,2270545070,3012213090,3386551741,1096517083,318260028,2467059067,1416695198,1451902384,2507160589,1023210396,133024446,738742523,3988278624,4149187129,84836057,2807460976,3347377057,2052069331,1443301765,283741067,1471137817,59622745,1781636238,3614324154,3896880493,1215130632,2798086528,3952394013,2450837735,3642544339,33621616,2406532855,1232451556,3820123330,3133462892,4610458,3016786978],"valuesAfterSort": [4610458,26313293,33621616,59622745,84836057,133024446,283741067,318260028,728322180,738742523,1023210396,1096517083,1215130632,1232451556,1361173914,1416695198,1443301765,1451902384,1471137817,1495923606,1781636238,2052069331,2213446826,2270545070,2406532855,2412496532,2450837735,2467059067,2507160589,2552602825,2798086528,2807460976,2841381042,3012213090,3016786978,3119216746,3133462892,3347377057,3386551741,3614324154,3642544339,3745457912,3820123330,3896880493,3931352601,3952394013,3988278624,4119067789,4149187129,4188234190],"algorithmRunTime_ms": x.xxxxxx}]}
-Results written in JSON at: './results.json'
-```
 
 <!-- ROADMAP -->
 ## Roadmap
 
 ### P1
 
-- [ ] Add array, linked list options CRUD operation resize array
-- [ ] Add Hashing comparisons
+- [x] Add array, linked list options CRUD operation resize array
+- [x] Add Hashing comparisons
 - [ ] Site cleanup go over site and fix bugs and pages BIG theta notation on all
-  - [ ] clean card heavy layout (Experiment, History)
-  - [ ] footer padding
-  - [ ] global button / links for experiment operations
-  - [ ] change mode dropdown
-  - [ ] remove repeat text  
+  - [x] clean card heavy layout (Experiment, History)
+  - [x] footer padding
+  - [x] global button / links for experiment operations
+  - [x] change mode dropdown
+  - [x] remove repeat text  
   - [ ] Implement experiment popup timer
-  - [ ] Grid layout for multiple cards (Four cards per row max)
+  - [x] Grid layout for multiple cards (Four cards per row max)
   - [ ] Toggle Dark Mode and Light Mode support
-  - [ ] Better history layout ???
-  - [ ] GEt rid of user input size ???
+  - [x] Better history layout 
+  - [ ] GEt rid of user input size (brad wants this for some reason)
   - [ ] When a close education popup I want to go back to the experiment
 - [ ] Instructor video and education overhaul
-- [ ] Parallel vs Serial
 - [ ] Validate Perf, ways to measure l1 cache. *
 
 ### P2
 
 - [ ] GPU algorithms, CUDA
-- [ ] Variations of sort algorithms (quick sort, merge sort 1...k, selection)
-- [ ] JAVA vs C++ vs RUST vs Python ???
+- [ ] Variations of current sort algorithms (quick sort, merge sort 1...k, selection)
+- [x] JAVA vs C++ vs RUST vs Python ???
 - [ ] CPU vectorization algorithms
-- [ ] Clear queue
+- [ ] Clear experiment queue
 - [ ] Trees AVL vs B trees
 
 ### P3
@@ -434,10 +451,10 @@ Results written in JSON at: './results.json'
 - [ ] graph storage mechs
 - [ ] Over under prediction betting, make the site fun
 - [ ] repeated and chunk slider
-
 - [X] Finish documenting code
 - [X] Add Perf options
 - [X] Fix memory SEGFAULT errors
+- [ ] Parallel processing of algorithms vs Serial.
 
 See the [open issues](https://github.com/jzdegrey/AlgoGauge/issues) for a full list of proposed features (and known issues).
 
@@ -448,7 +465,7 @@ See the [open issues](https://github.com/jzdegrey/AlgoGauge/issues) for a full l
 ## Contributing
 
 If you would like to contribute to this project, please create a new branch from either main or development and 
-create a pull request. ***NEVER*** commit and push directly to main or development!!!
+create a pull request. ***NEVER*** commit and push directly to main!!!
 
 1. Create your Feature Branch from Development or Main
 2. Commit and push your Changes
@@ -463,6 +480,9 @@ create a pull request. ***NEVER*** commit and push directly to main or developme
 #### Weber State University - School of Computing
 
 - Dr. Brad Peterson
+- Coleton Watt 
+- Cooper Maitoza
+- Brody Gardner 
 - John Z. DeGrey
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
