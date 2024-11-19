@@ -18,7 +18,7 @@ const collect = (value, previous) => {
 
 
 program
-  .name("AlgoGauge NodeJS")
+  .name("AlgoGauge Deno")
   .description(
     "This is the command line version of the AlgoGauge Program written in Javascript.",
   )
@@ -109,11 +109,11 @@ for (let i = 0; i < options.algorithm.length; i++) {
 
   for (const element of SelectedSortingAlgorithms) {
     if (options.output && options.verbose) {
-      console.log(`NodeJS Original Array: ${JSON.stringify(element.array)}`);
+      console.log(`Deno Original Array: ${JSON.stringify(element.array)}`);
     }
 
     if (options.verbose) {
-      console.log(`NodeJS Starting sort: \"${element.algorithm}\"`);
+      console.log(`Deno Starting sort: \"${element.algorithm}\"`);
     }
 
     if(options.perf){
@@ -141,12 +141,12 @@ for (let i = 0; i < options.algorithm.length; i++) {
   SelectedSortingAlgorithms.forEach((element) => {
     if (options.output && options.verbose) {
       console.log(
-        `NodeJS Sorted Array: ${JSON.stringify(element.sortedArray)}`,
+        `Deno Sorted Array: ${JSON.stringify(element.sortedArray)}`,
       );
     }
 
     if (options.verbose) {
-      console.log(`NodeJS Verifying sort: \"${element.algorithm}\"`);
+      console.log(`Deno Verifying sort: \"${element.algorithm}\"`);
     }
     const correct = verifySort(element.sortedArray);
 
@@ -154,16 +154,16 @@ for (let i = 0; i < options.algorithm.length; i++) {
       console.error(`${element.algorithm} there was an error when sorting`);
     } else {
       if (options.verbose) {
-        console.log(`NodeJS Sort: \"${element.algorithm}\" Verified!`);
+        console.log(`Deno Sort: \"${element.algorithm}\" Verified!`);
       }
     }
 	if (options.verbose) {
       console.log(
-        `NodeJS Sort: \"${element.algorithm}\" with Algorithm Option \"${element.strategy}\" of number ${element.length}, completed in ${element.timeTaken} milliseconds`,
+        `Deno Sort: \"${element.algorithm}\" with Algorithm Option \"${element.strategy}\" of number ${element.length}, completed in ${element.timeTaken} milliseconds`,
       );
     }
     jsonResults +=
-      `{"algorithmName": "${element.algorithm}","algorithmOption": "${element.strategy}","algorithmLength": ${element.length},"language": "NodeJS","algorithmCanonicalName": "${element.name}","algorithmRunTime_ms": ${
+      `{"algorithmName": "${element.algorithm}","algorithmOption": "${element.strategy}","algorithmLength": ${element.length},"language": "Deno","algorithmCanonicalName": "${element.name}","algorithmRunTime_ms": ${
         element.timeTaken.toFixed(6)
       }, "perfData": {}}` + ",";
   });
