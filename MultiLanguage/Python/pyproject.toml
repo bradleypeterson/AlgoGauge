@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "AlgogaugePY"
+name = "AlgoGaugePY"
 version = "0.0.1"
-description = "A mini version of algogauge built in python"
+description = "A mini version of AlgoGauge built in python"
 readme = "README.md"
 dependencies = [
     'argparse',
@@ -13,4 +13,4 @@ dependencies = [
 requires-python = ">=3.7"
 
 [project.gui-scripts]
-AlgogaugePY = "AlgogaugePY:main"
+AlgogaugePY = "AlgoGaugePY:main"

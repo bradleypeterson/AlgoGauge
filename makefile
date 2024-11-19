@@ -1,8 +1,8 @@
 # Define variables
 BUILD_DIR := build
 CMAKE_DIR := $(BUILD_DIR)
-DENO_SCRIPT := MultiLanguage/Javascript/Algogauge.mjs
-DENO_OUTPUT := $(BUILD_DIR)/AlgogaugeJS
+DENO_SCRIPT := MultiLanguage/Javascript/AlgoGauge.mjs
+DENO_OUTPUT := $(BUILD_DIR)/AlgoGaugeJS
 MORPHEUS_TARGET:= x86_64-unknown-linux-gnu
 MORPHEUS_DIR := $(BUILD_DIR)/morpheus
 
@@ -25,7 +25,7 @@ deno_build:
 	deno compile --output $(DENO_OUTPUT) $(DENO_SCRIPT)
 
 python_install:
-	@echo "Install AlgogaugePY to pipx"
+	@echo "Install AlgoGaugePY to pipx"
 	pipx install MultiLanguage/Python/ --force
 
 deno_build_linux:

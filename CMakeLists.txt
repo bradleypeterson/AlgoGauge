@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(Algogauge)
-add_executable( Algogauge 
+add_executable( AlgoGauge 
         main.cpp
         algorithms/sort_7algs.cpp
         algorithms/hash_algs.cpp

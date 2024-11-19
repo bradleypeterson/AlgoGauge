@@ -1,3 +1,3 @@
 # READ
 
-AlgogaugePY
+AlgoGaugePY

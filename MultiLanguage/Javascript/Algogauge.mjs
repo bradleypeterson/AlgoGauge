@@ -1,7 +1,7 @@
 import { Command } from "npm:commander";
 
 import { runSortingAlgorithm } from "./runAlgorithms.mjs";
-import { SortingAlgorithm } from "./AlgogaugeDetails.mjs";
+import { SortingAlgorithm } from "./AlgoGaugeDetails.mjs";
 import { verifySort } from "./sorting.mjs";
 
 let Max_Number;

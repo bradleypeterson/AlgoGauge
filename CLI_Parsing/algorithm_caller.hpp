@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cctype>
 
-#include "../AlgogaugeDetails.hpp"
+#include "../AlgoGaugeDetails.hpp"
 #include "CLI_Parser.hpp"
 
 
@@ -314,9 +314,9 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 
 	
 		if (algo.Language == "js" || algo.Language == "javascript" || algo.Language == "deno" || algo.Language == "denojs"){
-			binaryPath = "./AlgogaugeJS"; // needs dot as not in path
+			binaryPath = "./AlgoGaugeJS"; // needs dot as not in path
 		}else if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
-			binaryPath = "AlgogaugePY"; //no dot as it's in the path
+			binaryPath = "AlgoGaugePY"; //no dot as it's in the path
 		}else{
 			throw std::invalid_argument("Programming language is not supported");
 		}
