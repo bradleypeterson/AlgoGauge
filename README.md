@@ -77,8 +77,8 @@ To run on Windows OS (Calls help option `-h`)
 To run on Unix/Mac OS (Calls help option `-h`)
 
 ```shell
-./AlgoGauge -h
-./AlgoGaugeJS -h
+./Algogauge -h
+./AlgogaugeJS -h
 ```
 
 > [!IMPORTANT]
@@ -107,7 +107,7 @@ AlgogaugeJS -h
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Please use ```./AlgoGauge -h``` to see the help message along with options.
+Please use ```./Algogauge -h``` to see the help message along with options.
 
 ### Usage Help
 ---
@@ -249,7 +249,7 @@ Prints this help page.
 ### Running a single Algorithm using *Quick* sort with *100,000* *Random* values
 
 ```shell
-./AlgoGauge --algorithm quick --strategy random --number 10000 --language c++ --json
+./Algogauge --algorithm quick --strategy random --number 10000 --language c++ --json
 ```
 
 #### Results:
@@ -259,7 +259,7 @@ Prints this help page.
 ### Passing multiple Algorithms at the same time
 
 ```shell
-./AlgoGauge -a quick -s random -n 1000 -x c++ -j -a bubble -s random -n 1200 -x js -j
+./Algogauge -a quick -s random -n 1000 -x c++ -j -a bubble -s random -n 1200 -x js -j
 ```
 
 #### Results:
@@ -272,7 +272,7 @@ Sort 'Bubble' with Algorithm Option 'Random' of length 1200, completed in x.xxxx
 ### More examples of passing multiple Algorithms at the same time
 
 ```shell
-./AlgoGauge -a quick -s random -n 1000 -x c++ -j -a merge -s random -n 1200 -x c++ -j
+./Algogauge -a quick -s random -n 1000 -x c++ -j -a merge -s random -n 1200 -x c++ -j
 ```
 
 #### Results:
@@ -302,7 +302,7 @@ Sort 'Bubble' with Algorithm Option 'Random' of length 1200, completed in x.xxxx
 ### Using iterator and additional
 
 ```shell
-./AlgoGauge --algorithm bubble --strategy random --number 1000 --language js -v --iterator 2 --additional 20 --name bubbleTesting
+./Algogauge --algorithm bubble --strategy random --number 1000 --language js -v --iterator 2 --additional 20 --name bubbleTesting
 ```
 
 #### Results:
@@ -327,7 +327,7 @@ You can specify whether the results should be printed out in JSON format instead
 the previous examples. Note: the JSON flag ***only*** pertains to STDOUT.
 
 ```shell
-./AlgoGauge -a quick -s random -n 1000 -x c++ --json
+./Algogauge -a quick -s random -n 1000 -x c++ --json
 ```
 
 #### Results:
@@ -351,7 +351,7 @@ the previous examples. Note: the JSON flag ***only*** pertains to STDOUT.
 To include Perf values, you ***MUST*** be on Linux machine to get back really PERF values. Otherwise you will get dummy data.
 
 ```shell
-./AlgoGauge -a quick -s random -n 1000 -x c++ -json -p
+./Algogauge -a quick -s random -n 1000 -x c++ -json -p
 ```
 
 #### Results:
@@ -396,7 +396,7 @@ but you need to test and debug on a non-Linux machine, you can include the ```--
 dummy Perf data. This flag works with every other flag.
 
 ```shell
-./AlgoGauge -a quick -s random -n 1000 -x c++ -json --sample
+./Algogauge -a quick -s random -n 1000 -x c++ -json --sample
 ```
 
 #### Results:
@@ -444,7 +444,7 @@ isn't required and you can have the file ext be whatever you want or nonexistent
 the file as a JSON formatted text file. When you include this flag, nothing will be written to STDOUT.
 
 ```shell
-./AlgoGauge -a quick -s random -n 1000 -x c++ -json -p -f ./test
+./Algogauge -a quick -s random -n 1000 -x c++ -json -p -f ./test
 ```
 
 #### Results:
@@ -458,7 +458,7 @@ you should include the Verbose flag. However, the Verbose flag will provide you 
 examples have shown.
 
 ```shell
-./AlgoGauge -a quick -s random -n 1000 -x c++ -json -p -f ./test -v
+./Algogauge -a quick -s random -n 1000 -x c++ -json -p -f ./test -v
 ```
 
 #### Results:

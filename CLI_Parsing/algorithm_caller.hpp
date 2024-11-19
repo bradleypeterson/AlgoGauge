@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cctype>
 
-#include "../AlgoGaugeDetails.hpp"
+#include "../AlgogaugeDetails.hpp"
 #include "CLI_Parser.hpp"
 
 

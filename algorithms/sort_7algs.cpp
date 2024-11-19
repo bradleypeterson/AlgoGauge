@@ -14,7 +14,7 @@
 #include <string>
 #include <chrono>
 #include "RandomNum.hpp"
-#include "../AlgoGaugeDetails.hpp"
+#include "../AlgogaugeDetails.hpp"
 #include "../dependencies/PerfEvent.hpp"
 
 
