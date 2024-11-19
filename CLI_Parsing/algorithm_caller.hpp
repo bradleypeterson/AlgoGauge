@@ -291,11 +291,14 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 
 		const std::string selectedArrayStrategy = "--strategy=" + algo.ArrayStrategyString;
 		const std::string selectedArrayLength = "--number=" + std::to_string(algo.ArrayLength);
+		const std::string selectedName = "--name=" +  algo.Name;
+
 		
 		const std::string includeJSON = algorithmsController.Json ? "--json": "--ignore";
 
 		const std::string output = algorithmsController.Output ? "--output" : "--ignore";
 		const std::string verbose = algorithmsController.Verbose ? "--verbose": "--ignore";
+
 		
 
 		const std::string perf = algorithmsController.Perf == perfON || algorithmsController.Perf == sample  ? "--perf": "--ignore";
@@ -317,7 +320,7 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 
 		
 
-		const char* program_arguments[] = {binaryPath.c_str(), selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
+		const char* program_arguments[] = {binaryPath.c_str(), selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), selectedName.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
 		jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
 	}
@@ -325,6 +328,8 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 
 	return jsonResults;
 }
+
+
 
 std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	std::string jsonResults;
@@ -357,6 +362,47 @@ std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algorithmsControlle
 	return jsonResults;
 }
 
+std::string runCRUDOperation(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
+	std::string jsonResults;
+	std::string includePerf;
+	switch (algorithmsController.Perf)
+	{
+	case perfON:
+		includePerf += "true";
+		break;
+	case perfOFF:
+		includePerf += "false";
+	case sample:
+		includePerf += "sample";
+	}
+
+	for(auto algo: algorithmsController.SelectedCRUDOperations){
+		// if(algo.Type == "array"){
+		// 	jsonResults += LinkedListPerformanceTest(
+		// 		algo.Size,
+		// 		algo.Number,
+		// 		algo.Operation
+		// 		includePerf,
+		// 		algorithmsController.Verbose,
+		// 		algorithmsController.Output
+		// 	);
+		// }else if(algo.Type == "linked_list"){
+		// 	jsonResults += ArrayPerformanceTest(
+		// 		algo.Size,
+		// 		algo.Number,
+		// 		algo.Operation
+		// 		includePerf,
+		// 		algorithmsController.Verbose,
+		// 		algorithmsController.Output
+		// 	);
+		// }
+
+		jsonResults+=",";
+	}
+
+	return jsonResults;
+}
+
 
 void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	// int x = 7;
@@ -376,6 +422,13 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		jsonResults.pop_back(); //remove extraneous comma
 		jsonResults += "]";
 	}
+	if(!algorithmsController.SelectedCRUDOperations.empty()){
+		jsonResults += "\"crud_operations\":[";
+		jsonResults += runCRUDOperation(algorithmsController);
+		jsonResults.pop_back(); //remove extraneous comma
+		jsonResults += "]";
+	}
+
 	jsonResults+="}";
 	
 

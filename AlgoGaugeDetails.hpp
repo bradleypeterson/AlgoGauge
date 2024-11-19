@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 namespace AlgoGauge {
 
 /**
@@ -32,6 +33,8 @@ const std::unordered_map<std::string, AlgoGauge::AlgorithmOptions> strategyMap =
         {"sorted", AlgoGauge::AlgorithmOptions::sortedSet}
 };
 
+const std::unordered_set<std::string> crudOperations = {"push_front", "push_back", "pop_front", "pop_back", "pushpop_back", "pushpop_front"};
+
 struct HashTableSettings{
 	std::string Type = "Closed";
 	int Capacity = 10;
@@ -49,7 +52,14 @@ struct SortingAlgorithmSettings {
     int ArrayLength = 100;
 	std::string Language = "c++";
 };
+struct CRUDOperationSettings{
+	std::string Name = "";
+	std::string Type = "";
+	std::string Operation = "";
+	int Size = 0;
+	int Number = 0;
 
+};
 
 struct AlgoGaugeDetails{
 	bool Verbose = false;
@@ -60,6 +70,7 @@ struct AlgoGaugeDetails{
 	bool Unique = false;
 	std::vector<SortingAlgorithmSettings> SelectedSortingAlgorithms;
 	std::vector<HashTableSettings> SelectedHashTables;
+	std::vector<CRUDOperationSettings> SelectedCRUDOperations;
 };
 
 
