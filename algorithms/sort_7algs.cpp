@@ -36,8 +36,8 @@ namespace Sorting {
             "Random",
             "Repeated",
             "Chunks",
-            "Reversed",
-            "Ordered"
+            "Sorted_Reversed",
+            "Sorted"
     };
 
     /**
@@ -266,7 +266,7 @@ namespace Sorting {
      */
     template<typename T>
     void BaseSort<T>::loadOrderedValues() {
-        algorithmOption = AlgorithmOptions::orderedSet;
+        algorithmOption = AlgorithmOptions::sortedSet;
         for (unsigned int i = 0; i < capacity; i++) arr[i] = valuesPriorToSort[i] = i;
     }
 

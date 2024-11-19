@@ -20,6 +20,9 @@
 #include "../algorithms/sort_7algs.cpp"
 #include "../algorithms/hash_algs.cpp"
 
+#include "../algorithms/linkedList.cpp"
+#include "../algorithms/arrays.cpp"
+
 
 
 
@@ -73,7 +76,7 @@ std::string runCPlusPlusProgram(
 		case AlgoGauge::AlgorithmOptions::reversedSet:
 			SortingAlgorithm->loadReversedValues();
 			break;
-		case AlgoGauge::AlgorithmOptions::orderedSet:
+		case AlgoGauge::AlgorithmOptions::sortedSet:
 			SortingAlgorithm->loadOrderedValues();
 			break;
 		case AlgoGauge::AlgorithmOptions::randomSet:
@@ -146,13 +149,15 @@ std::string printChildProcessSTDOUT(struct subprocess_s &process, const std::str
 
 
 
-std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const bool& perf){
+std::string runChildProcess(const char* commandLineArguments[], const char* environment[], const bool& verbose, const AlgoGauge::PERF perfAlgo){
+	if(verbose) std::cout << "________________ STARTED ________________" << std::endl;
+	const bool perf = (perfAlgo == perfON || perfAlgo == sample ? true: false);
  	struct subprocess_s process;
 	int exit_code;
 	std::string stdJSON = "";
 
-	FILE *stdin_file;
-
+	// std::shared_ptr<FILE> stdin_file;
+	FILE* stdin_file;
     int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async | subprocess_option_combined_stdout_stderr, environment, &process);
 	const auto processName = commandLineArguments[0];
 
@@ -166,82 +171,48 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
         std::cerr << "Failed to start program!" << std::endl;
         return "";
     }
+	if(perf){
+		stdin_file = subprocess_stdin(&process);
 
+		static char data[1048576 + 1] = {0};	
+		std::string buffer;
+		unsigned bytes_read;
 
+		do {
+			bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
 
-	stdin_file = subprocess_stdin(&process);
+			if(bytes_read > 0){
+				data[bytes_read] = '\0';  // Ensure null-termination
 
-	// static char data[1048576 + 1] = {0};	
-	// unsigned bytes_read;
-	// if(verbose) std::cout << "Reading output..." << std::endl;
+				buffer += data;  // Accumulate read data in buffer
+				// cout << buffer << std::endl;
+				// Check if "READY?" or "DONE!" is fully in buffer
+				if (buffer.find("READY?") != std::string::npos) {
+					if(verbose) std::cout << "Detected READY? message" << std::endl;
+					fputs("Start\n", stdin_file); 
 
-	// do {
-	// 	bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
-    
-	// 	if (bytes_read > 0) {
-	// 		data[bytes_read] = '\0';  // Null-terminate the data
+					fflush(stdin_file);  // Ensure the input is sent immediately
+					e.startCounters();
 
-	// 		if (strcmp(data, "READY?") == 0 || strcmp(data, "READY?\n") == 0) {
-	// 			if(verbose) std::cout << "Detected READY? message" << std::endl;
-	// 			fputs("Start\n", stdin_file); 
-	// 			fflush(stdin_file);  // Ensure the input is sent immediately
+					buffer.clear();  // Clear after handling
+				} 
 
-	// 			e.startCounters();
-	// 			continue;
-	// 		}
-
-	// 		if (strcmp(data, "DONE!") == 0 || strcmp(data, "DONE!\n") == 0) {
-	// 			e.stopCounters();
-
-	// 			if(verbose) std::cout << "Detected DONE! message" << std::endl;
-	// 			fputs("Done\n", stdin_file);
-	// 			fflush(stdin_file);  // Ensure the input is sent immediately
-
-	// 			break;
-	// 		}
-
-	// 		std::cout << data; //data already has std::endl
-	// 	} else {
-	// 		if(verbose) std::cout << "No more data to read, exiting loop." << std::endl;
-	// 		break;
-	// 	}
-	// } while (true);
-
-	static char data[1048576 + 1] = {0};	
-	std::string buffer;
-	unsigned bytes_read;
-
-	do {
-		bytes_read = subprocess_read_stdout(&process, data, sizeof(data) - 1);
-		data[bytes_read] = '\0';  // Ensure null-termination
-
-		buffer += data;  // Accumulate read data in buffer
-
-		// Check if "READY?" or "DONE!" is fully in buffer
-		if (buffer.find("READY?") != std::string::npos) {
-			if(verbose) std::cout << "Detected READY? message" << std::endl;
-			fputs("Start\n", stdin_file); 
-
-			fflush(stdin_file);  // Ensure the input is sent immediately
-			e.startCounters();
-
-			buffer.clear();  // Clear after handling
-
-			continue;
-		}
-
-		if (buffer.find("DONE!") != std::string::npos) {
-			e.stopCounters();
-			if(verbose) std::cout << "Detected DONE! message" << std::endl;
-			fputs("Done\n", stdin_file);
-			fflush(stdin_file);  // Ensure the input is sent immediately
-			buffer.clear();  // Clear after handling
-			break;
-		}
-		cout << buffer;
-		buffer.clear();  // Clear after handling
-
-	} while (bytes_read != 0);
+				if (buffer.find("DONE!") != std::string::npos) {
+					
+					e.stopCounters();
+					if(verbose) std::cout << "Detected DONE! message" << std::endl;
+					fputs("Done\n", stdin_file);
+					fflush(stdin_file);  // Ensure the input is sent immediately
+					buffer.clear();  // Clear after handling
+					break;
+				} 
+				cout << buffer;
+				buffer.clear();  // Clear after handling
+			}
+			
+		} while (bytes_read != 0);
+	}
+	
 
 	// do{
 	// 	cout << "hello8" << std::endl;
@@ -289,6 +260,8 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 	// delete stdin_file;
 	// stdin_file = NULL;
 
+
+	if(verbose) std::cout << "________________ COMPLETED ________________" << std::endl;
 	
     return stdJSON;
 }
@@ -320,48 +293,46 @@ std::string runSortingAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsCo
 		const std::string selectedSortingAlgorithm = "--algorithm=" + algo.Algorithm;
 
 		const std::string selectedArrayStrategy = "--strategy=" + algo.ArrayStrategyString;
-		const std::string selectedArrayLength = "--length=" + std::to_string(algo.ArrayLength);
+		const std::string selectedArrayLength = "--number=" + std::to_string(algo.ArrayLength);
+		const std::string selectedName = "--name=" +  algo.Name;
+
 		
 		const std::string includeJSON = algorithmsController.Json ? "--json": "--ignore";
 
 		const std::string output = algorithmsController.Output ? "--output" : "--ignore";
 		const std::string verbose = algorithmsController.Verbose ? "--verbose": "--ignore";
+
+		
+
+		const std::string perf = algorithmsController.Perf == perfON || algorithmsController.Perf == sample  ? "--perf": "--ignore";
 		// const std::string output = "--output=false";
 
 
 		const char *environment[] = {NULL};
 
-		if (algo.Language == "node" || algo.Language == "nodejs"|| algo.Language == "js" || algo.Language == "javascript"){
-			//node Algogauge.mjs -vTrue -c10 -aBubble -aMerge -c10 -sOrdered -sreversed -j -oTrue -c20 -aDefault -sordered --file="../temp/javascript.txt"
-			//			const char* program_arguments[] = {"perf", "stat","node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
+		std::string binaryPath = "";
 
-			const char* program_arguments[] = {"node", "../MultiLanguage/Javascript/Algogauge.mjs", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
-			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
-			continue;
-
+	
+		if (algo.Language == "node" || algo.Language == "nodejs"|| algo.Language == "js" || algo.Language == "javascript" || algo.Language == "deno"){
+			binaryPath = "./AlgogaugeJS"; // needs dot as not in path
+		}else if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
+			binaryPath = "AlgogaugePY"; //no dot as it's in the path
+		}else{
+			throw std::invalid_argument("Programming language is not supported");
 		}
 
-		if (algo.Language == "python" || algo.Language == "python3" || algo.Language == "py"){
-			const char* program_arguments[] = {"python3", "../MultiLanguage/Python/src/AlgoGauge_bradleypeterson/__main__.py", selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), nullptr};
+		
 
-			jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
-
-			continue;
-		}
-
-		std::string program_path;
-
-		if(algo.Language == "rust"){
-			program_path = "../MultiLanguage/testing/rust_binary";
-		}
-
-		const char* program_arguments[] = {program_path.c_str(), selectedSortingAlgorithm.c_str(), nullptr};
-		std::cout << program_path;
+		const char* program_arguments[] = {binaryPath.c_str(), selectedSortingAlgorithm.c_str(), selectedArrayStrategy.c_str(), selectedArrayLength.c_str(), selectedName.c_str(), output.c_str(), verbose.c_str(), includeJSON.c_str(), perf.c_str(), nullptr};
 		jsonResults += runChildProcess(program_arguments, environment, algorithmsController.Verbose, algorithmsController.Perf);
 
 	}
+	// std::cout << "hello"<< jsonResults << std::endl;
+
 	return jsonResults;
 }
+
+
 
 std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	std::string jsonResults;
@@ -369,14 +340,12 @@ std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algorithmsControlle
 	switch (algorithmsController.Perf)
 	{
 	case perfON:
-		/* code */
 		includePerf += "true";
 		break;
 	case perfOFF:
 		includePerf += "false";
 	case sample:
 		includePerf += "sample";
-
 	}
 
 	for(auto algo: algorithmsController.SelectedHashTables){
@@ -396,6 +365,47 @@ std::string runHashTables(const AlgoGauge::AlgoGaugeDetails& algorithmsControlle
 	return jsonResults;
 }
 
+std::string runCRUDOperation(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
+	std::string jsonResults;
+	std::string includePerf;
+	switch (algorithmsController.Perf)
+	{
+	case perfON:
+		includePerf += "true";
+		break;
+	case perfOFF:
+		includePerf += "false";
+	case sample:
+		includePerf += "sample";
+	}
+
+	for(auto algo: algorithmsController.SelectedCRUDOperations){
+		if(algo.Type == "array"){
+			jsonResults += LinkedListPerformanceTest(
+				algo.Size,
+				algo.Number,
+				algo.Operation,
+				includePerf,
+				algorithmsController.Verbose,
+				algorithmsController.Output
+			);
+		}else if(algo.Type == "linked_list"){
+			jsonResults += ArrayPerformanceTest(
+				algo.Size,
+				algo.Number,
+				algo.Operation,
+				includePerf,
+				algorithmsController.Verbose,
+				algorithmsController.Output
+			);
+		}
+
+		jsonResults+=",";
+	}
+
+	return jsonResults;
+}
+
 
 void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	// int x = 7;
@@ -404,7 +414,7 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 	std::string jsonResults = "{"; //create the json results object even if not specified
 
 	if(!algorithmsController.SelectedSortingAlgorithms.empty()){
-		jsonResults+= "\"sorting_algorithm\": [";
+		jsonResults+= "\"sorting_algorithms\": [";
 		jsonResults += runSortingAlgorithms(algorithmsController);
 		jsonResults.pop_back(); //remove extraneous comma
 		jsonResults += "]";
@@ -415,6 +425,13 @@ void processAlgorithms(const AlgoGauge::AlgoGaugeDetails& algorithmsController){
 		jsonResults.pop_back(); //remove extraneous comma
 		jsonResults += "]";
 	}
+	if(!algorithmsController.SelectedCRUDOperations.empty()){
+		jsonResults += "\"crud_operations\":[";
+		jsonResults += runCRUDOperation(algorithmsController);
+		jsonResults.pop_back(); //remove extraneous comma
+		jsonResults += "]";
+	}
+
 	jsonResults+="}";
 	
 
