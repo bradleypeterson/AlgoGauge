@@ -37,7 +37,7 @@ Use the main branch to link your node project to. If you need to make any change
 code, then you must check out and create a new branch from either main or the <a href="">Development Branch</a>, 
 make your edits, commit and push them to your branch and then create a pull request. Only owners of this repo may authorize pull requests.
 
-If you do want to add to this repo, please also read the [DEV-README](./docs/DEV-README.md#algogauge-cli)
+If you do want to add to this repo, please also read the [DEV-README](./docs/DEV-README.md#AlgoGauge-cli)
 
 ### Prerequisites
 
@@ -60,7 +60,7 @@ cd build
 Pipx should install packages globally in there own isolated environment to check you can run.
 
  ```shell
- AlgogaugePY -h
+ AlgoGaugePY -h
  ```
 
 #### Windows OS
@@ -83,23 +83,24 @@ To run on Unix/Mac OS (Calls help option `-h`)
 
 > [!IMPORTANT]
 > LINUX Users
-> In order for perf to work correctly you either need to run Algogauge with sudo or update perf_event_paranoid [PERF.md#Security](./docs/PERF.md#security)
+> In order for perf to work correctly you either need to run AlgoGauge with sudo or update perf_event_paranoid [PERF.md#Security](./docs/PERF.md#security)
 
 #### Installation Production
 
-To use AlgoGauge CLI in production both AlgogaugeJS and Algogauge need to be in your global path (by default pipx should have added AlgogaugePY to path already). There is a lot of different ways to this but for Linux OS you can just copy the file
+To use AlgoGauge CLI in production both AlgoGaugeJS and AlgoGauge need to be in your global path (by default pipx should have added AlgoGaugePY to path already). There is a lot of different ways to this but for Linux OS you can just copy the file
 to /usr/local/bin.
 
 ```shell
-sudo cp Algogauge /usr/local/bin
-sudo cp AlgogaugeJS /usr/local/bin
+sudo cp AlgoGauge /usr/local/bin
+sudo cp AlgoGaugeJS /usr/local/bin
+sudo chmod +x /usr/local/bin/AlgoGauge
 ```
 
 To ensure it worked run
 
 ```shell
-Algogauge -h
-AlgogaugeJS -h
+AlgoGauge -h
+AlgoGaugeJS -h
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -259,7 +260,7 @@ Prints this help page.
 ### Passing multiple Algorithms at the same time
 
 ```shell
-./Algogauge -a quick -s random -n 1000 -x c++ -j -a bubble -s random -n 1200 -x js -j
+./AlgoGauge -a quick -s random -n 1000 -x c++ -j -a bubble -s random -n 1200 -x js -j
 ```
 
 #### Results:

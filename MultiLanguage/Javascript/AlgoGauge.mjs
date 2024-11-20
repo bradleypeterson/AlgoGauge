@@ -73,7 +73,6 @@ program
 program.parse();
 const options = program.opts();
 
-
 if (
   options.algorithm.length != options.number.length ||
   options.algorithm.length != options.strategy.length ||

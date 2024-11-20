@@ -219,7 +219,7 @@ look in when you execute a command. This means that you can now execute `AlgoGau
 a normal linux command.
 
 > [!WARNING]
-> Algogauge perf does not need sudo look at PERF.md to fix this
+> AlgoGauge perf does not need sudo look at PERF.md to fix this
 
 
 # Deploying React to an Ubuntu Server
@@ -260,7 +260,7 @@ I do not know the reason for this, but it is ***highly recommended to use the fo
 instead of installing Node via the stock package manager repo!
 
 To install the ***correct*** and ***latest*** version of Node, please follow the instructions located at their official 
-Git repo listed here: https://github.com/nodesource/distributions#debian-and-ubuntu-based-distributions
+Git repo listed here: https://github.com/nodesowhocurce/distributions#debian-and-ubuntu-based-distributions
 <br>
 If you do not, it is highly probable you ***will*** run into issues later on.
 

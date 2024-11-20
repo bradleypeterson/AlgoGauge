@@ -11,7 +11,7 @@ PERF is a Linux tool to be able to understand the performance of a given process
 
 [perf-security](https://www.kernel.org/doc/html/latest/admin-guide/perf-security.html)
 
-We recommend setting perf_event_paranoid to -1. This allows perf_event.hpp to use multiple CPUs to analyze the performance. It also allows Algogauge to be run without sudo.
+We recommend setting perf_event_paranoid to -1. This allows perf_event.hpp to use multiple CPUs to analyze the performance. It also allows AlgoGauge to be run without sudo.
 
 This print what perf_event_paranoid is set to, the default is generally 3+
 
@@ -32,11 +32,13 @@ echo "kernel.perf_event_paranoid = -1" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
 ```
 
-## How Algogauge use PERF
+## How AlgoGauge use PERF
 
-Algogauge use PERF to understand how long it takes a specific function to complete. This is after the function has been compiled to machine code. As perf is primary a CLI tool we use an open source library to accomplish this analyzing within C++. [Github of PERF Event](https://github.com/viktorleis/perfevent)
+AlgoGauge use PERF to understand how long it takes a specific function to complete. This is after the function has been compiled to machine code. As perf is primary a CLI tool we use an open source library to accomplish this analyzing within C++ [Github of PERF Event](https://github.com/viktorleis/perfevent). Perf event has been updated by us to output a more JSON like output. Along with sample data for computers without PERF.
 
-Perf event has been updated by us to output a more JSON like output. Along with sample data for computers without PERF.
+> [!NOTE]
+> PERF will sometimes return \NAN\ that is not an error with perf it just means the code you are anlazying didn't ever have that event. 
+> Basically treat it as 0
 
 ### Example
 
@@ -93,4 +95,3 @@ perfObject.stopCounters();
 > Note: I was able to get it work on my machine but in production when the number of elements being sorted was then then 500 it broke.
 > The solution was not having anything print between the functions.
 
-### What Algogauge collects
