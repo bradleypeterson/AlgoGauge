@@ -257,8 +257,7 @@ namespace HashTables {
 
 
   // This method creates a bunch of test CRUD operations for testing.
-  // get's a random CRUD operation a 100 times (loadValues, lookupValues, destroyValues)
-  // runs the CRUD operation for an amount of testOperationAmount (loadValues(testOperationAmount))
+  // Load, looks-up, and destroy (CRUD Operations) for only 1 value the number of times testOperationAmount.
   template <typename T, typename U>
   void ClosedHashTable<T, U>::crudOperation(const int testOperationAmount) {
     if (verbose) 
