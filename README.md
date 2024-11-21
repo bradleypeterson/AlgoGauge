@@ -1,4 +1,4 @@
-<a name="readme-top"></a>
+<a id="readme-top"></a>
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -8,29 +8,25 @@
 
 <h2 align="center">AlgoGauge CLI</h3>
 
-
   <h6 align="center">
     The CLI version of Dr. Brad Peterson's AlgoGauge Tenure project.
     
   </h6>
   <p align="left">
-    This program will compare one or many different algorithms and print out the results of the Algorithm. The purpose 
-    of this program is to help show case the differences between the many different sorting algorithms and to help 
-    visualize use cases for each (e.g. quick sort is great for random data, but not so great if the data is already
-    sorted). In the future, this program will also provide more result data via Perf as well as have the ability to 
-    test hashing algorithm complexities.
+    This program will compare one or many different algorithms and print out the results of the Algorithm. The purpose of this program is to help show case the differences between the many different sorting algorithms and to help
+    visualize use cases for each (e.g. quick sort is great for random data, but not so great if the data is already sorted). In the future, this program will also provide more result data via Perf as well as have the ability to test hashing algorithm complexities.
   </p>
 </div>
 
 <!-- BREAKING CHANGES -->
 ## Breaking Changes
 
-There are currently no breaking changes.
+There is no output if `-j --json` is not passed
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-Before getting started, there are some prerequisites and information you need to know first. 
+Before getting started, there are some prerequisites and information you need to know first.
 
 ### Repository Information
 
@@ -39,41 +35,75 @@ Use the main branch to link your node project to. If you need to make any change
  been reported. If not, then please create a 
 <a href="https://github.com/jzdegrey/AlgoGauge/issues/new/choose">New issue</a>. If you do need to make changes to this
 code, then you must check out and create a new branch from either main or the <a href="">Development Branch</a>, 
-make your edits, commit and push them to your branch and then create a pull request. Only owners of this repo may 
-authorize pull requests.
+make your edits, commit and push them to your branch and then create a pull request. Only owners of this repo may authorize pull requests.
 
-If you do want to add to this repo, please also read the <a href="./DEV-README.md">DEV-README.md</a>
+If you do want to add to this repo, please also read the [DEV-README](./docs/DEV-README.md#AlgoGauge-cli)
 
 ### Prerequisites
 
-This project is built on cmake. Please make sure to have cmake installed before continuing.
+The following prerequisites are required.
+
+- [CMAKE](https://cmake.org/) for compiling C++
+- [Deno](https://deno.com/) for compiling Javascript
+- [PipX](https://pipx.pypa.io/) for making Python CLI tools easy
+
+
 
 ### Installation
+
 ```shell
-cd [source code root directory]
-mkdir cmake-build-debug
-cd cmake-build-debug
-cmake --build ..
+make 
+make python_install
+cd build
 ```
 
-_next steps vary slightly depending on your OS_
-#### Windows OS:
+Pipx should install packages globally in there own isolated environment to check you can run.
+
+ ```shell
+ AlgoGaugePY -h
+ ```
+
+#### Windows OS
+
 To run on Windows OS (Calls help option `-h`)
 
 ```shell
 .\AlgoGauge.exe -h
+.\AlgoGaugeJS.exe -h
 ```
 
-#### Unix/Mac OS:
+#### Linux and Mac OS
+
 To run on Unix/Mac OS (Calls help option `-h`)
 
 ```shell
 ./AlgoGauge -h
+./AlgoGaugeJS -h
+```
+
+> [!IMPORTANT]
+> LINUX Users
+> In order for perf to work correctly you either need to run AlgoGauge with sudo or update perf_event_paranoid [PERF.md#Security](./docs/PERF.md#security)
+
+#### Installation Production
+
+To use AlgoGauge CLI in production both AlgoGaugeJS and AlgoGauge need to be in your global path (by default pipx should have added AlgoGaugePY to path already). There is a lot of different ways to this but for Linux OS you can just copy the file
+to /usr/local/bin.
+
+```shell
+sudo cp AlgoGauge /usr/local/bin
+sudo cp AlgoGaugeJS /usr/local/bin
+sudo chmod +x /usr/local/bin/AlgoGauge
+```
+
+To ensure it worked run
+
+```shell
+AlgoGauge -h
+AlgoGaugeJS -h
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -86,15 +116,16 @@ Please use ```./AlgoGauge -h``` to see the help message along with options.
 #### Basic Usage
 
 ```txt
-AlgoGauge -a (algorithm name) -s (algorthim strategy) -n (number of items to process) [-v, -j, -h]
+AlgoGauge -a (algorithm name) -s (algorithm strategy) -n (number of items to process) [-v, -j, -h]
 ```
-<br>
 
 #### Algorithm Name, Strategy, and Number [REQUIRED] options:
 
-##### -a, --algorithm 
-Name of the first algorithm to run. 
-- Sorting: 
+##### -a, --algorithm
+
+Name of the first algorithm to run.
+
+- Sorting:
   - `default`
   - `bubble`
   - `selection`
@@ -102,97 +133,113 @@ Name of the first algorithm to run.
   - `quick`
   - `merge`
   - `heap`
-- Hash Table: 
+- Hash Table:
   - `linear_probe`
 - Linked List:
-  - `pop`
-  - `push`
-  - `push_pop`
+  - `push_front`
+  - `push_back`
+  - `pop_front`
+  - `pop_back`
+  - `pushpop_back`
+  - `pushpop_front`
 
 ##### -s, --strategy
+
 Determines the strategy of loading values for sorting algorithms, the type of hash table, or the method of action for linked lists.
-- Sorting: 
-  - `ran/random`
-  - `rep/repeated` 
+
+- Sorting:
+  - `random`
+  - `repeated`
   - `chunks`
-  - `rev/sorted-reverse`
   - `sorted`
-- Hash Table: 
+  - `sorted_reversed`
+- Hash Table:
   - `closed`
 - Linked List:
-  - `front`
-  - `back`
-  - `front_back`
-  - `back_front`
+  - `array`
+  - `linked_list`
 
 ##### -n, --number
+
 The number of items the algorithm will process. Provide an int value between `0` and `4294967295`
+
 - Sorting: Size of Array to Sort
 - Hash Table: Number of testing operations
 - Linked List: Number of operations
-<br>
 
-#### Sorting Algorithm Specific [Required] options:
+#### Sorting Algorithm Specific [Required] options
 
-##### -x, --language 
+##### -x, --language
+
 What programming language will process the sorting algorithm
-- Options: 
+
+- Options:
   - `C++`
-  - `Py/Python3`
-  - `JS/NodeJS`
-<br>
+  - `Py/Python`
+  - `JS/Javascript`
 
-#### Sorting Algorithm [Optional] options:
+#### Sorting Algorithm [Optional] options
 
-##### -i, --iterator 
-How much the number per iteration (default: 1)
+##### -i, --iterator
 
-##### -e, --additional 
-The ending number for step operations (default: 0)
-<br>
+How much the number per iteration (default: 1) this needs to be used in combination with `--additional`
 
-#### Linked List Specific [Required] options:
+##### -e, --additional
 
-##### -l, --size 
-How many elements can be stored in the Linked List.Provide a number (int > 0) that determines linked list size.
-<br>
+The ending number for step operations (default: 0) this needs to be used in combination with `--iterator`
 
-#### Hash Table Specific [Required] options:
+#### Linked List Specific [Required] options
 
-##### -c, --capacity 
+##### -c, --capacity
+
+How many elements can be stored in the Linked List. Provide a number (int > 0) that determines linked list size.
+
+#### Hash Table Specific [Required] options
+
+##### -c, --capacity
+
 How many elements can be stored in the Hash Table. Provide a number (int > 0) that determines hash table size.
 
 ##### -d, --density
-How full or the density of the starting hash table as a percentage. Provide an int value between 0 (0%) and 100 (100%) to load into hash table.
-<br>
 
-#### Program Output [OPTIONAL] options:
+How full or the density of the starting hash table as a percentage. Provide an int value between 0 (0%) and 100 (100%) to load into hash table.
+
+#### Program Output [OPTIONAL] options
 
 ##### -f, --file
+
 File path must include the file name (extension not required). Regardless of file extension, file content's
 structure will always be JSON. The file path and name to output the file to (default: "")
 
 ##### -j, --json
+
 Prints the output as a json formatted object.
 
-#####   -y, --name 
-A canonical name that will be returned in output if provided.
-<br>
+##### -y, --name
 
-#### Program Settings [OPTIONAL] options:
+A canonical name that will be returned in output if provided.
+
+#### Program Settings [OPTIONAL] options
 
 ##### -v, --verbose
+
 Runs the program in Verbose mode
 
 ##### -o, --output
+
 Will output the arrays in the output. It is highly recommended to use a small length (less than 100).
 
 ##### -p, --perf
+
 Includes Perf data in the output. Actual Perf data only works on Linux.
 If you are not on Linux and want to use this anyways, you can set this to "sample". e.g. `--sample`
+
+> [!IMPORTANT]
+> Perf may not work without sudo however this can be easily be fixed by following does not need sudo look at [PERF.md](./docs/PERF.md) to fix this
+
 ##### -h, --help
+
 Prints this help page.
-<br>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -203,8 +250,9 @@ Prints this help page.
 ### Running a single Algorithm using *Quick* sort with *100,000* *Random* values
 
 ```shell
-./AlgoGauge -a quick -s random -n 100000 -x c++ -j
+./AlgoGauge --algorithm quick --strategy random --number 10000 --language c++ --json
 ```
+
 #### Results:
 
 ```{"sorting_algorithm": [{"algorithmName": "Quick","algorithmOption": "Random","algorithmLength": 100000,"language": "C++","algorithmCanonicalName": "","algorithmRunTime_ms": 18.326541, "perfData": {}}]}```
@@ -212,22 +260,20 @@ Prints this help page.
 ### Passing multiple Algorithms at the same time
 
 ```shell
-./AlgoGauge -a quick -s random -n 100000 -x c++ -j -a quick -s random -n 100000 -x c++ -j
+./AlgoGauge -a quick -s random -n 1000 -x c++ -j -a bubble -s random -n 1200 -x js -j
 ```
 
 #### Results:
 
 ```
-Sort 'Quick' with Algorithm Option 'Random' of length 100000, completed in x.xxxxxx milliseconds
-Sort 'Bubble' with Algorithm Option 'Random' of length 100000, completed in x.xxxxxx milliseconds
-Sort 'Quick' with Algorithm Option 'Ordered' of length 25000, completed in x.xxxxxx milliseconds
+Sort 'Quick' with Algorithm Option 'Random' of length 1000, completed in x.xxxxxx milliseconds
+Sort 'Bubble' with Algorithm Option 'Random' of length 1200, completed in x.xxxxxx milliseconds
 ```
 
-
-### More examples of passing multiple Algorithms at the same time.
+### More examples of passing multiple Algorithms at the same time
 
 ```shell
-./AlgoGauge -a quick -s random -n 1000 -x c++ -j -a merge -s random -n 1000 -x c++ -j
+./AlgoGauge -a quick -s random -n 1000 -x c++ -j -a merge -s random -n 1200 -x c++ -j
 ```
 
 #### Results:
@@ -244,24 +290,45 @@ Sort 'Quick' with Algorithm Option 'Ordered' of length 25000, completed in x.xxx
     , "perfData": {}}
   ,
     {"algorithmName": "Merge"
-    ,"algorithmOption": "Random"
-    ,"algorithmLength": 1000
+    ,"algorithmOption": "Bubble"
+    ,"algorithmLength": 1200
     ,"language": "C++"
     ,"algorithmCanonicalName": ""
-    ,"algorithmRunTime_ms": 0.321083
+    ,"algorithmRunTime_ms": 1.910916
     , "perfData": {}}
   ]
 }
 ```
 
+### Using iterator and additional
+
+```shell
+./AlgoGauge --algorithm bubble --strategy random --number 1000 --language js -v --iterator 2 --additional 20 --name bubbleTesting
+```
+
+#### Results:
+
+```txt
+Sorting Algorithm algorithm: bubble array_length: 1000 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1002 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1004 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1006 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1008 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1010 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1012 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1014 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1016 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1018 strategy: random language: js name: bubbleTesting
+Sorting Algorithm algorithm: bubble array_length: 1020 strategy: random language: js name: bubbleTesting
+```
 
 ### JSON Results ```-j``` or ```--json```
 
-You can specify whether the results should be printed out in JSON format instead of the human-readable versions like 
-the previous examples. Note: the JSON flag ***only*** pertains to STDOUT. 
+You can specify whether the results should be printed out in JSON format instead of the human-readable versions like
+the previous examples. Note: the JSON flag ***only*** pertains to STDOUT.
 
 ```shell
-./AlgoGauge -a quick -s random -n 1000 -x c++ -json
+./AlgoGauge -a quick -s random -n 1000 -x c++ --json
 ```
 
 #### Results:
@@ -282,7 +349,7 @@ the previous examples. Note: the JSON flag ***only*** pertains to STDOUT.
 
 ### Perf Values ```-p``` or ```--perf```
 
-To include Perf values, you ***MUST*** be on Linux machine and provide the Perf argument.
+To include Perf values, you ***MUST*** be on Linux machine to get back really PERF values. Otherwise you will get dummy data.
 
 ```shell
 ./AlgoGauge -a quick -s random -n 1000 -x c++ -json -p
@@ -325,8 +392,8 @@ To include Perf values, you ***MUST*** be on Linux machine and provide the Perf 
 
 ### Perf Values for *Non-Linux* Machines ```--perf=sample```
 
-If you are not on a Linux machine, but will be deploying this to a Linux machine eventually and will be needing Perf data, 
-but you need to test and debug on a non-Linux machine, you can include the ```--sample``` argument which mimics the Perf output by providing 
+If you are not on a Linux machine, but will be deploying this to a Linux machine eventually and will be needing Perf data,
+but you need to test and debug on a non-Linux machine, you can include the ```--sample``` argument which mimics the Perf output by providing
 dummy Perf data. This flag works with every other flag.
 
 ```shell
@@ -387,8 +454,8 @@ the file as a JSON formatted text file. When you include this flag, nothing will
 
 ### Printing to a file *and* printing to STDOUT via Verbose mode ```-v``` or ```--verbose```
 
-If you want the program to print the results to a JSON formatted file and have it output the results to STDOUT, then 
-you should include the Verbose flag. However, the Verbose flag will provide you with more than what the first few 
+If you want the program to print the results to a JSON formatted file and have it output the results to STDOUT, then
+you should include the Verbose flag. However, the Verbose flag will provide you with more than what the first few
 examples have shown.
 
 ```shell
@@ -437,9 +504,9 @@ create a pull request. ***NEVER*** commit and push directly to main!!!
 #### Weber State University - School of Computing
 
 - Dr. Brad Peterson
-- Coleton Watt 
+- Coleton Watt
 - Cooper Maitoza
-- Brody Gardner 
+- Brody Gardner
 - John Z. DeGrey
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

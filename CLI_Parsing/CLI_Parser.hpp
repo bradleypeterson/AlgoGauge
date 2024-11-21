@@ -60,11 +60,6 @@ Options getOptions(string type) {
         ("o,output", "Will output the arrays in the output. It is highly recommended to use a small length (less than 100).", cxxopts::value<bool>()->implicit_value("true"))
         ("h,help", "Prints this help page.")
         ("p,perf", "Includes Perf data in the output.", cxxopts::value<bool>()->implicit_value("true"))
-// #ifdef __linux__
-//         ("p,perf", "Includes Perf data in the output.", cxxopts::value<bool>()->implicit_value("true"))
-// #else
-//         ("p perf", "Includes PERF data in the output. Actual PERF only works on linux all perf data returned will be sample (dummy) data", cxxopts::value<bool>()->implicit_value("true"))
-// #endif
         ("sample", "Return PERF sample (dummy) data data in the output.", cxxopts::value<bool>()->implicit_value("true"))
     ;
     // Adds the output settings group to allow the user to change where the output of the program should go
@@ -84,7 +79,7 @@ Options getOptions(string type) {
     ;
 
     options.add_options("Required Sorting Algorithm")
-        ("x,lang,language", "Options: C++, Py/Python3, JS/NodeJS", cxxopts::value<vector<string>>(), "What programming language will process the sorting algorithm")
+        ("x,lang,language", "Options: C++, Py/Python3, JS/Javascript", cxxopts::value<vector<string>>(), "What programming language will process the sorting algorithm")
     ;
 
     options.add_options("Optional Sorting Algorithm")
@@ -95,14 +90,14 @@ Options getOptions(string type) {
         ("c, capacity", "Provide a number (int > 0) that determines hash table, array, or linked list size .", cxxopts::value<vector<int>>(), "How many elements can be stored given strategy")
     ;
 
-
-
     options.add_options("Required Hash Table")
         ("d, load, density", "Provide an int value between 0 (0%) and 100 (100%) to load into hash table.", cxxopts::value<vector<double>>(), "How full or the density of the starting hash table as a percentage")
     ;
 
     options.add_options("Optional Options")
         ("y, name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>())
+        ("version", "Prints the version", cxxopts::value<bool>()->implicit_value("true"))
+
     ;
 
     return options;
@@ -131,6 +126,9 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
         return algogaugeDetails; //line instead of two. However, for readability’s sake, it may be worth changing this.
     }
 
+    if(result.count("version")){
+        cout << "Version: 1.9" << std::endl;
+    }
 
     algogaugeDetails.Verbose = result["verbose"].as<bool>();
     algogaugeDetails.Output = result["output"].as<bool>();
@@ -381,7 +379,7 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
             oss << "Sorting Algorithm"
                 << " algorithm: " << sorting.Algorithm
                 << " array_length: " << sorting.ArrayLength
-                << " strategy: " << sorting.ArrayStrategy
+                << " strategy: " << sorting.ArrayStrategyString
                 << " language: " << sorting.Language
                 << " name: " << sorting.Name
                 << "\n"

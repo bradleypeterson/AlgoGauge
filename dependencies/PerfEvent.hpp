@@ -39,6 +39,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #if defined(__linux__)
 #include <asm/unistd.h>
 #include <linux/perf_event.h>
+#include <linux/hw_breakpoint.h>
 #include <sys/ioctl.h>
 
 
@@ -106,26 +107,47 @@ struct PerfEvent
 	/// @brief This is the constutor for PERF it holds all the attributes that should be tracked task-clock cycles etc.
 	/// @param pid Optionally pass in the PID of what process track default 0 or the caller function
 	PerfEvent(pid_t pid = 0){
-		registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
-		registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
+		registerCounter("task_clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
+		registerCounter("context_switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
 
-		registerCounter("cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
-		registerCounter("kcycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, KERNEL);
+		registerCounter("actual_cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+		registerCounter("reference_cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_REF_CPU_CYCLES);
+		registerCounter("kernel_cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, KERNEL);
+		registerCounter("bus_cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES);
+
 
 		registerCounter("instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
 
-		registerCounter("L1-misses", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_MISS << 16));
-		registerCounter("LLC-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
-		registerCounter("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
-		registerCounter("branch-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
+		registerCounter("L1_data_cache", PERF_TYPE_HW_CACHE, 
+			(PERF_COUNT_HW_CACHE_L1D) | 
+			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
+			(PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+		);
+		registerCounter("L1_data_cache_misses", PERF_TYPE_HW_CACHE, 
+			(PERF_COUNT_HW_CACHE_L1D) | 
+			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
+			(PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
+		);
+		registerCounter("branch_predictions", PERF_TYPE_HW_CACHE, 			
+			(PERF_COUNT_HW_CACHE_BPU) |
+            (PERF_COUNT_HW_CACHE_OP_READ << 8) |
+            (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+		);
+		registerCounter("branch_prediction_misses", PERF_TYPE_HW_CACHE, 			
+			(PERF_COUNT_HW_CACHE_BPU) |
+            (PERF_COUNT_HW_CACHE_OP_READ << 8) |
+            (PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
+		);
 
-		registerCounter("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
-		registerCounter("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
+		registerCounter("cache_references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
+		registerCounter("cache_references_misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+		
+		registerCounter("retired_branch_instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
 
-		registerCounter("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
-		registerCounter("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
-		registerCounter("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
-		registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
+		registerCounter("total_page_faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
+		registerCounter("minor_page_faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
+		registerCounter("major_page_faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
+		registerCounter("CPU_migrations", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS);
 
 		// additional counters can be found in linux/perf_event.h
 
@@ -225,25 +247,31 @@ struct PerfEvent
 	/// @brief Get how many instructions per cylce where called
 	/// @return A number
 	double getIPC(){
-		return getCounter("instructions") / getCounter("cycles");
+		return getCounter("instructions") / getCounter("actual_cycles");
+	}
+	double getRefrenceIPC(){
+		return getCounter("instructions") / getCounter("reference_cycles");
 	}
 
 	/// @brief Get how many CPUs where used and how much
 	/// @return A number
 	double getCPUs(){
-		return getCounter("task-clock") / (getDuration() * 1e9);
+		return getCounter("task_clock") / (getDuration() * 1e9);
 	}
 
 	/// @brief Number of ticks per ms
 	/// @return the number of ticks
 	double getClockTicksPerMS(){
-		return getCounter("task-clock");
+		return getCounter("task_clock");
 	}
 
 	/// @brief Computes the CPU frequency in GHz based on cycle and task clock counters.
 	/// @return The computed frequency in GHz.
 	double getGHz(){
-		return getCounter("cycles") / getCounter("task-clock");
+		return getCounter("actual_cycles") / getCounter("task_clock");
+	}
+	double getRefrenceGHz(){
+		return getCounter("reference_cycles") / getCounter("task_clock");
 	}
 
 	/// @brief Used to get the details of a specific counter
@@ -410,12 +438,15 @@ public:
 			std::stringstream stream;
 			stream << std::setprecision(precision) << events[i].readCounter() / static_cast<double>(normalizationConstant);
 			// std::cout << stream.str();
-			jsonString += "\"" + names[i] + "\":" + (stream.str() != "-nan"? stream.str(): "null") + ",";
+			jsonString += "\"" + names[i] + "\":" + (stream.str() != "-nan"? stream.str(): "0") + ",";
 		}
 		std::ostringstream stream;
 		stream << "\"scale\":" << std::setprecision(precision) << normalizationConstant << ",";
 		stream << "\"GHz\":" << std::fixed << std::setprecision(precision) << getGHz() << ",";
+		stream << "\"refrence_GHZ\":" << std::fixed << std::setprecision(precision) << (std::isnan(getRefrenceGHz()) ? -1: getRefrenceGHz()) << ",";
 		stream << "\"IPC\":" << std::fixed << std::setprecision(precision) << (std::isnan(getIPC()) ? -1: getIPC()) << ",";
+		stream << "\"refrence_IPC\":" << std::fixed << std::setprecision(precision) << (std::isnan(getRefrenceIPC()) ? -1: getRefrenceIPC()) << ",";
+
 		stream << "\"CPUs\":" << std::fixed << std::setprecision(precision) << getCPUs();
 
 		jsonString += stream.str() + "}";
