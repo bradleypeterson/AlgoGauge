@@ -1,0 +1,3 @@
+C:/Users/Alon/source/repos/AlgoGaugeMERN/backend/programs/AlgoGauge/out/build/x64-Debug/CMakeFiles/AlgoGauge.dir
+C:/Users/Alon/source/repos/AlgoGaugeMERN/backend/programs/AlgoGauge/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/Alon/source/repos/AlgoGaugeMERN/backend/programs/AlgoGauge/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
