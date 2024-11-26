@@ -257,17 +257,15 @@ namespace HashTables {
 
 
   // This method creates a bunch of test CRUD operations for testing.
-  // Load, looks-up, and destroy (CRUD Operations) for only 1 value the number of times testOperationAmount.
+  // get's a random CRUD operation a 100 times (loadValues, lookupValues, destroyValues)
+  // runs the CRUD operation for an amount of testOperationAmount (loadValues(testOperationAmount))
   template <typename T, typename U>
   void ClosedHashTable<T, U>::crudOperation(const int testOperationAmount) {
-    if (verbose) 
-      cout << "Running " + std::to_string(testOperationAmount) + " load, look-up, and delete operations on hash table..." << endl;
+    if (verbose) cout << "Running " + std::to_string(testOperationAmount) + " load, look-up, and delete operations on hash table..." << endl;
 
-    for (int i = 0; i < testOperationAmount; i++) {
-      this->loadValues(1);
-      this->lookupValues(1, false);
-      this->destroyValues(1, false);
-    }
+    this->loadValues(testOperationAmount);
+    this->lookupValues(testOperationAmount, false);
+    this->destroyValues(testOperationAmount, false);
   }
 
 
@@ -369,7 +367,7 @@ namespace HashTables {
 # endif
 
 // int main() {
-  // cout << runHash(HashTables::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "true")) << endl;
+  // cout << runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "true")) << endl;
 
 
   // cout << "Testing CRUD Operation Method..." << endl;

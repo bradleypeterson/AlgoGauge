@@ -13,4 +13,4 @@ dependencies = [
 requires-python = ">=3.7"
 
 [project.gui-scripts]
-AlgoGaugePY = "AlgoGaugePY:main"
+AlgogaugePY = "AlgoGaugePY:main"

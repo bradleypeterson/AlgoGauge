@@ -17,7 +17,7 @@ int runPIDSomething(){
  	execlp(
             "node",
             "node",  // argv[0] should be the name of the executable
-            "../MultiLanguage/Javascript/AlgoGauge.mjs",
+            "../MultiLanguage/Javascript/Algogauge.mjs",
             "--algorithm", "bubble",
             "--length", "100",
             "--strategy", "random",
@@ -56,14 +56,14 @@ int main(int argc, char *argv[])
 {
 
 	const char *command_line[] = {"node", 
-	"../MultiLanguage/Javascript/AlgoGauge.mjs", 
+	"../MultiLanguage/Javascript/Algogauge.mjs", 
 	"--algorithm=bubble",
 	"--length=100",
 	"--strategy=random",
 	"-v",
 	"-j",
 	NULL};
-	//perf stat node AlgoGauge.mjs -a bubble --length=100 --strategy=random -j -v
+	//perf stat node Algogauge.mjs -a bubble --length=100 --strategy=random -j -v
 	struct subprocess_s process;
 	std::cout << process.child << std::endl;
 	int result = subprocess_create(command_line, subprocess_option_search_user_path, &process);
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 
 	std::cout << stdOUT;
 	std::cout << "New Test:" << std::endl << std::endl;
-	int result2 = std::system("perf stat node ../MultiLanguage/Javascript/AlgoGauge.mjs -a bubble --length=100 --strategy=random -j -v"); // Replace "ls -l" with your command
+	int result2 = std::system("perf stat node ../MultiLanguage/Javascript/Algogauge.mjs -a bubble --length=100 --strategy=random -j -v"); // Replace "ls -l" with your command
     if (result2 != 0) {
         std::cerr << "Command failed with error code: " << result2 << std::endl;
     }else{

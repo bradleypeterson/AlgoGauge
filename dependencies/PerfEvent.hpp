@@ -35,6 +35,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <vector>
 #include <cmath>
 
+const std::vector<std::pair<std::string, double>> dummyData = {
+	{"task_clock", 404783.0},
+	{"context_switches", 0.0},
+	{"actual_cycles", 247236.0},
+	{"reference_cycles", 513156.0},
+	{"kernel_cycles", 147426.0},
+	{"bus_cycles", 5965.0},
+	{"instructions", 260452.0},
+	{"L1_data_cache", 114730.0},
+	{"L1_data_cache_misses", 0.0},
+	{"branch_predictions", 0.0},
+	{"branch_prediction_misses", 0.0},
+	{"cache_references", 0.0},
+	{"cache_references_misses", 0.0},
+	{"retired_branch_instructions", 0.0},
+	{"total_page_faults", 0.0},
+	{"minor_page_faults", 0.0},
+	{"major_page_faults", 0.0},
+	{"CPU_migrations", 0.0},
+	{"scale", 1.0},
+	{"GHz", 0.610787},
+	{"refrence_GHZ", 1.267731},
+	{"IPC", 1.053455},
+	{"refrence_IPC", 0.507549},
+	{"CPUs", 4.564999}
+};
+
 
 #if defined(__linux__)
 #include <asm/unistd.h>
@@ -83,71 +110,61 @@ struct PerfEvent
 	std::chrono::time_point<std::chrono::steady_clock> startTime;
 	std::chrono::time_point<std::chrono::steady_clock> stopTime;
 
-	const std::vector<std::pair<std::string, double>> dummyData = {
-		{"task-clock", 364444262.00},
-		{"context switches", 214.00},
-		{"cycles", 595348804.49},
-		{"kcycles", 170739620.86},
-		{"instructions", 1009631347.96},
-		{"L1-misses", 5583046.54},
-		{"LLC-misses", 897165.96},
-		{"branch predictions", 182104579.70},
-		{"branch-misses", 3082415.94},
-		{"cache references", 5131660.31},
-		{"retired branch instructions", 161551834.08},
-		{"total page faults", 10020.00},
-		{"minor page faults", 10020.00},
-		{"major page faults", 0.00},
-		{"scale", 1.0},
-		{"IPC", 1.70},
-		{"CPUs", 0.37},
-		{"GHz", 1.63}
-	};
+
 
 	/// @brief This is the constutor for PERF it holds all the attributes that should be tracked task-clock cycles etc.
 	/// @param pid Optionally pass in the PID of what process track default 0 or the caller function
 	PerfEvent(pid_t pid = 0){
-		registerCounter("task_clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
-		registerCounter("context_switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
+		registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
+		registerCounter("context switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES);
 
-		registerCounter("actual_cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
-		registerCounter("reference_cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_REF_CPU_CYCLES);
-		registerCounter("kernel_cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, KERNEL);
-		registerCounter("bus_cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES);
+		registerCounter("cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+		registerCounter("cycles2", PERF_TYPE_HARDWARE, PERF_COUNT_HW_REF_CPU_CYCLES);
 
+		registerCounter("kcycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, KERNEL);
 
 		registerCounter("instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
 
-		registerCounter("L1_data_cache", PERF_TYPE_HW_CACHE, 
+		registerCounter("L1 Data Cache", PERF_TYPE_HW_CACHE, 
 			(PERF_COUNT_HW_CACHE_L1D) | 
 			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
 			(PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
 		);
-		registerCounter("L1_data_cache_misses", PERF_TYPE_HW_CACHE, 
+		registerCounter("L1 Data Cache Misses", PERF_TYPE_HW_CACHE, 
 			(PERF_COUNT_HW_CACHE_L1D) | 
 			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
 			(PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
 		);
-		registerCounter("branch_predictions", PERF_TYPE_HW_CACHE, 			
+		registerCounter("L1 Instruction Cache", PERF_TYPE_HW_CACHE, 
+			(PERF_COUNT_HW_CACHE_L1I) | 
+			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
+			(PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+		);
+		registerCounter("L1 Instruction Misses", PERF_TYPE_HW_CACHE, 
+			(PERF_COUNT_HW_CACHE_L1D) | 
+			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
+			(PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
+		);
+
+		registerCounter("branch predictions", PERF_TYPE_HW_CACHE, 			
 			(PERF_COUNT_HW_CACHE_BPU) |
             (PERF_COUNT_HW_CACHE_OP_READ << 8) |
             (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
 		);
-		registerCounter("branch_prediction_misses", PERF_TYPE_HW_CACHE, 			
+		registerCounter("branch prediction misses", PERF_TYPE_HW_CACHE, 			
 			(PERF_COUNT_HW_CACHE_BPU) |
             (PERF_COUNT_HW_CACHE_OP_READ << 8) |
             (PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
 		);
 
-		registerCounter("cache_references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
-		registerCounter("cache_references_misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
-		
-		registerCounter("retired_branch_instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
+		registerCounter("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
+		registerCounter("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+		registerCounter("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
 
-		registerCounter("total_page_faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
-		registerCounter("minor_page_faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
-		registerCounter("major_page_faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
-		registerCounter("CPU_migrations", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS);
+		registerCounter("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
+		registerCounter("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
+		registerCounter("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
+		registerCounter("CPU Migrations", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS);
 
 		// additional counters can be found in linux/perf_event.h
 
@@ -247,31 +264,25 @@ struct PerfEvent
 	/// @brief Get how many instructions per cylce where called
 	/// @return A number
 	double getIPC(){
-		return getCounter("instructions") / getCounter("actual_cycles");
-	}
-	double getRefrenceIPC(){
-		return getCounter("instructions") / getCounter("reference_cycles");
+		return getCounter("instructions") / getCounter("cycles");
 	}
 
 	/// @brief Get how many CPUs where used and how much
 	/// @return A number
 	double getCPUs(){
-		return getCounter("task_clock") / (getDuration() * 1e9);
+		return getCounter("task-clock") / (getDuration() * 1e9);
 	}
 
 	/// @brief Number of ticks per ms
 	/// @return the number of ticks
 	double getClockTicksPerMS(){
-		return getCounter("task_clock");
+		return getCounter("task-clock");
 	}
 
 	/// @brief Computes the CPU frequency in GHz based on cycle and task clock counters.
 	/// @return The computed frequency in GHz.
 	double getGHz(){
-		return getCounter("actual_cycles") / getCounter("task_clock");
-	}
-	double getRefrenceGHz(){
-		return getCounter("reference_cycles") / getCounter("task_clock");
+		return getCounter("cycles") / getCounter("task-clock");
 	}
 
 	/// @brief Used to get the details of a specific counter
@@ -438,15 +449,12 @@ public:
 			std::stringstream stream;
 			stream << std::setprecision(precision) << events[i].readCounter() / static_cast<double>(normalizationConstant);
 			// std::cout << stream.str();
-			jsonString += "\"" + names[i] + "\":" + (stream.str() != "-nan"? stream.str(): "0") + ",";
+			jsonString += "\"" + names[i] + "\":" + (stream.str() != "-nan"? stream.str(): "null") + ",";
 		}
 		std::ostringstream stream;
 		stream << "\"scale\":" << std::setprecision(precision) << normalizationConstant << ",";
 		stream << "\"GHz\":" << std::fixed << std::setprecision(precision) << getGHz() << ",";
-		stream << "\"refrence_GHZ\":" << std::fixed << std::setprecision(precision) << (std::isnan(getRefrenceGHz()) ? -1: getRefrenceGHz()) << ",";
 		stream << "\"IPC\":" << std::fixed << std::setprecision(precision) << (std::isnan(getIPC()) ? -1: getIPC()) << ",";
-		stream << "\"refrence_IPC\":" << std::fixed << std::setprecision(precision) << (std::isnan(getRefrenceIPC()) ? -1: getRefrenceIPC()) << ",";
-
 		stream << "\"CPUs\":" << std::fixed << std::setprecision(precision) << getCPUs();
 
 		jsonString += stream.str() + "}";
@@ -483,26 +491,6 @@ struct PerfEvent {
 	PerfEvent(pid_t pid = 0){
 
 	}
-	const std::vector<std::pair<std::string, double>> dummyData = {
-	{"task-clock", 364444262.00},
-	{"context switches", 214.00},
-	{"cycles", 595348804.49},
-	{"kcycles", 170739620.86},
-	{"instructions", 1009631347.96},
-	{"L1-misses", 5583046.54},
-	{"LLC-misses", 897165.96},
-	{"branch predictions", 182104579.70},
-	{"branch-misses", 3082415.94},
-	{"cache references", 5131660.31},
-	{"retired branch instructions", 161551834.08},
-	{"total page faults", 10020.00},
-	{"minor page faults", 10020.00},
-	{"major page faults", 0.00},
-	{"context switches", 214.00},
-	{"scale", 1.0},
-	{"IPC", 1.70},
-	{"CPUs", 0.37},
-	{"GHz", 1.63}};
 
 
    void startCounters() {}

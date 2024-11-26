@@ -96,8 +96,6 @@ Options getOptions(string type) {
 
     options.add_options("Optional Options")
         ("y, name", "A canonical name that will be returned in output if provided.", cxxopts::value<vector<string>>())
-        ("version", "Prints the version", cxxopts::value<bool>()->implicit_value("true"))
-
     ;
 
     return options;
@@ -126,9 +124,6 @@ AlgoGauge::AlgoGaugeDetails parseAndGetAlgorithms(const ParseResult& result, con
         return algogaugeDetails; //line instead of two. However, for readability’s sake, it may be worth changing this.
     }
 
-    if(result.count("version")){
-        cout << "Version: 1.9" << std::endl;
-    }
 
     algogaugeDetails.Verbose = result["verbose"].as<bool>();
     algogaugeDetails.Output = result["output"].as<bool>();
