@@ -160,17 +160,17 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 	FILE* stdin_file;
     int result = subprocess_create_ex(commandLineArguments, subprocess_option_search_user_path | subprocess_option_enable_async | subprocess_option_combined_stdout_stderr, environment, &process);
 	const auto processName = commandLineArguments[0];
-
-	if(verbose){
-		std::cout << "PID of child process: "<< processName << " " << process.child << std::endl;
-	}
-
-	PerfEvent e(process.child);
-	// cout << process.child;
     if (result != 0) {
         std::cerr << "Failed to start program!" << std::endl;
         return "";
     }
+#if !defined(_WIN32)
+
+	if(verbose){
+		std::cout << "PID of child process: "<< processName << " " << process.child << std::endl;
+	}
+	PerfEvent e(process.child);
+
 	if(perf){
 		stdin_file = subprocess_stdin(&process);
 
@@ -213,6 +213,7 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
 		} while (bytes_read != 0);
 	}
 	
+#endif
 
 	// do{
 	// 	cout << "hello8" << std::endl;
@@ -238,17 +239,20 @@ std::string runChildProcess(const char* commandLineArguments[], const char* envi
         std::cerr << "Program exited with code " << exit_code << std::endl;
     }
 
+
+#if !defined(_WIN32)
 	std::string stdOUT = printChildProcessSTDOUT(process, perf ? e.getPerfJSONString(): "{}");
 
 	if(verbose && perf){
 		std::cout << "PERF data as recorded by c++ for " << processName << ": " << e.getPerfJSONString() << endl;
 	}
-
 	if (!stdOUT.empty() && stdOUT[0] == '{') {
         stdJSON = stdOUT;
     }else{
 		cout << stdOUT << std::endl;
 	}
+#endif
+
 
     // Clean up
 	int cleanUpResult = subprocess_destroy(&process);

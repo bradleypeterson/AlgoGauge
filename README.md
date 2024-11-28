@@ -85,7 +85,7 @@ To run on Unix/Mac OS (Calls help option `-h`)
 > LINUX Users
 > In order for perf to work correctly you either need to run Algogauge with sudo or update perf_event_paranoid [PERF.md#Security](./docs/PERF.md#security)
 
-#### Installation Production
+##### Installation Production
 
 To use AlgoGauge CLI in production both AlgogaugeJS and Algogauge need to be in your global path (by default pipx should have added AlgogaugePY to path already). There is a lot of different ways to this but for Linux OS you can just copy the file
 to /usr/local/bin.

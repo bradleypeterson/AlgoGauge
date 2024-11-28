@@ -3,6 +3,8 @@
  * @authors Brad Peterson Ph.D., John Z. DeGrey, et al.
  * @copyright Weber State University
  */
+#ifndef MAIN_CPP
+#define MAIN_CPP
 
 #include "CLI_Parsing/CLI_Parser.hpp"
 #include "dependencies/PerfEvent.hpp"
@@ -39,3 +41,5 @@ int main(int argc, char *argv[]) {
     // as for some reason, node treats a non-0 exit code as a server
     // error instead of capturing data from STDERR.
 }
+
+#endif // MAIN_CPP
