@@ -218,11 +218,11 @@ std::string LinkedListPerformanceTest(int size, int number, string function, str
     else if(function == "push_back"){
         LinkedListPushBackTime(list);
     }
-    else if(function == "pushpop_front"){
+    else if(function == "push_pop_front"){
         LinkedListPushFrontTime(list);
         LinkedListPopFrontTime(list);
     }
-    else if(function == "pushpop_back"){
+    else if(function == "push_pop_back"){
         LinkedListPushBackTime(list);
         LinkedListPopBackTime(list);
     }

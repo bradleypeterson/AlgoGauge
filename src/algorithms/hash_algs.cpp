@@ -343,7 +343,7 @@ namespace HashTables {
     string output;
     output += "{\"algorithmName\": \"" + hashObj.getName() +"\", ";
     output += "\"algorithmCapacity\": " + std::to_string(hashObj.getCapacity()) + ", ";
-    output += "\"language\": \"c++\", "; 
+    output += "\"language\": \"C++\", "; 
     output += "\"probingType\": \"" + hashObj.getProbingType() + "\", ";
     output += "\"algorithmRunTime_ms\": " + std::to_string(fp_ms.count()) + ", ";
     output += "\"density\": " + std::to_string(hashObj.getAmountFilled()) + ", ";

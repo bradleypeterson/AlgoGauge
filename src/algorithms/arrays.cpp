@@ -203,11 +203,11 @@ string ArrayPerformanceTest(int capacity, int number, string function, string pe
     else if (function == "push_back") {
         ArrayPushBackTime(array, number);
     } 
-    else if (function == "pushpop_front") {
+    else if (function == "push_pop_front") {
         ArrayPushFrontTime(array, number);
         ArrayPopFrontTime(array, number);
     } 
-    else if (function == "pushpop_back") {
+    else if (function == "push_pop_back") {
         ArrayPushBackTime(array, number);
         ArrayPopBackTime(array, number);
     } 

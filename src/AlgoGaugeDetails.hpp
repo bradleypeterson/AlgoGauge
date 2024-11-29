@@ -50,7 +50,7 @@ struct SortingAlgorithmSettings {
 	std::string ArrayStrategyString = "default";
 	AlgorithmOptions ArrayStrategy = none;
     int ArrayLength = 100;
-	std::string Language = "c++";
+	std::string Language = "C++";
 };
 struct CRUDOperationSettings{
 	std::string Name = "";
