@@ -384,8 +384,9 @@ std::string runCRUDOperation(const AlgoGauge::AlgoGaugeDetails& algorithmsContro
 	}
 
 	for(auto algo: algorithmsController.SelectedCRUDOperations){
+		// cout << algo.Type << endl;
 		if(algo.Type == "array"){
-			jsonResults += LinkedListPerformanceTest(
+			jsonResults += ArrayPerformanceTest(
 				algo.Size,
 				algo.Number,
 				algo.Operation,
@@ -394,7 +395,7 @@ std::string runCRUDOperation(const AlgoGauge::AlgoGaugeDetails& algorithmsContro
 				algorithmsController.Output
 			);
 		}else if(algo.Type == "linked_list"){
-			jsonResults += ArrayPerformanceTest(
+			jsonResults += LinkedListPerformanceTest(
 				algo.Size,
 				algo.Number,
 				algo.Operation,

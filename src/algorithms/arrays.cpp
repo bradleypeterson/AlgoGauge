@@ -225,7 +225,8 @@ string ArrayPerformanceTest(int capacity, int number, string function, string pe
 
     output = "{";
     output += R"("algorithmName": ")" + function + "\",";
-    output += R"("arrayCapacity": )" + std::to_string(capacity) + ",";
+    output += R"("nodeCount": )" + std::to_string(capacity) + ",";
+    output += "\"type\": \"array\",";
     output += R"("number": )" + std::to_string(number) + ",";
     output += R"("algorithmRunTime_ms": )" + std::to_string(fp_ms.count());
 

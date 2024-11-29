@@ -246,7 +246,8 @@ std::string LinkedListPerformanceTest(int size, int number, string function, str
     //create return     
     output = "{";
     output += R"("algorithmName": ")" + function + "\",";
-    output += R"("listSize": )" + std::to_string(size) + ","; 
+    output += R"("nodeCount": )" + std::to_string(size) + ",";
+    output += "\"type\": \"linked_list\",";
     output += R"("number": )" + std::to_string(number) + ",";
     output += R"("algorithmRunTime_ms": )" + std::to_string(fp_ms.count());  
 
