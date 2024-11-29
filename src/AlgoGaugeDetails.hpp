@@ -33,7 +33,7 @@ const std::unordered_map<std::string, AlgoGauge::AlgorithmOptions> strategyMap =
         {"sorted", AlgoGauge::AlgorithmOptions::sortedSet}
 };
 
-const std::unordered_set<std::string> crudOperations = {"push_front", "push_back", "pop_front", "pop_back", "pushpop_back", "pushpop_front"};
+const std::unordered_set<std::string> crudOperations = {"push_front", "push_back", "pop_front", "pop_back", "push_pop_back", "push_pop_front"};
 
 struct HashTableSettings{
 	std::string Type = "Closed";
