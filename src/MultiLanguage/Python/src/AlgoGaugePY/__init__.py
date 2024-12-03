@@ -2,6 +2,9 @@ import sys
 from argparse import ArgumentParser
 from .run_algorithms import run_algorithm
 
+__version__ = "0.0.1"
+
+
 MAX_NUMBER = 2**32 - 1
 
 USAGE = f"Usage: python {sys.argv[0]} [--help] | [-s <sep>] [first [incr]] last"
@@ -13,7 +16,7 @@ parser = ArgumentParser(
                     epilog='', 
                     usage='python {sys.argv[0]} <options>')
 
-parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+parser.add_argument('--version', action='version', version=__version__)
 
 
 parser.add_argument('-v', '--verbose', action='store_true', help='Verbose mode')

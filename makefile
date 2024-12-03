@@ -67,7 +67,8 @@ deno_build_macos_x86_64:
 
 python_install:
 	@echo "Install AlgoGaugePY to pipx"
-	pipx install src/MultiLanguage/Python/ --force
+	pipx uninstall AlgogaugePY
+	pipx install src/MultiLanguage/Python/
 
 # Clean up the build files
 clean:
