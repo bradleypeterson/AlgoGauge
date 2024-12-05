@@ -12,7 +12,7 @@ def get_unsorted_array(strategy: str, length: int, max_value: int) -> array:
     strategy_map = {
         "random": lambda: full_random_array(length=length, max_value=max_value),
         "chunk": lambda: random_chunk_array(length=length, max_value=max_value),
-        "repeating": lambda: repeating_array(length=length, max_value=max_value),
+        "repeated": lambda: repeating_array(length=length, max_value=max_value),
         "sorted": lambda: ordered_array(length=length),
         "sorted_reversed": lambda: ordered_reversed_array(length=length)
     }

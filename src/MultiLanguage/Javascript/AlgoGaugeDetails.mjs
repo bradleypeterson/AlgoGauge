@@ -63,7 +63,7 @@ export class SortingAlgorithm {
       case "random":
         this.array = fullRandomArray(length, max);
         break;
-      case "chunk":
+      case "chunks":
         this.array = randomChunkArray(length, max);
         break;
       case "repeating":
