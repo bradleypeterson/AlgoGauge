@@ -135,11 +135,11 @@ struct PerfEvent
 			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
 			(PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
 		);
-		registerCounter("L1 Instruction Cache", PERF_TYPE_HW_CACHE, 
-			(PERF_COUNT_HW_CACHE_L1I) | 
-			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
-			(PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
-		);
+		// registerCounter("L1 Instruction Cache", PERF_TYPE_HW_CACHE, 
+		// 	(PERF_COUNT_HW_CACHE_L1I) | 
+		// 	(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
+		// 	(PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
+		// );
 		registerCounter("L1 Instruction Misses", PERF_TYPE_HW_CACHE, 
 			(PERF_COUNT_HW_CACHE_L1D) | 
 			(PERF_COUNT_HW_CACHE_OP_READ << 8) | 
