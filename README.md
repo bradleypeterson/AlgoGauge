@@ -47,8 +47,6 @@ The following prerequisites are required.
 - [Deno](https://deno.com/) for compiling Javascript
 - [PipX](https://pipx.pypa.io/) for making Python CLI tools easy
 
-
-
 ### Installation
 
 ```shell
