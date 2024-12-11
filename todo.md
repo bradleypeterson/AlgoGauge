@@ -43,6 +43,9 @@
 - [ ] JAVA and Rust support
 - [ ] CPU vectorization algorithms
 - [ ] Trees AVL vs B trees
+- [ ] Better windows support
+- [ ] Better python support maybe see about uploading to pip
+  - [ ] Still will use pipx but ideally we would be able to use pipx with the url to github (windows users)
 
 ### P3
 

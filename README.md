@@ -18,6 +18,10 @@
   </p>
 </div>
 
+> [!Important]
+> Windows is not officially support and is not easy to work with it is recommend to use WSL or a Linux VM instead
+> If you would like to just run it please download the latest version from the releases tab
+
 <!-- BREAKING CHANGES -->
 ## Breaking Changes
 
@@ -34,7 +38,7 @@ Use the main branch to link your node project to. If you need to make any change
  check the <a href="https://github.com/jzdegrey/AlgoGauge/issues">Repo Issues tab</a> to see if your issue has already
  been reported. If not, then please create a 
 <a href="https://github.com/jzdegrey/AlgoGauge/issues/new/choose">New issue</a>. If you do need to make changes to this
-code, then you must check out and create a new branch from either main or the <a href="">Development Branch</a>, 
+code, then you must check out and create a new branch from either main or Development Branch,
 make your edits, commit and push them to your branch and then create a pull request. Only owners of this repo may authorize pull requests.
 
 If you do want to add to this repo, please also read the [DEV-README](./docs/DEV-README.md#algogauge-cli)
@@ -49,6 +53,20 @@ The following prerequisites are required.
 
 ### Installation
 
+#### Windows OS
+
+You can ask a Linux user to build it for you if they run. Or you can attempt to use CMake and download make
+
+```bash
+make build_windows
+```
+
+You will also need to directly use pipx with python
+
+They will need the mingw32 toolchain in there path
+
+#### Linux and Mac OS
+
 ```shell
 make 
 make python_install
@@ -61,16 +79,11 @@ Pipx should install packages globally in there own isolated environment to check
  AlgogaugePY -h
  ```
 
-#### Windows OS
+AlgoGauge and AlgoGaugeJS can be found in build bin. AlgoGaugeJS will need to be moved to your path to be able to be ran from AlgoGauge (C++). The easiest way to do this is to run
 
-To run on Windows OS (Calls help option `-h`)
-
-```shell
-.\AlgoGauge.exe -h
-.\AlgoGaugeJS.exe -h
+```bash
+sudo cp ./AlgoGaugeJS /usr/local/bin
 ```
-
-#### Linux and Mac OS
 
 To run on Unix/Mac OS (Calls help option `-h`)
 
@@ -89,8 +102,8 @@ To use AlgoGauge CLI in production both AlgogaugeJS and Algogauge need to be in 
 to /usr/local/bin.
 
 ```shell
-sudo cp Algogauge /usr/local/bin
-sudo cp AlgogaugeJS /usr/local/bin
+sudo cp ./Algogauge /usr/local/bin
+sudo cp ./AlgogaugeJS /usr/local/bin
 ```
 
 To ensure it worked run
