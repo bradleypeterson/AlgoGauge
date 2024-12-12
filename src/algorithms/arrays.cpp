@@ -114,7 +114,8 @@ struct Array {
             size--;
         } 
         else {
-            std::cerr << "Array is empty!" << endl;
+            // std::cerr << "Array is empty!" << endl;
+            return;
         }
     }
 
@@ -125,7 +126,8 @@ struct Array {
             
         } 
         else {
-            std::cerr << "Array is empty!" << endl;
+            // std::cerr << "Array is empty!" << endl;
+            return;
         }
     }
 
@@ -180,6 +182,15 @@ string ArrayPerformanceTest(int capacity, int number, string function, string pe
     string output = "";
     PerfEvent perfObject;
     string perfObjectString = "{}";
+
+    if(capacity < number){
+
+        if(verbose) {
+            std::cerr << "Error: Cannot delete (" << capacity << ") from a list size of (" << number << ")." << endl;
+        }
+
+        output = "{\"ERROR\":\"List size must be larger than number removed or added\"}";
+    }
 
     // Create array with given capacity
     Array array(capacity);
