@@ -99,7 +99,7 @@ struct LinkedList {
     void pop_back() {
         // Error scenario: List is empty
         if (!head) {
-            std::cerr << "The list is empty!" << std::endl;
+            //std::cerr << "The list is empty!" << std::endl;
             return;
         }
         // Specific scenario: Only one node in the list
@@ -128,7 +128,7 @@ struct LinkedList {
     void pop_front() {
         //List is empty
         if (!head) {
-            std::cout << "The list is empty!" << std::endl;
+            //std::cout << "The list is empty!" << std::endl;
             return;
         }
         //Only one node in the list
