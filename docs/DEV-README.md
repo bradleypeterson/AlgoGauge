@@ -16,11 +16,11 @@
   <p align="left">
     This is the README for developers who are looking to improve this project. If you are only looking
     to use this program, please read the <a href="./README.md">README.md</a> file instead. This readme
-    also contains information on deploying not just this program, but also the React app to an 
+    also contains information on deploying not just this program, but also the React app to an
     Ubuntu server.
     <br><br>
     Use this file to SUPPLEMENT the <a href="./README.md">README.md</a>. 
-    <br>    
+    <br>
     <em>It makes little sense to improve something you do not know how to use.</em>
   </p>
 </div>
@@ -28,8 +28,8 @@
 <br>
 <h4>&gt;&gt;&gt; <a href="#react-deploy">Jump to Deploying React to an Ubuntu Server</a></h4>
 
-## AlgoGauge CLI
-****
+# AlgoGauge CLI
+---
 *This section provides details on the C++ Code*
 
 ### Project Structure
@@ -44,15 +44,22 @@ constitutes a normal number of lines for a given file.
 AlgoGaugeCLI:
 │
 ├───algorithms  # Contains files related to running any algorithms
+│   ├───arrays.hpp # Contains all the array logic
+│   ├───hash_algs.cpp  # Contains all the hash table logic 
+│   ├───linkedList.hpp # Contains all the linked list logic
 │   ├───RandomNum.hpp  # File containing logic to generate random numbers
 │   └───sort_7algs.cpp  # Contains all the Sorting Algorithms logic
 │
 ├───CLI_Parsing  # Contains files related to parsing out command line arguments
+│   ├───algorithm_caller.hpp # Takes parsed commands from CLI_Parsing.hpp and calls the algorithms.
 │   └───CLI_Parsing.hpp  # File for parsing out command line arguments. Also, manages the running algorithms
 │
 ├───dependencies  # Contains any third party libraries (TPL)
 │   ├───cxxopts.hpp  # TPL for auto parsing the command line arguments (this does a lot of heavy lifting)
-│   └───Perf.hpp  # Library that I wrote to make interfacing with Perf a lot easier (this is not a TPL)
+│   ├───PerfEvent.hpp  # Library that I wrote to make interfacing with Perf a lot easier (this is not a TPL)
+│   └───subprocess.h # TODO: add info on what this does.
+│
+├───MultiLanguage  # Contains the files for multi-language logic. (sorting algorithms only)
 │
 ├───CMakeLists.txt  # File that tells cmake or make how to build this project
 └───main.cpp  # Main runner. No logic is included here. Only used as a starting point.
@@ -60,28 +67,51 @@ AlgoGaugeCLI:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### algorithms/
-#### /RandomNum.hpp
+# algorithms/
+---
+### /arrays.cpp
+TODO: add text.
+
+### /hash_algs.cpp
+This file is where all the hash table logic is stored. The only hash table that has been created is closed (array based) hash table. 
+
+##### Design:
+  - The design method was to create an class for ClosedHashTable that has all the crud operations like creating, looking-up, changing, and deleting. 
+  - Then I created the testing methods that are apart of the class, which are specifically for testing the hash table algorithms. 
+  - The getters retrive the privite data members that are passed into the constructor. These data members have to do with the creation of the hash table and the parameters for testing, along with the parameters for how the JSON string is returned and verbose couts.
+  - To run/test a hash table object you create an object and pass it into the `runHash()` function. The `runHash()` function returns a string which is in a JSON format. Example bellow:
+  ```cpp
+  cout << runHash(AlgoGauge::ClosedHashTable<string, string> (100000, "linear", 50, 1000, true, "true")) << endl;
+  ```
+
+##### Things to Add:
+- [ ] Add Open hash tables
+- [ ] Add Quadratic probing 
+- [ ] Add more testing functions  
+
+### /linkedList.cpp
+TODO: add text.
+
+### /RandomNum.hpp
 This file centralizes the random number generator. It primarily uses the Mersenne Twister Engine.
 The MTE is not considered to be a *truly* random generator. This is used so as to generate the exact
 same set of random numbers every time given a seed. While the MTE does generate random numbers after 
 each `getRandomNumber()` call, the set  it generates will always be the same. 
 
-##### e.g.
-If I want to generate 5 random numbers, it might produce {3, 524, 65, 325663, 23, 25234}.
-If I restart the program, it will produce {3, 524, 65, 325663, 23, 25234} again. Even though
-the program was restarted, it still produced the same set of random numbers.
+- ##### e.g.
+  If I want to generate 5 random numbers, it might produce {3, 524, 65, 325663, 23, 25234}.
+  If I restart the program, it will produce {3, 524, 65, 325663, 23, 25234} again. Even though
+  the program was restarted, it still produced the same set of random numbers.
 
-##### Why do we want to do this?
-This helps ensure consistency when comparing different sorting algorithms while also maintaining 
-randomness within the set. If I want to compare a random Bubble sort with a random Quick sort, I would
-expect to get a more accurate result if the two algorithms had to sort the exact same set. This also
-greatly helps if I compare two algorithms with random start sets, come back at a later time, and then 
-run an additional algorithm with a random start set. No matter the time difference between the 
-first comparison run and the second, the random start set will be the same every time. 
+- ##### Why do we want to do this?
+   This helps ensure consistency when comparing different sorting algorithms while also maintaining 
+  randomness within the set. If I want to compare a random Bubble sort with a random Quick sort, I would
+  expect to get a more accurate result if the two algorithms had to sort the exact same set. This also
+  greatly helps if I compare two algorithms with random start sets, come back at a later time, and then 
+  run an additional algorithm with a random start set. No matter the time difference between the 
+  first comparison run and the second, the random start set will be the same every time. 
 
-#
-#### /sort_7algs.cpp
+### /sort_7algs.cpp
 This is the main file that houses all the sorting algorithms and processing logic.
 This file is setup to be object oriented where every algorithm should inherit from the base class 
 `BaseSort`. 
@@ -93,9 +123,11 @@ environments.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#
-### CLI_Parsing/
-#### /CLI_Parsing.hpp
+# CLI_Parsing/
+---
+### /algorithm_caller.hpp
+TODO: add text.
+### /CLI_Parsing.hpp
 This is the main file for managing the program. It parses out the command line arguments primarily,
 and then takes those arguments to build each of the algorithms depending on the passed arguments/flags.
 It then takes any passed program level flags (verbose, json, perf, etc) and sets up those 
@@ -106,18 +138,17 @@ and the flag `-p` or `--perf` is passed without setting it to `sample` (`--perf=
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## dependencies/
-#### /cxxopts.hpp
+# dependencies/
+---
+### /cxxopts.hpp
 This is the TPL that does most of the heavy lifting in terms of parsing out the command line 
 arguments. While there are other TPLs that are more sophisticated in parsing CLI args, I chose this one
 as it was able to accomplish everything we needed, while also being the simplest to use. 
 <br><br>
 The official documentation for this TPL is listed here: https://github.com/jarro2783/cxxopts
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#
-#### /Perf.hpp
+### /PerfEvent.hpp
 This is the library that interfaces with the Perf API on Linux. It should go without saying that this 
 was the hardest piece to interface with. My only advice is to put aside a couple of hours to research 
 and understand Perf. Unfortunately, the majority of documentation on Perf is on the Command Line 
@@ -127,10 +158,18 @@ to understand Perf: https://www.man7.org/linux/man-pages/man2/perf_event_open.2.
 Luckily for you, I wrote this library to make interfacing with the Perf API easier and to take on 
 the majority of the heavy lifting. 
 
-<br>
+### /subprocess.h
+TODO: add information.
+
+
+# MultiLanguage/
+---
+TODO: add files and descriptions.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+# More Information:
+---
 ## Perf
 A couple more items to mention with Perf. Since Perf records performance metrics for a program or a 
 running block of code, there is a concern with adding to the run time complexity by also having to 
@@ -151,18 +190,17 @@ When this limit is exceeded, no error is generated. Instead, all the perf metric
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#
-### Deploying to an Ubuntu Server
+## Deploying to an Ubuntu Server
 These steps are similar to the **Getting Started -> Installation** section in the other README. However,
 these contain the steps I used to build this as a program on Ubuntu so that it could be called from 
 the command line interface as a normal Linux command instead of having to specify the path to the 
 binary every time. 
 
-### Prerequisites
+## Prerequisites
 
 This project is built on cmake. Please make sure to have cmake installed before continuing.
 
-### Installation
+## Installation
 ```shell
 cd [source code root directory]
 cmake ..
@@ -178,46 +216,17 @@ in the future.
 <br>
 This builds the binary and then moves it into the binaries folder which is where almost all shells 
 look in when you execute a command. This means that you can now execute `AlgoGauge [flags/args]` like 
-a normal linux command. 
+a normal linux command.
 
-### Getting AlgoGauge to run as sudo as a user without sudo access
-In order to do this, there is an extra step that needs to be run after completing the above steps.
-You have to edit the sudoers file. I found this site to be useful while completing these actions.
-https://ostechnix.com/run-particular-commands-without-sudo-password-linux/
-To edit the sudoers file, do ***not*** edit it directly! Instead, run the following command:
-```bash
-sudo visudo
-```
-Then, add the following lines at the end of the file:
-```bash
-# Allow perf to be ran without password:
-%sudo ALL=NOPASSWD:/usr/bin/AlgoGauge
-root ALL=NOPASSWD:/usr/bin/AlgoGauge
-%root ALL=NOPASSWD:/usr/bin/AlgoGauge
-```
-What these three lines mean is to allow all users to run the AlgoGauge program as sudo without 
-also having to have sudo access as well as not having to input any password when running it as sudo.
-(these changes will only work on new shell sessions. Meaning you'll need to close your active shell session and re-login
-in order to get it to work)
-These lines allow any user to now run the following command:
-```bash
-sudo AlgoGauge [flags/args]
-```
-Which sudo is required in order for the -p/--perf flag to work!
+> [!WARNING]
+> Algogauge perf does not need sudo look at PERF.md to fix this
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#
-
-<h1 id="react-deploy" name="react-deploy">
-Deploying React to an Ubuntu Server
-</h1>
-
-****
+# Deploying React to an Ubuntu Server
+---
 *This section provides details on deploying your React app to an Ubuntu server running NGINX*
 
-### Prerequisites
-
+### Prerequisites:
 - ##### NGINX
 - ##### Ubuntu
 These instructions were made for deploying on an Ubuntu server using the NGINX web daemon. These instructions will
@@ -241,10 +250,10 @@ have at least the basic installation of NGINX installed and running on Ubuntu.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<h2 id="i-node" name="i-node">Installing Node</h2>
+# Installing Node
+---
 As you probably already know, Node is required in order to run a React app. However, installing Node on Ubuntu is a 
 little bit different if you are wanting to use the most recent version of Node. 
-<hr>
 
 **IMPORTANT:** The majority of package managers (including `apt` and `apt-get`) do not have the latest version of Node.
 I do not know the reason for this, but it is ***highly recommended to use the following installation instructions***
@@ -258,10 +267,10 @@ If you do not, it is highly probable you ***will*** run into issues later on.
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<h2 id="c-react-root-dep" name="c-react-root-dep">Configuring React for root deployment</h2>
+# Configuring React for root deployment
+---
 If you are planning on deploying your React app at the root level of your website (or if your React app will be the 
 sole website running on the server) and you intend to install it at `/var/www/html/`, then continue with this section.
-<hr>
 
 ***IMPORTANT:*** **If you are planning on installing this in a subdirectory or as a subdomain,** ***do NOT*** **follow
 this section!!! Instead, follow the next section titled** <a href="#c-react-sub-dep">Configuring React for 
@@ -311,11 +320,12 @@ about Linux file permissions here: https://linuxhandbook.com/linux-file-permissi
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<h2 id="c-react-sub-dep" name="c-react-sub-dep">Configuring React for sub-directory or sub-domain deployment</h2>
+# Configuring React for sub-directory or sub-domain deployment
+---
 If you are planning on deploying your React app in a subdirectory or subdomain of your website (or if your React app 
 will be one of many websites running on the server) and you intend to install it at `/var/www/html/[some-folder-name]`, 
 then continue with this section.
-<hr>
+<br>
 
 ***IMPORTANT:*** **If you are planning on installing this at the root level,** ***do NOT*** **follow
 this section!!! Instead, follow the previous section titled** <a href="#c-react-root-dep">Configuring React for root 
@@ -449,11 +459,11 @@ https://skryvets.com/blog/2018/09/20/an-elegant-solution-of-deploying-react-app-
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<h2 id="sandbox-subdir-groups" name="sandbox-subdir-groups">Sandbox sub-directory for Group Based Permissions</h2>
+# Sandbox sub-directory for Group Based Permissions
+---
 This section details instructions for the current deployment of the AlgoGauge React app on the Morpheus server as well 
 as deploying individual group's React projects to their own segregated/sandboxed folders
 
-<hr>
 
 The current Morpheus server is setup so that each group that had an opportunity to deploy their project, was sandboxed 
 into their own project folder. This provided certain security boundaries so that each group could only access and 
@@ -489,21 +499,21 @@ because we would only set the `etc` folder to **NOT** have any permissions on th
 except whenever we have to build the React app. This is because we would have to redo the `chmod -R +rx` on the root 
 group folder which would also add read and execute permissions to the `etc` folder which is not what we wanted. Meaning 
 that every time we would have to manually specify each of the files in our `chmod` command so as to not touch the `etc` 
-folder as well. 
+folder as well.
 
 <br>
 
-The best solution to this problem is to create two folders for each group. One group folder that would be the same as 
-above in `/var/www/html/` and then another one somewhere other than `/var/www/html/`. This would eliminate the need for 
-the `etc` folder as it would move the `etc` folder somewhere else in the file system. 
+The best solution to this problem is to create two folders for each group. One group folder that would be the same as
+above in `/var/www/html/` and then another one somewhere other than `/var/www/html/`. This would eliminate the need for
+the `etc` folder as it would move the `etc` folder somewhere else in the file system.
 
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<h2 id="c-react-server-daemon" name="c-react-server-daemon">Create React Server Daemon Process</h2>
+# Create React Server Daemon Process
+---
 This section explains how to set up the React backend/server/express/etc server to run without taking over your shell 
 and without requiring you to maintain an active shell session.
-<hr>
 
 When we run `npm start` within our development environments for our backend/server/express process, you may have 
 noticed that the command `npm start` takes over your current console/shell and can only be regained by terminating the 
@@ -580,7 +590,7 @@ WantedBy=multi-user.target
 After you created and saved your `.service` file, you need to tell `systemd` to enable it. You can do this with the 
 following command:
 ```bash
-sudo systemctl enable [name of .service file you created WITHOUT .service]
+sudo "_systemctl_" enable [name of .service file you created WITHOUT .service]
 ```
 
 E.g. if the service file you created is called `example-backend.service`, you would run:
@@ -621,9 +631,8 @@ journalctl -u [name of .service file you created WITHOUT .service]
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<h2 id="c-nginx-react-router" name="c-nginx-react-router">Configure NGINX to Point React Pages to React Router</h2>
-
-<hr>
+# Configure NGINX to Point React Pages to React Router
+---
 
 Another fun issue with React and React Router is that when you navigate to a different page that's handled 
 by your React Router and try to refresh, you'll notice you'll get a 404 error. This is because when you 
@@ -675,9 +684,8 @@ https://stackforgeeks.com/blog/reactjs-application-showing-404-not-found-in-ngin
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<h2 id="i-c-mongodb" name="i-c-mongodb">Install and Configure MongoDB</h2>
-
-<hr>
+# Install and Configure MongoDB
+---
 
 MongoDB has been installed on the Morpheus server so as to not have to worry about any paid cloud 
 subscriptions or free tier limits. 
@@ -712,9 +720,8 @@ Only one user was created to interface with this single db.
 <p align="right">(<a href="#i-react-home">back to install react contents</a>)</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<h2 id="react-additional-notes" name="react-additional-notes">Additional Notes</h2>
-
-<hr>
+# Additional Notes
+---
 
 If there are no additional notes to be added, but yet a section for additional notes is added anyways 
 where the only content is "there is no additional notes as of right now" or some other long winded content 

@@ -5,36 +5,28 @@
  * @copyright Weber State University
  */
 
+#ifndef ALGOGAUGE_SORT_7ALGS_CPP
+#define ALGOGAUGE_SORT_7ALGS_CPP
+
 #include <iostream>
 #include <memory>
 #include <fstream>
 #include <string>
 #include <chrono>
 #include "RandomNum.hpp"
-#include "../dependencies/Perf.hpp"
+#include "../AlgoGaugeDetails.hpp"
+#include "../dependencies/PerfEvent.hpp"
+
 
 using std::cout;
 using std::cin;
 using std::endl;
 using std::string;
 
-#ifndef ALGOGAUGE_SORT_7ALGS_CPP
-#define ALGOGAUGE_SORT_7ALGS_CPP
+using namespace AlgoGauge;
 
-namespace AlgoGauge {
+namespace Sorting {
 
-    /**
-     * @brief Used for determining valid Algorithm Options.
-     * none is default, however, if set, should always throw an error.
-     */
-    enum AlgorithmOptions {
-        none = 0,
-        randomSet,
-        repeatedSet,
-        chunkSet,
-        reversedSet,
-        orderedSet
-    };
 
     /**
      * @brief This is used to map to the AlgorithmOptions enum
@@ -44,8 +36,8 @@ namespace AlgoGauge {
             "Random",
             "Repeated",
             "Chunks",
-            "Reversed",
-            "Ordered"
+            "Sorted_Reversed",
+            "Sorted"
     };
 
     /**
@@ -61,7 +53,7 @@ namespace AlgoGauge {
             const string &canonicalName = "",
             const bool &verbose = false,
             const bool &includeValues = false,
-            const string &includePerf = "false"
+            const AlgoGauge::PERF& includePerf = perfOFF
         );
         virtual ~BaseSort();
 
@@ -90,16 +82,10 @@ namespace AlgoGauge {
         void loadChunkValues();
         void loadReversedValues();
         void loadOrderedValues();
-        void printValues() const;
         void verifySort() const;
-        void printSortToFile(const string &filePath, const bool &append = true) const;
         void runAndCaptureSort();
-        void runAndPrintSort();
-        void runAndPrintFileSort(const string &filePath, const bool &append = true);
-        string runAndGetJSONSort();
-        string getDummyPerfData(bool JSON = false);
+        void runAndPrintSort(const bool& printToScreen);
 
-        virtual void runSort() = 0; // Pure virtual function.
         // It makes the class **abstract**.  In other words,
         // nothing can instantiate an object of this class.
 
@@ -112,15 +98,17 @@ namespace AlgoGauge {
         // This is different from sortName as this can be whatever the user defines.
         bool verbose;
         bool includeValues;
-        string includePerf;
-#ifdef linux
-        Perf::Perf perf;
-#endif
+        AlgoGauge::PERF includePerf;
+        std::string perfObjectString = "{}";
+
+        virtual void runSort() = 0; // Pure virtual function.
+        void printValues() const;
+
 
     private:
         unsigned int *valuesPriorToSort; //Stores the values prior to sorting
         std::chrono::duration<double, std::milli> executionTime;
-        void loadPerf();
+        // void loadPerf();
     };
 
     /**
@@ -139,7 +127,7 @@ namespace AlgoGauge {
             const string &canonicalName,
             const bool &verbose,
             const bool &includeValues,
-            const string &includePerf
+            const AlgoGauge::PERF &includePerf
     ) {
         this->sortName = sortName;
         if (capacity > 0 && capacity < UINT32_MAX) this->capacity = capacity; //make sure capacity is more than 0 and less than an unsigned 32 bit int
@@ -148,11 +136,11 @@ namespace AlgoGauge {
         this->valuesPriorToSort = new T[capacity];
         this->canonicalName = canonicalName;
         this->algorithmOption = AlgorithmOptions::none;
-        this->executionTime = (std::chrono::high_resolution_clock::now() - std::chrono::high_resolution_clock::now());
+        this->executionTime = (std::chrono::steady_clock::now() - std::chrono::steady_clock::now());
         this->verbose = verbose;
         this->includeValues = includeValues;
         this->includePerf = includePerf;
-        this->loadPerf(); //initialize perf setup
+        // this->loadPerf(); //initialize perf setup
     }
 
     /**
@@ -217,6 +205,7 @@ namespace AlgoGauge {
     /**
      * Initializes perf data. Sets which hardware and software events to collect from. (Remove some of these if your system has too little performance CPU registers)
      */
+    /*
     template<typename T>
     void BaseSort<T>::loadPerf() {
         
@@ -226,12 +215,12 @@ namespace AlgoGauge {
         perf.addNewPerfEvent("bus cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES);
         perf.addNewPerfEvent("cpu instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
         perf.addNewPerfEvent("cache references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES);
-        perf.addNewPerfEvent("cache misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
-        perf.addNewPerfEvent("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
-        perf.addNewPerfEvent("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
-        perf.addNewPerfEvent("branch misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
+        // perf.addNewPerfEvent("cache misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
+        // perf.addNewPerfEvent("branch predictions", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_BPU);
+        // perf.addNewPerfEvent("retired branch instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS);
+        // perf.addNewPerfEvent("branch misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
 
-        //CPU Software (OS) Events
+        // //CPU Software (OS) Events
         perf.addNewPerfEvent("total page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS);
         perf.addNewPerfEvent("minor page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN);
         perf.addNewPerfEvent("major page faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ);
@@ -259,55 +248,9 @@ namespace AlgoGauge {
             (PERF_COUNT_HW_CACHE_L1I) | (PERF_COUNT_HW_CACHE_OP_PREFETCH << 8) | (PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
         );
 #endif
-    }
+    }*/
 
-    /**
-     * Generates static perf data so that Perf data can be used on non-linux environments.
-     * @param JSON Whether the dummy data should be returned in JSON format
-     * @return Dummy data of static perf data
-     */
-    template<typename T>
-    string BaseSort<T>::getDummyPerfData(bool JSON) {
-        string allEvents[17][2] = { //create the static dummy data
-            {"PERF NOTE", "\"INCLUDED DATA IS DUMMY DATA!\""},
-            {"cpu cycles", "5432316545"},
-            {"bus cycles", "1561896"},
-            {"cpu instructions", "5151651"},
-            {"cache references", "198456156"},
-            {"cache misses", "198415652"},
-            {"branch predictions", "51894156489"},
-            {"retired branch instructions", "98528445"},
-            {"branch misses", "7415437"},
-            {"total page faults", "574"},
-            {"minor page faults", "242"},
-            {"major page faults", "473"},
-            {"context switches", "4"},
-            {"L1 data cache read accesses", "369545"},
-            {"L1 instruction cache read accesses", "841616"},
-            {"L1 data cache prefetch accesses", "261485"},
-            {"L1 instruction cache prefetch accesses", "2117485"}
-        };
 
-        string returnString; //create the string that will be returned
-        int size = sizeof(allEvents)/sizeof(*allEvents); //get the size of the array
-        //loop through the dummy data and format it according to if it's JSON or not
-        if (JSON) {
-            returnString += "{";
-            for (int i = 0; i < size; i++) {
-                returnString += "\"" + allEvents[i][0];
-                returnString += "\": " + allEvents[i][1];
-                if (i + 1 != size) returnString += ", ";
-            }
-            returnString += "}";
-        } else {
-            for (int i = 0; i < size; i++) {
-                returnString += allEvents[i][0];
-                returnString += ": " + allEvents[i][1];
-                if (i + 1 != size) returnString += "; ";
-            }
-        }
-        return returnString;
-    }
 
     /**
      * This loads values that are already sorted in reverse order
@@ -323,7 +266,7 @@ namespace AlgoGauge {
      */
     template<typename T>
     void BaseSort<T>::loadOrderedValues() {
-        algorithmOption = AlgorithmOptions::orderedSet;
+        algorithmOption = AlgorithmOptions::sortedSet;
         for (unsigned int i = 0; i < capacity; i++) arr[i] = valuesPriorToSort[i] = i;
     }
 
@@ -344,33 +287,57 @@ namespace AlgoGauge {
      */
     template<typename T>
     void BaseSort<T>::runAndCaptureSort() {
-        if (verbose) cout << "Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
-        auto startTime = std::chrono::high_resolution_clock::now(); //record the start time counter
-#ifdef linux
-        if (includePerf == "true") {
-            //reset the perf registers
-            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
-            //start recording on the perf registers
-            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
-            runSort();
-            //stop recording on the perf registers
-            ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
-        } else { //don't record perf values if not specified
-            runSort();
+
+
+        PerfEvent perfObject;
+        if (verbose) cout << "C++ Starting sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+        
+        auto startTime = std::chrono::steady_clock::now(); //record the start time counter
+
+        if (includePerf == perfON){
+            if(verbose) std::cout << "Starting PERF" << std::endl;
+            perfObject.startCounters();
         }
-#else
-    runSort();
-#endif
 
+        runSort();
 
-        auto stopTime = std::chrono::high_resolution_clock::now(); //record the stop time counter
-        if (verbose) cout << "Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+        if (includePerf == perfON){
+            perfObject.stopCounters();
+            if(verbose) std::cout << "Stopping PERF it ran for: " << perfObject.getDuration() << std::endl;
+        }
+        auto stopTime = std::chrono::steady_clock::now(); //record the stop time counter
+
+        if (verbose) cout << "C++ Verifying sort: \"" << sortName << "\"" << getCanonicalName() << "..." << endl;
+
         verifySort();
-        if (verbose) cout << "Sort: \"" << sortName << "\"" << getCanonicalName() << "Verified!" << endl;
-        executionTime = stopTime - startTime; //get the wall time or execution time
-#ifdef linux
-        perf.readBuffer(); //read the data collected
-#endif
+
+        if (verbose) cout << "C++ Sort: \"" << sortName << "\"" << getCanonicalName() << " Verified!" << endl;
+        executionTime = stopTime - startTime;
+
+        if (includePerf == perfON) this->perfObjectString = perfObject.getPerfJSONString();
+
+        if(includePerf == sample){
+            if(verbose) std::cout << "Sample PERF Data Insert" << std::endl;
+            this->perfObjectString = perfObject.getPerfJSONStringDummy();
+        }
+
+// #ifdef linux
+//         if (includePerf == "true") {
+// 		    // std::cout << "C++ Running with perf" << std::endl;
+//             //reset the perf registers
+//             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP);
+//             //start recording on the perf registers
+//             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP);
+//             runSort();
+//             //stop recording on the perf registers
+//             ioctl(perf.getFirstFileDescriptor(), PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
+//         } else { //don't record perf values if not specified
+//             perfObject.startCounters();
+//             runSort();
+//         }
+// #else
+//     runSort();
+// #endif
     }
 
     /**
@@ -381,24 +348,22 @@ namespace AlgoGauge {
     string BaseSort<T>::getStringResult() {
         //add perf data if perf is specified, otherwise, create the perfString as an empty string
         string perfString = "; Perf Data: ";
-        if (includePerf == "sample") {
-            perfString += getDummyPerfData();
-        }
+        perfString = perfObjectString;
+
 #ifdef linux
-        else if (includePerf == "true") {
-            perfString += perf.getBufferString();
-        }
+        // else if (includePerf == "true") {
+        //     perfString += perfObjectString;           
+        // }
 #endif
-        else perfString = "";
 
         //return the sort results as a human-readable string
-        return string("Sort '")
+        return string("C++ Sort \"")
                + sortName
-               + string("' ")
+               + string("\"")
                + getCanonicalName()
-               + string("with Algorithm Option '")
+               + string("with Algorithm Option \"")
                + getAlgorithmOption()
-               + string("' of length ")
+               + string("\" of length ")
                + std::to_string(capacity)
                + string(", completed in ")
                + std::to_string(executionTime.count())
@@ -448,7 +413,9 @@ namespace AlgoGauge {
         output += R"("algorithmName": ")" + sortName + "\",";
         output += R"("algorithmOption": ")" + getAlgorithmOption() + "\",";
         output += R"("algorithmLength": )" + std::to_string(capacity) + ",";
+        output += R"("language": "C++",)";
         output += R"("algorithmCanonicalName": ")" + canonicalName + "\",";
+
 
         if (includeValues) {
             output += R"("valuesBeforeSort": [)";
@@ -470,16 +437,8 @@ namespace AlgoGauge {
         output += "\"algorithmRunTime_ms\": " + std::to_string(executionTime.count());
 
         output += ", \"perfData\": "; //always return the perf data object regardless. If no perf data, perf object will just be empty
-        if (includePerf == "sample") {
-            output += getDummyPerfData(true);
-        }
-#ifdef linux
-        else if (includePerf == "true") {
-            output += perf.getBufferJSON();
-        }
-#endif
-        else output += "{}";
-
+        output += perfObjectString;
+            
         return output + "}";
     }
 
@@ -488,47 +447,18 @@ namespace AlgoGauge {
      * @param filePath The path to the file to write the output to
      * @param append Whether or not this should overwrite the file or append to it
      */
-    template<typename T>
-    void BaseSort<T>::printSortToFile(const std::string &filePath, const bool &append) const {
-        std::ofstream outFile;
-        append ? outFile.open(filePath, std::ios::app) : outFile.open(filePath);
-        outFile << getJSONResult();
-        outFile.close();
-    }
+
 
     /**
      * This starts the sort and prints out the results
      */
     template<typename T>
-    void BaseSort<T>::runAndPrintSort() {
-        if (includeValues) cout << "Values before sort:" << endl << getValuesRange() << endl;
+    void BaseSort<T>::runAndPrintSort(const bool& printToScreen) {
+        if (includeValues && printToScreen) cout << "Values before sort:" << endl << getValuesRange() << endl;
         runAndCaptureSort();
-        if (includeValues) cout << "Values after sort:" << endl << getValuesRange() << endl;
-        cout << getStringResult() << endl;
+        if (includeValues && printToScreen) cout << "Values after sort:" << endl << getValuesRange() << endl;
+        if(printToScreen) cout << getStringResult() << endl;
     }
-
-    /**
-     * This starts the sort and writes the results to a file
-     * @param filePath The path to the file to write the output to
-     * @param append Whether or not this should overwrite the file or append to it
-     */
-    template<typename T>
-    void BaseSort<T>::runAndPrintFileSort(const std::string &filePath, const bool &append) {
-        runAndCaptureSort();
-        printSortToFile(filePath, append);
-    }
-
-    /**
-     * This starts the sort and returns the results as a JSON formatted string
-     * @return a string of the sorting results formatted in JSON
-     */
-    template<typename T>
-    string BaseSort<T>::runAndGetJSONSort() {
-        runAndCaptureSort();
-        return getJSONResult();
-    }
-
-
 //Algorithms
 /**
  * This is the class for handling the Bubble Sort Algorithm.
@@ -541,7 +471,7 @@ namespace AlgoGauge {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Bubble", capacity, canonicalName, verbose, includedValues, includePerf) {}
 
         void runSort();
@@ -552,18 +482,31 @@ namespace AlgoGauge {
     /**
      * The logic for executing the bubble sort algorithm.
      */
-    template<typename T>
-    void Bubble<T>::runSort() {
-        for (unsigned int round = 0; round < this->capacity - 1; round++) {
-            for (unsigned int i = 0; i < this->capacity - 1 - round; i++) {
-                if (this->arr[i + 1] < this->arr[i]) {
-                    T temp = this->arr[i];
-                    this->arr[i] = this->arr[i + 1];
-                    this->arr[i + 1] = temp;
-                }
+template<typename T>
+void Bubble<T>::runSort() {
+    bool swapped;
+    unsigned int n = this->capacity;
+
+    do {
+        swapped = false;
+        unsigned int lastUnsorted = 0; // Track the last unsorted position
+
+        for (unsigned int i = 0; i < n - 1; i++) {
+            if (this->arr[i] > this->arr[i + 1]) {
+                // Swap using a temporary variable
+                T temp = this->arr[i];
+                this->arr[i] = this->arr[i + 1];
+                this->arr[i + 1] = temp;
+                swapped = true;
+                lastUnsorted = i + 1; // Update last unsorted position
             }
         }
-    }
+
+        n = lastUnsorted > 0 ? lastUnsorted : n; // Update n only if lastUnsorted has changed
+    } while (swapped && n > 1); // Continue if swaps were made and there's more than one element
+}
+
+
 
     /**
      * This is the class for handling the Selection Sort Algorithm.
@@ -576,7 +519,7 @@ namespace AlgoGauge {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Selection", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
@@ -616,7 +559,7 @@ namespace AlgoGauge {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Insertion", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
@@ -656,7 +599,7 @@ namespace AlgoGauge {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Quick", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
@@ -729,7 +672,7 @@ namespace AlgoGauge {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
+                const AlgoGauge::PERF& includePerf = perfOFF
         ) : BaseSort<T>("Heap", capacity, canonicalName, verbose, includedValues, includePerf) {};
 
         void runSort();
@@ -795,8 +738,8 @@ namespace AlgoGauge {
                 const string &canonicalName = "",
                 const bool &verbose = false,
                 const bool &includedValues = false,
-                const string &includePerf = "false"
-        ) : BaseSort<T>("merge", capacity, canonicalName, verbose, includedValues, includePerf) {}
+                const AlgoGauge::PERF& includePerf = perfOFF
+        ) : BaseSort<T>("Merge", capacity, canonicalName, verbose, includedValues, includePerf) {}
 
         void runSort();
 
@@ -1128,9 +1071,9 @@ namespace AlgoGauge {
         cout << "Running sort: " << sortObj.getName() << endl;
         sortObj.loadRandomValues();
         sortObj.printValues();
-        auto t1 = std::chrono::high_resolution_clock::now();
+        auto t1 = std::chrono::steady_clock::now();
         sortObj.runSort();
-        auto t2 = std::chrono::high_resolution_clock::now();
+        auto t2 = std::chrono::steady_clock::now();
 
         sortObj.printValues();
         sortObj.verifySort();
