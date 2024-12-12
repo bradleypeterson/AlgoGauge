@@ -102,8 +102,8 @@ To use AlgoGauge CLI in production both AlgogaugeJS and Algogauge need to be in 
 to /usr/local/bin.
 
 ```shell
-sudo cp ./Algogauge /usr/local/bin
-sudo cp ./AlgogaugeJS /usr/local/bin
+sudo cp ./AlgoGauge /usr/local/bin
+sudo cp ./AlgoGaugeJS /usr/local/bin
 ```
 
 To ensure it worked run
